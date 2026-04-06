@@ -8,9 +8,10 @@ from typing import Any, Optional
 class TemplateEngine:
     """简单模板引擎"""
 
-    def __init__(self, root: str = "./templates"):
+    def __init__(self, root: str = "./templates", max_depth: int = 10):
         self.root = root
         self._cache: dict[str, str] = {}
+        self.max_depth = max_depth
         self._ensure_root()
 
     def _ensure_root(self):
@@ -26,7 +27,7 @@ class TemplateEngine:
     def render(self, name: str, context: dict[str, Any]) -> str:
         """渲染模板"""
         template = self._load_template(name)
-        return self._render_template(template, context)
+        return self._render_template(template, context, depth=0)
 
     def _load_template(self, name: str) -> str:
         """加载模板"""
@@ -88,8 +89,22 @@ class TemplateEngine:
                     self._validate_ast(node.slice, allowed_names))
         return False
 
-    def _render_template(self, template: str, context: dict[str, Any]) -> str:
-        """渲染模板内容"""
+    def _render_template(self, template: str, context: dict[str, Any], depth: int = 0) -> str:
+        """渲染模板内容
+        
+        Args:
+            template: 模板内容
+            context: 上下文变量
+            depth: 当前递归深度
+        
+        Raises:
+            RecursionError: 当嵌套深度超过 max_depth 时
+        """
+        if depth > self.max_depth:
+            raise RecursionError(
+                f"模板嵌套深度超过限制 ({self.max_depth})，可能存在无限递归"
+            )
+        
         # 替换 {{ variable }}
         def replace_var(match):
             var_name = match.group(1).strip()
@@ -102,14 +117,14 @@ class TemplateEngine:
         result = re.sub(r'\{\{(.*?)\}\}', replace_var, template)
 
         # 处理 {% if condition %} ... {% endif %}
-        result = self._process_if(result, context)
+        result = self._process_if(result, context, depth)
 
         # 处理 {% for item in list %} ... {% endfor %}
-        result = self._process_for(result, context)
+        result = self._process_for(result, context, depth)
 
         return result
 
-    def _process_if(self, template: str, context: dict) -> str:
+    def _process_if(self, template: str, context: dict, depth: int = 0) -> str:
         """处理 if 条件"""
         pattern = r'\{%\s*if\s+(.*?)\s*%\}(.*?){%\s*endif\s*%\}'
 
@@ -118,11 +133,14 @@ class TemplateEngine:
             content = match.group(2)
             # 安全条件评估
             value = self._safe_eval(condition, context)
-            return content if value else ""
+            if value:
+                # 递归处理嵌套内容，深度+1
+                return self._render_template(content, context, depth + 1)
+            return ""
 
         return re.sub(pattern, replace_if, template, flags=re.DOTALL)
 
-    def _process_for(self, template: str, context: dict) -> str:
+    def _process_for(self, template: str, context: dict, depth: int = 0) -> str:
         """处理 for 循环"""
         pattern = r'\{%\s*for\s+(\w+)\s+in\s+(\w+)\s*%\}(.*?){%\s*endfor\s*%\}'
 
@@ -138,7 +156,8 @@ class TemplateEngine:
             result = ""
             for item in items:
                 loop_context = {**context, item_name: item}
-                result += self._render_template(content, loop_context)
+                # 递归处理嵌套内容，深度+1
+                result += self._render_template(content, loop_context, depth + 1)
             return result
 
         return re.sub(pattern, replace_for, template, flags=re.DOTALL)

@@ -29,13 +29,16 @@ class WsMiddlewareChain:
     async def run(self, client, message) -> Optional[str]:
         """执行中间件链"""
         idx = 0
+        current_message = message
 
-        async def next_fn():
-            nonlocal idx
+        async def next_fn(msg=None):
+            nonlocal idx, current_message
+            if msg is not None:
+                current_message = msg
             if idx < len(self.middlewares):
                 mw = self.middlewares[idx]
                 idx += 1
-                return await mw.process(client, message, next_fn)
-            return message
+                return await mw.process(client, current_message, next_fn)
+            return current_message
 
         return await next_fn()

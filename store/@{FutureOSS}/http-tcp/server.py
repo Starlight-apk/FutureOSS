@@ -77,8 +77,35 @@ class TcpHttpServer:
                     break
                 buffer += data
 
-                # 检查 HTTP 请求是否完整
+                # 检查 HTTP 请求头是否完整
                 if b"\r\n\r\n" in buffer:
+                    # 先解析请求头以获取 Content-Length
+                    header_end = buffer.find(b"\r\n\r\n")
+                    header_text = buffer[:header_end].decode("utf-8", errors="replace")
+                    
+                    # 从请求头中提取 Content-Length
+                    content_length = 0
+                    for line in header_text.split("\r\n")[1:]:
+                        if line.lower().startswith("content-length:"):
+                            content_length = int(line.split(":", 1)[1].strip())
+                            break
+                    
+                    # 计算 body 起始位置
+                    body_start_pos = header_end + 4  # \r\n\r\n
+                    body_received = len(buffer) - body_start_pos
+                    
+                    # 等待完整 body
+                    if body_received < content_length:
+                        # 继续接收剩余数据
+                        while body_received < content_length:
+                            remaining = content_length - body_received
+                            chunk = client.conn.recv(min(4096, remaining))
+                            if not chunk:
+                                break
+                            buffer += chunk
+                            body_received += len(chunk)
+                    
+                    # 现在解析完整请求
                     request = self._parse_request(buffer)
                     if request:
                         # 触发请求事件

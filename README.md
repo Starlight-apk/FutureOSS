@@ -36,18 +36,18 @@ FutureOSS/
 
 </div>
 
-所有文档都在本地 `dock/` 目录中：
+完整开发者文档请查阅 [项目 Wiki](https://gitee.com/starlight-apk/feature-oss/wikis)：
 
 | 📘 页面 | 📝 内容 |
 |:---:|:---|
-| [🎯 项目介绍](./dock/00-项目介绍/) | 什么是 FutureOSS、架构设计、核心概念 |
-| [🚀 快速开始](./dock/01-快速开始/) | 安装、配置、第一次运行 |
-| [🔌 插件开发](./dock/02-插件开发/) | 编写你的第一个插件、事件系统 |
-| [📄 插件文档](./dock/03-插件文档/) | http-api、ws-api、file 插件详解 |
-| [📦 包管理](./dock/04-包管理/) | 安装/卸载/搜索/发布插件 |
-| [⚙️ 配置参考](./dock/05-配置参考/) | 配置参数详解 |
-| [🚢 部署运维](./dock/06-部署运维/) | 本地运行、Docker、生产环境 |
-| [🌟 社区与贡献](./dock/07-社区与贡献/) | 贡献指南、行为准则 |
+| [🎯 项目介绍](https://gitee.com/starlight-apk/feature-oss/wikis/项目介绍) | 什么是 FutureOSS、架构设计、核心概念 |
+| [🚀 快速开始](https://gitee.com/starlight-apk/feature-oss/wikis/快速开始) | 安装、配置、第一次运行 |
+| [🔌 插件开发](https://gitee.com/starlight-apk/feature-oss/wikis/插件开发) | 编写你的第一个插件、事件系统 |
+| [📄 插件文档](https://gitee.com/starlight-apk/feature-oss/wikis/插件文档) | http-api、ws-api、file 插件详解 |
+| [📦 包管理](https://gitee.com/starlight-apk/feature-oss/wikis/包管理) | 安装/卸载/搜索/发布插件 |
+| [⚙️ 配置参考](https://gitee.com/starlight-apk/feature-oss/wikis/配置参考) | 配置参数详解 |
+| [🚢 部署运维](https://gitee.com/starlight-apk/feature-oss/wikis/部署运维) | 本地运行、Docker、生产环境 |
+| [🌟 社区与贡献](https://gitee.com/starlight-apk/feature-oss/wikis/社区与贡献) | 贡献指南、行为准则 |
 
 <div align="center">
 

@@ -269,32 +269,32 @@
     <polygon points="480,0 500,0 500,25 490,18 480,25" fill="#ec4899" opacity="0.8"/>
     
     <!-- 标题 -->
-    <text x="250" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#6366f1" font-weight="600" letter-spacing="2">所有文档都在本地 dock/ 目录中</text>
+    <text x="250" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#6366f1" font-weight="600" letter-spacing="2">完整文档请访问项目 Wiki</text>
     
-    <!-- 文档列表 (单列 8 项) -->
+    <!-- Wiki 链接列表 (单列 8 项) -->
     <use href="#icon-book" transform="translate(100, 53) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="65" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">项目介绍</text>
+    <text x="125" y="65" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/项目介绍</text>
     
     <use href="#icon-rocket" transform="translate(100, 83) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="95" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">快速开始</text>
+    <text x="125" y="95" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/快速开始</text>
     
     <use href="#icon-dev" transform="translate(100, 113) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="125" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">插件开发</text>
+    <text x="125" y="125" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/插件开发</text>
     
     <use href="#icon-docs" transform="translate(100, 143) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="155" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">插件文档</text>
+    <text x="125" y="155" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/插件文档</text>
     
     <use href="#icon-config" transform="translate(100, 173) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="185" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">包管理</text>
+    <text x="125" y="185" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/包管理</text>
     
     <use href="#icon-features" transform="translate(100, 203) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="215" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">配置参考</text>
+    <text x="125" y="215" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/配置参考</text>
     
     <use href="#icon-deploy" transform="translate(100, 233) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="245" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">部署运维</text>
+    <text x="125" y="245" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/部署运维</text>
     
     <use href="#icon-star" transform="translate(100, 263) scale(0.75)" color="#a5b4fc" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="125" y="275" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">社区与贡献</text>
+    <text x="125" y="275" font-family="system-ui, sans-serif" font-size="15" fill="#a5b4fc">Wiki/社区与贡献</text>
   </g>
 
   <!-- 许可证区域 -->
