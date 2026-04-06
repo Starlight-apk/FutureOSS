@@ -105,17 +105,40 @@
 }
 
 .feature-card {
-    background: var(--bg-glass);
-    border: 1px solid var(--border);
-    border-radius: 20px;
+    /* 苹果液态玻璃 */
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.04) 100%
+    );
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 24px;
     padding: 32px;
-    transition: all 0.4s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .feature-card:hover {
-    border-color: var(--border-hover);
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(6, 182, 212, 0.1);
+    /* 悬停时增强玻璃效果 */
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.06) 100%
+    );
+    backdrop-filter: blur(50px) saturate(200%);
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 20px 48px rgba(0, 0, 0, 0.18),
+        0 8px 16px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .feature-icon {
@@ -195,10 +218,21 @@
 .install-demo {
     max-width: 700px;
     margin: 0 auto 48px;
-    background: rgba(10, 15, 30, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    /* 苹果液态玻璃 */
+    background: linear-gradient(
+        135deg,
+        rgba(10, 15, 30, 0.7) 0%,
+        rgba(10, 15, 30, 0.5) 100%
+    );
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
     overflow: hidden;
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.2),
+        0 4px 10px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .demo-header {
@@ -264,14 +298,33 @@
 .arch-diagram { max-width: 900px; margin: 0 auto 64px; }
 
 .arch-layer {
-    border-radius: 16px;
+    /* 苹果液态玻璃 */
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.03) 100%
+    );
+    backdrop-filter: blur(30px) saturate(160%);
+    -webkit-backdrop-filter: blur(30px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
     padding: 24px;
-    border: 1px solid var(--border);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .arch-core {
-    background: rgba(6, 182, 212, 0.05);
-    border-color: rgba(6, 182, 212, 0.2);
+    background: linear-gradient(
+        135deg,
+        rgba(6, 182, 212, 0.15) 0%,
+        rgba(6, 182, 212, 0.08) 100%
+    );
+    border-color: rgba(6, 182, 212, 0.3);
+    box-shadow: 
+        0 8px 24px rgba(6, 182, 212, 0.15),
+        0 2px 8px rgba(6, 182, 212, 0.08),
+        inset 0 1px 0 rgba(6, 182, 212, 0.2);
 }
 
 .arch-label {
@@ -330,17 +383,38 @@
 }
 
 .arch-plugin {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    /* 苹果液态玻璃 */
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
     padding: 20px;
     text-align: center;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .arch-plugin:hover {
-    border-color: var(--border-hover);
     transform: translateY(-4px);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.04) 100%
+    );
+    backdrop-filter: blur(30px) saturate(170%);
+    -webkit-backdrop-filter: blur(30px) saturate(170%);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 
+        0 10px 28px rgba(0, 0, 0, 0.12),
+        0 3px 8px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .arch-plugin-title {
@@ -373,11 +447,38 @@
     align-items: center;
     gap: 10px;
     padding: 12px 20px;
-    background: var(--bg-glass);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    /* 苹果液态玻璃 */
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.03) 100%
+    );
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
     font-size: 14px;
     font-weight: 500;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flow-step:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    backdrop-filter: blur(30px) saturate(170%);
+    -webkit-backdrop-filter: blur(30px) saturate(170%);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px);
 }
 
 .flow-step-num {
@@ -404,17 +505,39 @@
 }
 
 .step-card {
-    background: var(--bg-glass);
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    /* 苹果液态玻璃 */
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.03) 100%
+    );
+    backdrop-filter: blur(30px) saturate(160%);
+    -webkit-backdrop-filter: blur(30px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
     padding: 32px;
     text-align: center;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.1),
+        0 2px 6px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .step-card:hover {
-    border-color: var(--border-hover);
     transform: translateY(-4px);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.15),
+        0 4px 10px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .step-number {
@@ -457,7 +580,9 @@
 }
 
 @media (max-width: 768px) {
-    .page-content { padding-left: 24px; }
+    .page-content { 
+        padding: 80px 20px 60px; 
+    }
     .features-grid { grid-template-columns: 1fr; }
     .arch-plugin-grid { grid-template-columns: 1fr; }
     .steps-grid { grid-template-columns: 1fr; }
@@ -465,4 +590,46 @@
     .flow-arrow { transform: rotate(90deg); }
     .pkg-explain { grid-template-columns: 1fr; }
     .pkg-table { overflow-x: auto; }
+    
+    /* 移动端页面标题区域 */
+    .page-header {
+        margin-bottom: 40px;
+    }
+    .page-title {
+        font-size: 28px;
+    }
+    .page-desc {
+        font-size: 15px;
+    }
+    
+    /* 移动端特性卡片 */
+    .feature-card {
+        padding: 24px;
+    }
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+    }
+    .feature-icon svg { 
+        width: 24px; 
+        height: 24px; 
+    }
+}
+
+@media (max-width: 480px) {
+    .page-content {
+        padding: 60px 16px 40px;
+    }
+    .page-header {
+        margin-bottom: 32px;
+    }
+    .page-title {
+        font-size: 24px;
+    }
+    .page-desc {
+        font-size: 14px;
+    }
+    .feature-card {
+        padding: 20px;
+    }
 }

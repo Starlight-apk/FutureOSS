@@ -53,27 +53,27 @@ class ParallaxTracker {
         const isMobile = this._isMobileDevice();
 
         // 按优先级尝试输入源
-        if (isMobile && this._initGyroscope()) {
-            this.activeSource = 'gyro';
-            console.log('[Parallax] 使用陀螺仪输入');
-        } else if (!isMobile && this._initMouse()) {
-            this.activeSource = 'mouse';
-            console.log('[Parallax] 使用鼠标输入');
-        } else if (isMobile) {
-            // 移动端回退方案：触摸滑动
-            this._initTouchFallback();
-            this.activeSource = 'touch';
-            console.log('[Parallax] 使用触摸滑动输入');
+        if (isMobile) {
+            // 移动端优先使用陀螺仪
+            if (this._initGyroscope()) {
+                this.activeSource = 'gyro';
+                console.log('[Parallax] 使用陀螺仪输入');
+            } else {
+                // 陀螺仪不可用时使用触摸滑动
+                this._initTouchFallback();
+                this.activeSource = 'touch';
+                console.log('[Parallax] 使用触摸滑动输入');
+            }
         } else {
-            // 电脑端最后的回退：仍然尝试鼠标
+            // 桌面端使用鼠标
             this._initMouse();
             this.activeSource = 'mouse';
-            console.log('[Parallax] 使用鼠标输入（回退）');
+            console.log('[Parallax] 使用鼠标输入');
         }
 
         // 启动动画循环
         this._animate();
-        console.log(`[Parallax] 已初始化 ${this.elements.length} 个元素`);
+        console.log(`[Parallax] 已初始化 ${this.elements.length} 个元素，输入源: ${this.activeSource}`);
     }
 
     // 检测是否为移动设备
@@ -98,7 +98,10 @@ class ParallaxTracker {
 
     // ── 陀螺仪输入 ──
     _initGyroscope() {
-        if (!window.DeviceOrientationEvent) return false;
+        if (!window.DeviceOrientationEvent) {
+            console.log('[Parallax] 设备不支持 DeviceOrientationEvent');
+            return false;
+        }
 
         let hasFired = false;
         const handler = (e) => {
@@ -123,12 +126,19 @@ class ParallaxTracker {
             return false; // 等待用户授权后再启用
         }
 
+        // Android 和其他设备直接监听
         window.addEventListener('deviceorientation', handler);
+        console.log('[Parallax] 陀螺仪监听已启动（无需权限）');
         return true;
     }
 
     _addGyroPermissionButton(handler) {
         // iOS 设备需要用户交互才能请求陀螺仪权限
+        // 检查是否已经显示过权限按钮
+        if (document.getElementById('gyro-permission-btn')) {
+            return;
+        }
+
         const btn = document.createElement('div');
         btn.id = 'gyro-permission-btn';
         btn.innerHTML = `
@@ -152,15 +162,30 @@ class ParallaxTracker {
                     window.addEventListener('deviceorientation', handler);
                     this.activeSource = 'gyro';
                     console.log('[Parallax] 陀螺仪权限已授予');
+                    btn.remove();
+                } else {
+                    console.warn('[Parallax] 陀螺仪权限被拒绝');
+                    btn.remove();
+                    // 权限被拒绝后使用触摸滑动
+                    this._initTouchFallback();
+                    this.activeSource = 'touch';
                 }
             } catch (err) {
-                console.warn('[Parallax] 陀螺仪权限被拒绝', err);
+                console.warn('[Parallax] 陀螺仪权限请求失败', err);
+                btn.remove();
+                // 出错时使用触摸滑动
+                this._initTouchFallback();
+                this.activeSource = 'touch';
             }
-            btn.remove();
         });
 
         // 点击遮罩关闭
-        btn.querySelector('.gyro-permission-overlay').addEventListener('click', () => btn.remove());
+        btn.querySelector('.gyro-permission-overlay').addEventListener('click', () => {
+            btn.remove();
+            // 用户关闭后使用触摸滑动
+            this._initTouchFallback();
+            this.activeSource = 'touch';
+        });
     }
 
     // ── 触摸滑动输入 ──

@@ -16,6 +16,11 @@
 
     <main class="page-docs">
         <header class="docs-header">
+            <button class="docs-hamburger" id="docs-hamburger" aria-label="切换导航菜单">
+                <span class="docs-hamburger-line"></span>
+                <span class="docs-hamburger-line"></span>
+                <span class="docs-hamburger-line"></span>
+            </button>
             <div class="docs-header-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -28,8 +33,10 @@
             </div>
         </header>
 
+        <div class="docs-sidebar-overlay" id="docs-overlay"></div>
+
         <div class="docs-layout">
-            <aside class="docs-sidebar">
+            <aside class="docs-sidebar" id="docs-sidebar">
                 <div class="docs-nav-section">
                     <div class="docs-nav-section-title">入门</div>
                     <a href="index.html" class="docs-nav-item">什么是 FutureOSS<span class="nav-path">/ 项目介绍</span></a>
@@ -38,7 +45,6 @@
                 </div>
                 <div class="docs-nav-section">
                     <div class="docs-nav-section-title">快速开始</div>
-                    <a href="quickstart.html" class="docs-nav-item">三步运行<span class="nav-path">/ 安装部署</span></a>
                 </div>
                 <div class="docs-nav-section">
                     <div class="docs-nav-section-title">插件</div>
@@ -94,5 +100,60 @@
     <script src="../js/particles.js"></script>
     <script src="../js/parallax.js"></script>
     <script src="../js/animations.js"></script>
+    <script>
+    // 汉堡菜单交互逻辑
+    (function() {
+        const hamburger = document.getElementById('docs-hamburger');
+        const sidebar = document.getElementById('docs-sidebar');
+        const overlay = document.getElementById('docs-overlay');
+        
+        if (!hamburger || !sidebar || !overlay) return;
+        
+        function openSidebar() {
+            sidebar.classList.add('is-open');
+            overlay.classList.add('is-visible');
+            hamburger.classList.add('is-active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSidebar() {
+            sidebar.classList.remove('is-open');
+            overlay.classList.remove('is-visible');
+            hamburger.classList.remove('is-active');
+            document.body.style.overflow = ''';
+        }
+        
+        function toggleSidebar() {
+            if (sidebar.classList.contains('is-open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        }
+        
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        
+        sidebar.querySelectorAll('.docs-nav-item).forEach(link => {
+            link.addEventListener('click', closeSidebar);
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+                closeSidebar();
+            }
+        });
+        
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (window.innerWidth > 768 && sidebar.classList.contains('is-open')) {
+                    closeSidebar();
+                }
+            }, 100);
+        });
+    })();
+    </script>
 </body>
 </html>
