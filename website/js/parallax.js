@@ -24,6 +24,23 @@ class ParallaxTracker {
     }
 
     _init() {
+        // 自动检测文档页面
+        const docsContent = document.querySelector('.docs-content');
+        if (docsContent && !docsContent.hasAttribute('data-parallax-speed')) {
+            docsContent.setAttribute('data-parallax-speed', '1.0');
+        }
+
+        // 自动检测首页
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent && !heroContent.hasAttribute('data-parallax-speed')) {
+            heroContent.setAttribute('data-parallax-speed', '1.0');
+        }
+
+        const heroSection = document.querySelector('.page-hero');
+        if (heroSection && !heroSection.hasAttribute('data-parallax-speed')) {
+            heroSection.setAttribute('data-parallax-speed', '1.0');
+        }
+
         // 查找视差元素
         document.querySelectorAll('[data-parallax-speed]').forEach(el => {
             const speed = parseFloat(el.dataset.parallaxSpeed) || 0.1;

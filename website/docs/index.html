@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>什么是 FutureOSS - Future OSS 文档</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/dock.css" />
+    <link rel="stylesheet" href="../css/docs.css" />
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div id="dock-container"></div>
+
+    <main class="page-docs">
+        <header class="docs-header">
+            <div class="docs-header-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span>文档中心</span>
+            </div>
+            <div class="docs-header-breadcrumb">入门 · 项目介绍</div>
+            <div class="docs-header-actions">
+                <a href="https://gitee.com/starlight-apk/feature-oss/wikis" target="_blank" class="docs-wiki-link">完整 Wiki</a>
+            </div>
+        </header>
+
+        <div class="docs-layout">
+            <aside class="docs-sidebar">
+                <div class="docs-nav-section">
+                    <div class="docs-nav-section-title">入门</div>
+                    <a href="index.html" class="docs-nav-item active">什么是 FutureOSS<span class="nav-path">/ 项目介绍</span></a>
+                    <a href="why-python.html" class="docs-nav-item">为什么选择 Python<span class="nav-path">/ 技术选型</span></a>
+                    <a href="architecture.html" class="docs-nav-item">架构设计<span class="nav-path">/ 三层架构</span></a>
+                </div>
+                <div class="docs-nav-section">
+                    <div class="docs-nav-section-title">快速开始</div>
+                    <a href="quickstart.html" class="docs-nav-item">三步运行<span class="nav-path">/ 安装部署</span></a>
+                </div>
+                <div class="docs-nav-section">
+                    <div class="docs-nav-section-title">插件</div>
+                    <a href="plugins.html" class="docs-nav-item">官方插件列表<span class="nav-path">/ 12+ 插件</span></a>
+                    <a href="development.html" class="docs-nav-item">插件开发指南<span class="nav-path">/ 开发基础</span></a>
+                </div>
+            </aside>
+
+            <div class="docs-content-wrapper">
+                <article class="docs-content">
+                    <h1>🧩 什么是 FutureOSS？</h1>
+
+                    <blockquote><p>FutureOSS 是一个一切皆为插件的开发者工具运行时框架。框架本身是空壳，所有功能均以插件形式加载。</p></blockquote>
+
+                    <h2>项目定位</h2>
+                    <p>协议、中间件、通知渠道……所有功能均以插件形式加载。内置熔断降级、依赖自动解析、事件驱动等企业级稳定性机制。</p>
+
+                    <h2>核心特性</h2>
+                    <ul>
+                        <li><strong>一切皆插件</strong> — 框架本身不提供任何业务功能，所有能力通过插件扩展</li>
+                        <li><strong>热插拔</strong> — 插件运行时加载与卸载，改完即生效，零编译</li>
+                        <li><strong>依赖自动解析</strong> — 拓扑排序 (Kahn 算法) + 循环依赖检测</li>
+                        <li><strong>熔断与降级</strong> — 自动熔断，支持 closed/open/half-open 状态切换</li>
+                        <li><strong>包管理系统</strong> — 一键安装/卸载/更新插件，支持 <code>@{作者}/插件名</code> 格式</li>
+                        <li><strong>事件驱动</strong> — 发布/订阅 + 通配符匹配 + RPC 桥接</li>
+                        <li><strong>统一存储</strong> — plugin-storage 为每个插件提供隔离的文件读写入口</li>
+                    </ul>
+
+                    <hr>
+
+                    <h2>关键原则</h2>
+
+                    <h3>类型共享</h3>
+                    <p>框架在 <code>oss/plugin/types.py</code> 中定义所有数据类型和接口，插件通过 <code>from oss.plugin.types import Plugin</code> 直接使用。插件不应重复定义 Logger、EventBus 等类型。</p>
+
+                    <h3>配置驱动</h3>
+                    <p>所有插件通过 <code>config.json</code> 配置，不修改源码。配置文件使用相对路径，相对于 config.json 所在目录。</p>
+
+                    <h3>插件安装格式</h3>
+                    <p>格式为 <code>@{作者名称}/插件名称</code>，命令：<code>oss pkg install @{Falck}/http-server</code></p>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <a href="https://gitee.com/starlight-apk/feature-oss/wikis" target="_blank" class="docs-wiki-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+        <span>获取更多信息</span>
+    </a>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
+    <script src="../js/dock.js"></script>
+    <script src="../js/particles.js"></script>
+    <script src="../js/parallax.js"></script>
+    <script src="../js/animations.js"></script>
+    <script>
+    document.querySelectorAll('pre code').forEach(function(block) {
+        if (typeof hljs !== 'undefined') hljs.highlightElement(block);
+    });
+    </script>
+</body>
+</html>

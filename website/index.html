@@ -24,9 +24,9 @@
     <div id="dock-container"></div>
 
     <!-- 首页 Hero -->
-    <main class="page-hero" data-parallax-speed="0.3">
+    <main class="page-hero" data-parallax-speed="0.05">
         <div class="hero-container">
-            <div class="hero-content" data-parallax-speed="0.8">
+            <div class="hero-content" data-parallax-speed="0.12">
                 <div class="badge">
                     <span class="badge-dot"></span>
                     <span>2026 · 插件驱动 · 一切皆可扩展</span>
@@ -59,7 +59,21 @@
                     <div class="ripple ripple-3"></div>
                     <div class="ripple ripple-4"></div>
                     <div class="ripple ripple-5"></div>
-                    <img src="logo.svg" alt="Future OSS Logo" class="hero-logo" />
+                    <div class="cube-scene">
+                        <div class="cube is-spinning" id="feature-cube">
+                            <div class="cube-face cube-face-front" data-face="front"></div>
+                            <div class="cube-face cube-face-back" data-face="back"></div>
+                            <div class="cube-face cube-face-right" data-face="right"></div>
+                            <div class="cube-face cube-face-left" data-face="left"></div>
+                            <div class="cube-face cube-face-top" data-face="top"></div>
+                            <div class="cube-face cube-face-bottom" data-face="bottom"></div>
+                        </div>
+                        <div class="cube-tooltip" id="cube-tooltip">
+                            <div class="cube-tooltip-icon"></div>
+                            <div class="cube-tooltip-title"></div>
+                            <div class="cube-tooltip-desc"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,5 +85,6 @@
     <script src="js/particles.js"></script>
     <script src="js/parallax.js"></script>
     <script src="js/animations.js"></script>
+    <script src="js/cube.js"></script>
 </body>
 </html>
