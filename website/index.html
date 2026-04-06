@@ -24,9 +24,9 @@
     <div id="dock-container"></div>
 
     <!-- 首页 Hero -->
-    <main class="page-hero">
+    <main class="page-hero" data-parallax-speed="0.3">
         <div class="hero-container">
-            <div class="hero-content">
+            <div class="hero-content" data-parallax-speed="0.8">
                 <div class="badge">
                     <span class="badge-dot"></span>
                     <span>2026 · 插件驱动 · 一切皆可扩展</span>
@@ -53,20 +53,13 @@
             <div class="hero-visual">
                 <div class="orbit orbit-1"><div class="orbit-dot"></div></div>
                 <div class="orbit orbit-2"><div class="orbit-dot orbit-dot-lg"></div></div>
-                <div class="code-window">
-                    <div class="code-header">
-                        <span class="code-dot code-dot-red"></span>
-                        <span class="code-dot code-dot-yellow"></span>
-                        <span class="code-dot code-dot-green"></span>
-                        <span class="code-title">start.sh</span>
-                    </div>
-                    <pre class="code-body"><code><span class="code-comment"># 1. 克隆项目</span>
-<span class="code-cmd">$ git clone</span> https://gitee.com/starlight-apk/feature-oss.git
-<span class="code-cmd">$ cd</span> feature-oss
-
-<span class="code-comment"># 2. 一键启动</span>
-<span class="code-cmd">$ bash</span> start.sh
-<span class="code-comment"># ✓ 服务已启动 → http://localhost:8080/</span></code></pre>
+                <div class="ripple-container">
+                    <div class="ripple ripple-1"></div>
+                    <div class="ripple ripple-2"></div>
+                    <div class="ripple ripple-3"></div>
+                    <div class="ripple ripple-4"></div>
+                    <div class="ripple ripple-5"></div>
+                    <img src="logo.svg" alt="Future OSS Logo" class="hero-logo" />
                 </div>
             </div>
         </div>
@@ -76,6 +69,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="js/dock.js"></script>
     <script src="js/particles.js"></script>
+    <script src="js/parallax.js"></script>
     <script src="js/animations.js"></script>
 </body>
 </html>

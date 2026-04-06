@@ -14,11 +14,6 @@ start-web.sh
 website/router.php
 admin/
 
-# 数据库配置（含密码）
-website/community/config.php
-website/community/.env
-admin/includes/config.php
-
 # 日志
 logs/
 *.log

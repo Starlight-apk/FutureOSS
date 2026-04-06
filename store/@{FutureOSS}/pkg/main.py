@@ -41,12 +41,16 @@ class PackageManager:
         """加载已安装的包"""
         if not PKG_DIR.exists():
             return
-        for pkg_dir in PKG_DIR.iterdir():
-            if pkg_dir.is_dir():
-                manifest = pkg_dir / "manifest.json"
-                if manifest.exists():
-                    with open(manifest, "r", encoding="utf-8") as f:
-                        self.installed[pkg_dir.name] = json.load(f)
+        # 扫描 @{author}/plugin_name 结构
+        for author_dir in PKG_DIR.iterdir():
+            if author_dir.is_dir() and author_dir.name.startswith("@{"):
+                for plugin_dir in author_dir.iterdir():
+                    if plugin_dir.is_dir():
+                        manifest = plugin_dir / "manifest.json"
+                        if manifest.exists():
+                            with open(manifest, "r", encoding="utf-8") as f:
+                                full_name = author_dir.name + "/" + plugin_dir.name
+                                self.installed[full_name] = json.load(f)
 
     def search(self, query: str = "") -> list[PackageInfo]:
         """搜索可用的包"""
@@ -75,14 +79,19 @@ class PackageManager:
         return results
 
     def install(self, name: str, version: str = "") -> bool:
-        """安装包，支持 @{作者/插件名} 格式"""
-        # 解析输入格式 @{author/plugin} 或直接插件名
+        """安装包，支持 @{作者名称}/插件名称 格式"""
+        # 解析输入格式 @{author}/plugin 或直接插件名
         author = "FutureOSS"  # 默认作者
         plugin_name = name
-        
-        if name.startswith("@{") and "/" in name:
-            # 解析 @{author/plugin} 格式
-            inner = name[2:-1] if name.endswith("}") else name[2:]
+
+        if name.startswith("@{") and "}/" in name:
+            # 解析 @{author}/plugin 格式
+            end_bracket = name.index("}/")
+            author = name[2:end_bracket]
+            plugin_name = name[end_bracket + 2:]
+        elif name.startswith("@{") and name.endswith("}") and "/" in name:
+            # 兼容旧格式 @{author/plugin}
+            inner = name[2:-1]
             parts = inner.split("/", 1)
             if len(parts) == 2:
                 author, plugin_name = parts
@@ -104,8 +113,8 @@ class PackageManager:
             pkg_info.version = version or "1.0.0"
             pkg_info.download_url = self.registry + "/store/@{" + author + "/" + plugin_name + "}"
 
-        # 创建安装目录 @{author/plugin_name}
-        install_dir = PKG_DIR / ("@{" + author + "/" + plugin_name + "}")
+        # 创建安装目录 @{author}/plugin_name
+        install_dir = PKG_DIR / ("@{" + author + "}") / plugin_name
         install_dir.mkdir(parents=True, exist_ok=True)
 
         try:
@@ -124,7 +133,7 @@ class PackageManager:
                 f.write(main_data)
 
             # 更新已安装列表
-            full_name = "@{" + author + "/" + plugin_name
+            full_name = "@{" + author + "}/" + plugin_name
             self.installed[full_name] = manifest_data
             print(f"[pkg] 已安装: {full_name} {manifest_data.get('metadata', {}).get('version', '')}")
             return True
@@ -136,15 +145,30 @@ class PackageManager:
             return False
 
     def uninstall(self, name: str) -> bool:
-        """卸载包"""
-        install_dir = PKG_DIR / name
+        """卸载包，支持 @{作者名称}/插件名称 格式"""
+        # 解析格式获取目录路径
+        if name.startswith("@{") and "}/" in name:
+            end_bracket = name.index("}/")
+            author = name[2:end_bracket]
+            plugin_name = name[end_bracket + 2:]
+            install_dir = PKG_DIR / ("@{" + author + "}") / plugin_name
+        elif name.startswith("@{") and name.endswith("}") and "/" in name:
+            # 兼容旧格式
+            install_dir = PKG_DIR / name
+        else:
+            install_dir = PKG_DIR / name
+
         if not install_dir.exists():
             print(f"[pkg] 包未安装: {name}")
             return False
 
         try:
             shutil.rmtree(install_dir)
-            del self.installed[name]
+            # 从已安装列表中移除
+            for key in list(self.installed.keys()):
+                if key == name or key.endswith("/" + install_dir.name):
+                    del self.installed[key]
+                    break
             print(f"[pkg] 已卸载: {name}")
             return True
         except Exception as e:
