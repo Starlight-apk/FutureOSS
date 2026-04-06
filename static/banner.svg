@@ -66,19 +66,19 @@
   <ellipse cx="1100" cy="1800" rx="700" ry="450" fill="url(#glow-purple)" filter="url(#blur-lg)" opacity="0.75"/>
   <ellipse cx="500" cy="2500" rx="650" ry="400" fill="url(#glow-cyan)" filter="url(#blur-lg)" opacity="0.7"/>
 
-  <g transform="translate(200, 500) rotate(-25) scale(1.2)" filter="url(#glow-strong)">
+  <g transform="translate(200, 500) rotate(-25) scale(1.2)" filter="url(#glow-strong)" class="layer-cubes">
     <polygon points="0,-40 60,-70 120,-40 60,-10" fill="url(#cube-purple)" opacity="0.5" stroke="#6366f1" stroke-width="0.8"/>
     <polygon points="0,-40 60,-10 60,50 0,20" fill="url(#cube-purple)" opacity="0.4" stroke="#6366f1" stroke-width="0.8"/>
     <polygon points="60,-10 120,-40 120,20 60,50" fill="url(#cube-purple)" opacity="0.35" stroke="#6366f1" stroke-width="0.8"/>
   </g>
 
-  <g transform="translate(1100, 700) rotate(15) scale(1.1)" filter="url(#glow-strong)">
+  <g transform="translate(1100, 700) rotate(15) scale(1.1)" filter="url(#glow-strong)" class="layer-cubes">
     <polygon points="0,-40 60,-70 120,-40 60,-10" fill="url(#cube-cyan)" opacity="0.5" stroke="#06b6d4" stroke-width="0.8"/>
     <polygon points="0,-40 60,-10 60,50 0,20" fill="url(#cube-cyan)" opacity="0.4" stroke="#06b6d4" stroke-width="0.8"/>
     <polygon points="60,-10 120,-40 120,20 60,50" fill="url(#cube-cyan)" opacity="0.35" stroke="#06b6d4" stroke-width="0.8"/>
   </g>
 
-  <g transform="translate(700, 1000) rotate(35) scale(0.9)" filter="url(#glow)">
+  <g transform="translate(700, 1000) rotate(35) scale(0.9)" filter="url(#glow)" class="layer-cubes">
     <polygon points="0,-40 60,-70 120,-40 60,-10" fill="url(#cube-pink)" opacity="0.45" stroke="#ec4899" stroke-width="0.6"/>
     <polygon points="0,-40 60,-10 60,50 0,20" fill="url(#cube-pink)" opacity="0.35" stroke="#ec4899" stroke-width="0.6"/>
     <polygon points="60,-10 120,-40 120,20 60,50" fill="url(#cube-pink)" opacity="0.3" stroke="#ec4899" stroke-width="0.6"/>
@@ -114,18 +114,18 @@
     <polygon points="60,-10 120,-40 120,20 60,50" fill="url(#cube-purple)" opacity="0.25" stroke="#6366f1" stroke-width="0.5"/>
   </g>
 
-  <g transform="translate(700, 150)" text-anchor="middle">
+  <g transform="translate(700, 150)" text-anchor="middle" class="layer-title">
     <rect x="-230" y="-25" width="460" height="50" rx="25" fill="#6366f1" opacity="0.15" filter="url(#glow)"/>
     <rect x="-228" y="-23" width="456" height="46" rx="23" fill="none" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
     <text font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#a5b4fc" letter-spacing="3" font-weight="400">Python 3.10+  Apache 2.0  Plugin Driven</text>
   </g>
 
-  <g transform="translate(700, 380)" text-anchor="middle" filter="url(#shadow)">
+  <g transform="translate(700, 380)" text-anchor="middle" filter="url(#shadow)" class="layer-title">
     <text font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="96" fill="url(#cube-purple)" font-weight="800" letter-spacing="4">FutureOSS</text>
     <text y="75" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="32" fill="#e0e7ff" font-weight="300" letter-spacing="8">一切皆为插件的开发者工具运行时框架</text>
   </g>
 
-  <g transform="translate(700, 520)" text-anchor="middle">
+  <g transform="translate(700, 520)" text-anchor="middle" class="layer-title">
     <text font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#94a3b8" font-style="italic">一个空壳框架，通过插件获得无限能力</text>
   </g>
 
@@ -315,107 +315,8 @@
   <text x="700" y="3000" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#6366f1" opacity="0.08" text-anchor="middle" letter-spacing="15" font-weight="300">FUTURE OSS</text>
   <text x="700" y="3050" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#6366f1" opacity="0.06" text-anchor="middle" letter-spacing="10" font-weight="300">EVERYTHING IS A PLUGIN</text>
 
-  <!-- 视差效果脚本 -->
-  <script type="text/ecmascript"><![CDATA[
-    // 视差层配置
-    const layers = [
-      { selector: '.parallax-grid', speed: 0.05 },
-      { selector: '.parallax-cubes', speed: 0.12 },
-      { selector: '.parallax-title', speed: 0.25 },
-      { selector: '.parallax-content', speed: 0.08 }
-    ];
-
-    let mouseX = 700, mouseY = 500;
-    let currentX = 700, currentY = 500;
-    const centerX = 700, centerY = 1650;
-
-    // 获取SVG元素
-    function getLayerElements(selector) {
-      const elements = [];
-      const all = document.querySelectorAll('*');
-      for (let i = 0; i < all.length; i++) {
-        const classes = all[i].getAttribute('class') || '';
-        if (classes.includes(selector.replace('.', ''))) {
-          elements.push(all[i]);
-        }
-      }
-      return elements;
-    }
-
-    // 鼠标移动事件
-    document.addEventListener('mousemove', function(e) {
-      const svg = document.querySelector('svg');
-      const rect = svg.getBoundingClientRect();
-      mouseX = (e.clientX - rect.left) / rect.width * 1400;
-      mouseY = (e.clientY - rect.top) / rect.height * 3300;
-    });
-
-    // 动画循环
-    function animate() {
-      // 平滑插值
-      currentX += (mouseX - currentX) * 0.15;
-      currentY += (mouseY - currentY) * 0.15;
-
-      const deltaX = currentX - centerX;
-      const deltaY = currentY - centerY;
-
-      layers.forEach(layer => {
-        const elements = getLayerElements(layer.selector);
-        elements.forEach(el => {
-          const moveX = deltaX * layer.speed;
-          const moveY = deltaY * layer.speed;
-          const currentTransform = el.getAttribute('data-base-transform') || '';
-          el.setAttribute('transform', `${currentTransform} translate(${moveX}, ${moveY})`);
-        });
-      });
-
-      requestAnimationFrame(animate);
-    }
-
-    // 初始化：为各层添加 class
-    function init() {
-      // 网格层
-      document.querySelectorAll('rect').forEach(rect => {
-        if (rect.getAttribute('fill') && rect.getAttribute('fill').includes('grid')) {
-          rect.setAttribute('class', 'parallax-grid');
-        }
-      });
-
-      // 3D立方体层
-      const cubeGroups = [
-        'translate(200, 500)', 'translate(1100, 700)', 'translate(700, 1000)',
-        'translate(300, 1500)', 'translate(1050, 1800)', 'translate(500, 2200)',
-        'translate(900, 2600)', 'translate(250, 3000)'
-      ];
-      document.querySelectorAll('g').forEach(g => {
-        const transform = g.getAttribute('transform') || '';
-        if (cubeGroups.some(t => transform.includes(t))) {
-          g.setAttribute('data-base-transform', transform);
-          g.setAttribute('class', 'parallax-cubes');
-        }
-      });
-
-      // 标题层
-      document.querySelectorAll('g').forEach(g => {
-        const transform = g.getAttribute('transform') || '';
-        if (transform.includes('translate(700, 380)') || transform.includes('translate(700, 150)') || transform.includes('translate(700, 520)')) {
-          g.setAttribute('data-base-transform', transform);
-          g.setAttribute('class', 'parallax-title');
-        }
-      });
-
-      // 内容层
-      document.querySelectorAll('g').forEach(g => {
-        const transform = g.getAttribute('transform') || '';
-        if (transform.includes('translate(0, 650)') || transform.includes('translate(700, 920)') || transform.includes('translate(200, 980)') || transform.includes('translate(700, 1250)') || transform.includes('translate(150, 1320)')) {
-          g.setAttribute('data-base-transform', transform);
-          g.setAttribute('class', 'parallax-content');
-        }
-      });
-
-      animate();
-    }
-
-    init();
-  ]]></script>
+  <style>
+    @keyframes float-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes float-medium { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+  </style>
 </svg>
