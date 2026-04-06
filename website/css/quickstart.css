@@ -1,0 +1,65 @@
+/* ===== 快速开始 ===== */
+#quickstart {
+    padding: 120px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 64px;
+}
+
+.step-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.step-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-4px);
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.step-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.step-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    text-align: left;
+    background: rgba(10, 15, 30, 0.6);
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.quickstart-cta {
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .steps-grid { grid-template-columns: 1fr; }
+}

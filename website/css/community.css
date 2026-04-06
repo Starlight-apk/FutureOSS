@@ -1,0 +1,46 @@
+/* ===== 社区区域 ===== */
+#community {
+    padding: 120px 0;
+    background: var(--bg-secondary);
+    position: relative;
+    z-index: 1;
+}
+
+.community-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.community-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.community-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 32px;
+    background: var(--bg-glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.community-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(6, 182, 212, 0.1);
+}
+
+.community-card svg {
+    width: 24px;
+    height: 24px;
+    color: var(--cyan);
+}

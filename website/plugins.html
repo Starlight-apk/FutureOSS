@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>插件生态 - Future OSS</title>
+    <meta name="description" content="探索 Future OSS 插件生态：HTTP API、WebSocket、Node.js 适配器，以及包管理与搜索安装。" />
+    <meta name="keywords" content="插件市场, 插件列表, 包管理, oss pkg install, HTTP API, WebSocket, Node.js适配器, 插件开发" />
+    <meta name="author" content="Falck" />
+    <meta property="og:title" content="插件生态 - Future OSS" />
+    <meta property="og:description" content="HTTP API、WebSocket、Node.js 适配器，以及包管理与搜索安装" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://oss-runtime.dev/plugins" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/dock.css" />
+    <link rel="stylesheet" href="css/page.css" />
+</head>
+<body>
+    <canvas id="particles"></canvas>
+
+    <!-- Dock 侧边栏 (由 js/dock.js 动态生成) -->
+    <div id="dock-container"></div>
+
+    <main class="page-content">
+        <div class="page-header">
+            <span class="section-badge">插件生态</span>
+            <h1 class="page-title">包名格式与<span class="gradient-text">安装流程</span></h1>
+            <p class="page-desc">简洁且富有表现力的包名格式，让插件管理像呼吸一样自然</p>
+        </div>
+
+        <div class="plugins-content">
+            <div class="pkg-format">
+                <div class="pkg-card">
+                    <span class="pkg-symbol">@{</span>
+                    <span class="pkg-highlight">作者</span>
+                    <span class="pkg-symbol">/</span>
+                    <span class="pkg-highlight">插件名</span>
+                    <span class="pkg-symbol">}&lt;</span>
+                    <span class="pkg-version">版本</span>
+                    <span class="pkg-symbol">&gt;</span>
+                </div>
+                <div class="pkg-explain">
+                    <div class="explain-item">
+                        <div class="explain-symbol">@{ }</div>
+                        <div class="explain-text">大括号包裹作者和插件名</div>
+                    </div>
+                    <div class="explain-item">
+                        <div class="explain-symbol">/</div>
+                        <div class="explain-text">分隔作者与插件名</div>
+                    </div>
+                    <div class="explain-item">
+                        <div class="explain-symbol">&lt; &gt;</div>
+                        <div class="explain-text">尖括号包裹语义化版本号</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="install-demo">
+                <div class="demo-header">
+                    <span class="demo-dot demo-dot-red"></span>
+                    <span class="demo-dot demo-dot-yellow"></span>
+                    <span class="demo-dot demo-dot-green"></span>
+                    <span class="demo-title">终端</span>
+                </div>
+                <div class="demo-body">
+                    <div class="cmd-line">
+                        <span class="prompt">$</span>
+                        <span class="cmd-text">oss pkg install @{Falck/http-server}&lt;1.0.0&gt;</span>
+                    </div>
+                    <div class="cmd-output success">✅ http-server@1.0.0 安装完成 (1.2s)</div>
+                    <div class="cmd-line">
+                        <span class="prompt">$</span>
+                        <span class="cmd-text">oss pkg list</span>
+                    </div>
+                    <div class="cmd-output">已安装 1 个包:</div>
+                    <div class="cmd-output indent">http-server@1.0.0 - HTTP 协议适配器</div>
+                    <div class="cmd-line" style="margin-top: 16px;">
+                        <span class="prompt">$</span>
+                        <span class="cmd-text">oss pkg update</span>
+                    </div>
+                    <div class="cmd-output success">✅ 所有包已是最新版本</div>
+                </div>
+            </div>
+
+            <div class="pkg-table">
+                <h3 class="pkg-table-title">常用命令</h3>
+                <table>
+                    <thead>
+                        <tr><th>命令</th><th>别名</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>oss pkg install @{x/y}&lt;v&gt;</code></td><td><code>i</code> / <code>add</code></td><td>安装指定版本的插件包</td></tr>
+                        <tr><td><code>oss pkg remove @{x/y}</code></td><td><code>rm</code> / <code>uninstall</code></td><td>卸载已安装的插件</td></tr>
+                        <tr><td><code>oss pkg list</code></td><td><code>ls</code></td><td>列出所有已安装的包</td></tr>
+                        <tr><td><code>oss pkg update [包名]</code></td><td>—</td><td>更新单个或所有包</td></tr>
+                        <tr><td><code>oss pkg sync</code></td><td>—</td><td>从远程仓库同步所有包</td></tr>
+                        <tr><td><code>oss pkg init</code></td><td>—</td><td>初始化 package.json</td></tr>
+                        <tr><td><code>oss pkg clean</code></td><td>—</td><td>清理下载缓存</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="js/dock.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/animations.js"></script>
+</body>
+</html>

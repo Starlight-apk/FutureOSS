@@ -1,0 +1,146 @@
+@echo off
+chcp 65001 >nul 2>&1
+setlocal enabledelayedexpansion
+
+:: ═══════════════════════════════════════════════════════════
+::  FutureOSS 启动脚本 — Windows
+::  自动检测 Python / 依赖 / 守护 / 崩溃重启
+:: ═══════════════════════════════════════════════════════════
+
+set "RED=[31m"
+set "GREEN=[32m"
+set "YELLOW=[33m"
+set "CYAN=[36m"
+set "WHITE=[37m"
+set "BOLD=[1m"
+set "NC=[0m"
+
+call :color_echo "BOLD" "CYAN" ""
+echo  ███████╗ ██████╗  ██████╗  ██████╗ ██████╗  ██████╗
+echo  ██╔════╝ ██╔══██╗ ██╔══██╗ ██╔══██╗ ██╔══██╗██╔════╝
+echo  █████╗   ██████╔╝ ██████╔╝ ██████╔╝ ██║  ██║██║  ███╗
+echo  ██╔══╝   ██╔══██╗ ██╔══██╗ ██╔══██╗ ██║  ██║██║   ██║
+echo  ██║      ██║  ██║ ██║  ██║ ██║  ██║ ██████╔╝╚██████╔╝
+echo  ╚═╝      ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝
+call :color_echo "BOLD" "WHITE" ""         一切皆为插件 · 零编译热插拔
+call :color_echo "" "WHITE" ""         https://gitee.com/starlight-apk/feature-oss
+echo.
+
+:: ── 目录 ──
+cd /d "%~dp0"
+set "PYTHON_CMD="
+set "PIP_CMD="
+
+:: ═══════════════════════════════════════════════════════════
+::  1. 检查 Python
+:: ═══════════════════════════════════════════════════════════
+call :section "环境检测"
+
+where python 2>nul && set "PYTHON_CMD=python" || (
+    where python3 2>nul && set "PYTHON_CMD=python3" || (
+        where py 2>nul && set "PYTHON_CMD=py" || (
+            call :color_echo "" "YELLOW" "" [!] 未检测到 Python
+            echo.
+            echo    请安装 Python 3.10+ :
+            echo    ^> https://www.python.org/downloads/
+            echo.
+            echo    安装时请勾选 "Add Python to PATH"
+            echo.
+            pause
+            exit /b 1
+        )
+    )
+)
+
+for /f "tokens=*" %%i in ('%PYTHON_CMD% --version 2^>^&1') do set "PY_VER=%%i"
+call :color_echo "" "GREEN" "" [✓] Python: %PY_VER%
+
+:: ═══════════════════════════════════════════════════════════
+::  2. 虚拟环境 & 依赖
+:: ═══════════════════════════════════════════════════════════
+call :section "依赖安装"
+
+if not exist ".venv" (
+    call :color_echo "" "CYAN" "" [i] 创建虚拟环境...
+    %PYTHON_CMD% -m venv .venv
+)
+
+set "VENV_PYTHON=.venv\Scripts\python.exe"
+set "VENV_PIP=.venv\Scripts\pip.exe"
+
+if exist "pyproject.toml" (
+    call :color_echo "" "CYAN" "" [i] 安装项目依赖...
+    %VENV_PIP% install -e . -q 2>nul
+)
+
+if exist "requirements.txt" (
+    call :color_echo "" "CYAN" "" [i] 安装 requirements.txt...
+    %VENV_PIP% install -r requirements.txt -q 2>nul
+)
+
+:: 核心依赖兜底
+for %%p in (click pyyaml websockets) do (
+    %VENV_PYTHON% -c "import %%p" 2>nul || (
+        call :color_echo "" "CYAN" "" [i] 安装 %%p ...
+        %VENV_PIP% install %%p -q 2>nul
+    )
+)
+
+call :color_echo "" "GREEN" "" [✓] 依赖就绪
+
+:: ═══════════════════════════════════════════════════════════
+::  3. 确保 data 目录
+:: ═══════════════════════════════════════════════════════════
+if not exist "data\html-render"    mkdir "data\html-render"
+if not exist "data\web-toolkit"    mkdir "data\web-toolkit"
+if not exist "data\plugin-storage" mkdir "data\plugin-storage"
+if not exist "data\DCIM"           mkdir "data\DCIM"
+if not exist "data\pkg"            mkdir "data\pkg"
+
+:: ═══════════════════════════════════════════════════════════
+::  4. 启动
+:: ═══════════════════════════════════════════════════════════
+call :section "启动 FutureOSS"
+
+set "RESTART_DELAY=3"
+set "RESTART_COUNT=0"
+
+:LOOP
+    echo.
+    call :color_echo "" "CYAN" "" [i] 启动服务...
+    echo.
+    %VENV_PYTHON% -m oss.cli serve
+    set "EXIT_CODE=!ERRORLEVEL!"
+
+    if !EXIT_CODE! equ 0 (
+        echo.
+        call :color_echo "" "GREEN" "" [✓] 服务正常退出
+        goto :END
+    )
+
+    set /a RESTART_COUNT+=1
+    echo.
+    call :color_echo "" "YELLOW" "" [!] 服务异常退出 (code: !EXIT_CODE!)，!RESTART_DELAY!s 后重启... (第 !RESTART_COUNT! 次)
+    timeout /t !RESTART_DELAY! /nobreak >nul
+
+    if !RESTART_DELAY! lss 30 set /a RESTART_DELAY=!RESTART_DELAY!*2
+
+    goto :LOOP
+
+:END
+echo.
+pause
+exit /b 0
+
+:: ── 辅助函数 ──
+:color_echo
+    if "%~1" neq "" set /p "=^<ESC>%BOLD%%~2%<ESC>%NC%" <nul
+    echo.
+    goto :eof
+
+:section
+    echo.
+    call :color_echo "BOLD" "WHITE" "══════════════════════════════════════"
+    call :color_echo "BOLD" "WHITE" "  %~1"
+    call :color_echo "BOLD" "WHITE" "══════════════════════════════════════"
+    goto :eof

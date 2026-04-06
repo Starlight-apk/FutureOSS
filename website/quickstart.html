@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>快速开始 - Future OSS</title>
+    <meta name="description" content="快速上手 Future OSS：环境要求、一键安装、配置初始化、启动服务、安装第一个插件。" />
+    <meta name="keywords" content="快速开始, 安装教程, 环境配置, install.sh, Go入门, 插件安装, oss init, oss serve" />
+    <meta name="author" content="Falck" />
+    <meta property="og:title" content="快速开始 - Future OSS" />
+    <meta property="og:description" content="环境要求、一键安装、配置初始化、启动服务、安装插件" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://oss-runtime.dev/quickstart" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/dock.css" />
+    <link rel="stylesheet" href="css/page.css" />
+</head>
+<body>
+    <canvas id="particles"></canvas>
+
+    <!-- Dock 侧边栏 (由 js/dock.js 动态生成) -->
+    <div id="dock-container"></div>
+
+    <main class="page-content">
+        <div class="page-header">
+            <span class="section-badge">快速开始</span>
+            <h1 class="page-title">三步即可<span class="gradient-text">运行</span></h1>
+            <p class="page-desc">从克隆代码到启动服务，只需几分钟</p>
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 class="step-title">克隆代码</h3>
+                <pre class="step-code"><code><span class="code-cmd">git clone</span> https://gitee.com/starlight-apk/feature-oss.git
+<span class="code-cmd">cd</span> feature-oss</code></pre>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3 class="step-title">编译构建</h3>
+                <pre class="step-code"><code><span class="code-cmd">go</span> mod download
+<span class="code-cmd">go</span> build -o bin/oss .
+<span class="code-cmd">./bin/oss</span> init</code></pre>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3 class="step-title">启动服务</h3>
+                <pre class="step-code"><code><span class="code-cmd">./bin/oss</span> serve
+<span class="code-comment"># 访问 localhost:8080</span></code></pre>
+            </div>
+        </div>
+
+        <div class="quickstart-links">
+            <a href="https://gitee.com/starlight-apk/feature-oss/wikis/Home" target="_blank" class="btn btn-primary btn-lg">
+                查看完整文档
+                <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+            <a href="https://gitee.com/starlight-apk/feature-oss" target="_blank" class="btn btn-outline btn-lg">
+                前往 Gitee 仓库
+            </a>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="js/dock.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/animations.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- 背景：深邃黑 -->
+  <rect width="200" height="200" rx="48" fill="#020617"/>
+  
+  <!-- F 的主体：核心骨架 (紫色到蓝紫) -->
+  <!-- 代表框架本体，沉稳、支撑一切 -->
+  <rect x="56" y="52" width="24" height="96" rx="12" fill="url(#spine)"/>
+  
+  <!-- F 的顶部横条：插件模块 A (青色到蓝色) -->
+  <!-- 与骨架分离 14px，悬浮在右侧，代表"热插拔" -->
+  <rect x="94" y="52" width="56" height="24" rx="12" fill="url(#topBar)"/>
+  
+  <!-- F 的中间横条：插件模块 B (绿色到青色) -->
+  <!-- 同样悬浮，代表多样性和扩展性 -->
+  <rect x="94" y="94" width="36" height="24" rx="12" fill="url(#midBar)"/>
+  
+  <!-- 渐变定义 -->
+  <defs>
+    <linearGradient id="spine" x1="68" y1="52" x2="68" y2="148" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="topBar" x1="94" y1="64" x2="150" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="midBar" x1="94" y1="106" x2="130" y2="106" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+</svg>

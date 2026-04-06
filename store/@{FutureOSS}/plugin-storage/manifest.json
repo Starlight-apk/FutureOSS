@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "name": "plugin-storage",
+    "version": "1.0.0",
+    "author": "FutureOSS",
+    "description": "插件存储 - 为所有插件提供隔离的键值存储服务",
+    "type": "utility"
+  },
+  "config": {
+    "enabled": true,
+    "args": {
+      "data_dir": "./data/storage"
+    }
+  },
+  "dependencies": [],
+  "permissions": ["*"]
+}
