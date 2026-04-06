@@ -100,7 +100,7 @@ Copyright 2026 Falck
 </p>
 
 <p>
-  Made with ❤️ by <a href="https://gitee.com/starlight-apk">Falck</a>
+  Made with ❤️ by <a href="https://gitee.com/starlight-apk">Falck</a> & <a href="https://gitcode.com/yongwanxing">yongwanxing</a>
 </p>
 
 </div>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>快速开始 - Future OSS</title>
     <meta name="description" content="快速上手 Future OSS：环境要求、一键安装、配置初始化、启动服务、安装第一个插件。" />
-    <meta name="keywords" content="快速开始, 安装教程, 环境配置, install.sh, Go入门, 插件安装, oss init, oss serve" />
+    <meta name="keywords" content="快速开始, 安装教程, 环境配置, Python 3.10+, pip install, 插件安装, oss init, oss serve" />
     <meta name="author" content="Falck" />
     <meta property="og:title" content="快速开始 - Future OSS" />
     <meta property="og:description" content="环境要求、一键安装、配置初始化、启动服务、安装插件" />
@@ -39,15 +39,14 @@
             </div>
             <div class="step-card">
                 <div class="step-number">2</div>
-                <h3 class="step-title">编译构建</h3>
-                <pre class="step-code"><code><span class="code-cmd">go</span> mod download
-<span class="code-cmd">go</span> build -o bin/oss .
-<span class="code-cmd">./bin/oss</span> init</code></pre>
+                <h3 class="step-title">安装依赖</h3>
+                <pre class="step-code"><code><span class="code-cmd">pip</span> install -r requirements.txt
+<span class="code-cmd">pip</span> install -e .</code></pre>
             </div>
             <div class="step-card">
                 <div class="step-number">3</div>
                 <h3 class="step-title">启动服务</h3>
-                <pre class="step-code"><code><span class="code-cmd">./bin/oss</span> serve
+                <pre class="step-code"><code><span class="code-cmd">bash</span> start.sh
 <span class="code-comment"># 访问 localhost:8080</span></code></pre>
             </div>
         </div>

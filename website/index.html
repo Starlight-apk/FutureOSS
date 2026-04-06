@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Future OSS - 一切皆为插件的开发者工具运行时框架</title>
     <meta name="description" content="Future OSS 是一个一切皆为插件的开发者工具运行时框架。支持插件热插拔、依赖自动解析、熔断降级、事件驱动，打造企业级稳定运行时。" />
-    <meta name="keywords" content="OSS, Future OSS, 插件化, 插件框架, Go框架, 开发者工具, 运行时, 微服务, 热插拔, 依赖解析, 事件驱动, 熔断降级" />
+    <meta name="keywords" content="OSS, Future OSS, 插件化, 插件框架, Python框架, 开发者工具, 运行时, 微服务, 热插拔, 依赖解析, 事件驱动, 熔断降级" />
     <meta name="author" content="Falck" />
     <meta property="og:title" content="Future OSS - 一切皆为插件" />
     <meta property="og:description" content="一切皆为插件的开发者工具运行时框架" />
@@ -58,17 +58,15 @@
                         <span class="code-dot code-dot-red"></span>
                         <span class="code-dot code-dot-yellow"></span>
                         <span class="code-dot code-dot-green"></span>
-                        <span class="code-title">main.go</span>
+                        <span class="code-title">start.sh</span>
                     </div>
-                    <pre class="code-body"><code><span class="code-comment">// 1. 加载配置</span>
-cfg, _ := config.<span class="code-func">Load</span>(<span class="code-str">"config.yaml"</span>)
+                    <pre class="code-body"><code><span class="code-comment"># 1. 克隆项目</span>
+<span class="code-cmd">$ git clone</span> https://gitee.com/starlight-apk/feature-oss.git
+<span class="code-cmd">$ cd</span> feature-oss
 
-<span class="code-comment">// 2. 安装插件</span>
-<span class="code-cmd">$ oss pkg install \</span>
-<span class="code-cmd">  @{Falck/http-server}&lt;1.0.0&gt;</span>
-
-<span class="code-comment">// 3. 启动服务</span>
-<span class="code-cmd">$ oss serve</span></code></pre>
+<span class="code-comment"># 2. 一键启动</span>
+<span class="code-cmd">$ bash</span> start.sh
+<span class="code-comment"># ✓ 服务已启动 → http://localhost:8080/</span></code></pre>
                 </div>
             </div>
         </div>
