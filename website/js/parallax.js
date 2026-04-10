@@ -27,18 +27,18 @@ class ParallaxTracker {
         // 自动检测文档页面
         const docsContent = document.querySelector('.docs-content');
         if (docsContent && !docsContent.hasAttribute('data-parallax-speed')) {
-            docsContent.setAttribute('data-parallax-speed', '1.0');
+            docsContent.setAttribute('data-parallax-speed', '0.5');
         }
 
         // 自动检测首页
         const heroContent = document.querySelector('.hero-content');
         if (heroContent && !heroContent.hasAttribute('data-parallax-speed')) {
-            heroContent.setAttribute('data-parallax-speed', '1.0');
+            heroContent.setAttribute('data-parallax-speed', '0.5');
         }
 
         const heroSection = document.querySelector('.page-hero');
         if (heroSection && !heroSection.hasAttribute('data-parallax-speed')) {
-            heroSection.setAttribute('data-parallax-speed', '1.0');
+            heroSection.setAttribute('data-parallax-speed', '0.5');
         }
 
         // 查找视差元素

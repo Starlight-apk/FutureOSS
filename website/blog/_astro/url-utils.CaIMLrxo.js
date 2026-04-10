@@ -1,0 +1,1 @@
+import"./config.B4FKKqOZ.js";import"./zh_TW.CqrCsd4X.js";function u(o,t){const n=o.replace(/^\/|\/$/g,"").toLowerCase(),r=t.replace(/^\/|\/$/g,"").toLowerCase();return n===r}function e(...o){return o.join("/").replace(/\/+/g,"/")}function l(o){return a(`/posts/${o}/`)}function a(o){return e("","/blog/",o)}export{l as g,u as p,a as u};
