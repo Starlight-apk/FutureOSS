@@ -7,11 +7,13 @@ import urllib.parse
 from pathlib import Path
 from typing import Any, Optional
 
+from oss.logger.logger import Log
 from oss.plugin.types import Plugin, register_plugin_type
 
 
 # 远程仓库地址（可配置）
-DEFAULT_REGISTRY = "https://gitee.com/starlight-apk/future-oss-pkg/raw/main"
+# 插件存储在 future-oss 仓库的 store/ 目录下
+DEFAULT_REGISTRY = "https://gitee.com/starlight-apk/future-oss/raw/main"
 
 # 插件安装目录
 PKG_DIR = Path("./data/pkg")
@@ -54,28 +56,16 @@ class PackageManager:
 
     def search(self, query: str = "") -> list[PackageInfo]:
         """搜索可用的包"""
-        # 从远程仓库获取包索引
-        index_url = f"{self.registry}/index.json"
-        try:
-            with urllib.request.urlopen(index_url, timeout=10) as resp:
-                index = json.loads(resp.read().decode("utf-8"))
-        except Exception:
-            # 本地缓存
-            return list(self.index_cache.values())
-
+        # 简化版本：直接返回本地缓存
+        # 实际使用时可以通过 API 或配置文件维护一个插件索引
+        return self._search_from_cache(query)
+    
+    def _search_from_cache(self, query: str = "") -> list[PackageInfo]:
+        """从本地缓存搜索包"""
         results = []
-        for pkg_name, pkg_info in index.items():
+        for pkg_name, pkg_info in self.index_cache.items():
             if not query or query.lower() in pkg_name.lower() or query.lower() in pkg_info.get("description", "").lower():
-                info = PackageInfo()
-                info.name = pkg_name
-                info.version = pkg_info.get("version", "")
-                info.author = pkg_info.get("author", "")
-                info.description = pkg_info.get("description", "")
-                info.download_url = pkg_info.get("download_url", "")
-                info.dependencies = pkg_info.get("dependencies", [])
-                results.append(info)
-                self.index_cache[pkg_name] = info
-
+                results.append(pkg_info)
         return results
 
     def install(self, name: str, version: str = "") -> bool:
@@ -107,11 +97,12 @@ class PackageManager:
 
         if not pkg_info or not pkg_info.download_url:
             # 尝试从远程仓库直接构建 URL
+            # 插件存储在 store/@{author}/plugin_name 目录下
             pkg_info = PackageInfo()
             pkg_info.name = plugin_name
             pkg_info.author = author
             pkg_info.version = version or "1.0.0"
-            pkg_info.download_url = self.registry + "/store/@{" + author + "/" + plugin_name + "}"
+            pkg_info.download_url = f"{self.registry}/store/@{{{author}}}/{plugin_name}"
 
         # 创建安装目录 @{author}/plugin_name
         install_dir = PKG_DIR / ("@{" + author + "}") / plugin_name
@@ -135,10 +126,10 @@ class PackageManager:
             # 更新已安装列表
             full_name = "@{" + author + "}/" + plugin_name
             self.installed[full_name] = manifest_data
-            print(f"[pkg] 已安装: {full_name} {manifest_data.get('metadata', {}).get('version', '')}")
+            Log.info("pkg", f"已安装: {full_name} {manifest_data.get('metadata', {}).get('version', '')}")
             return True
         except Exception as e:
-            print(f"[pkg] 安装失败 {name}: {e}")
+            Log.error("pkg", f"安装失败 {name}: {e}")
             # 清理失败的安装
             if install_dir.exists():
                 shutil.rmtree(install_dir)
@@ -159,7 +150,7 @@ class PackageManager:
             install_dir = PKG_DIR / name
 
         if not install_dir.exists():
-            print(f"[pkg] 包未安装: {name}")
+            Log.info("pkg", f"包未安装: {name}")
             return False
 
         try:
@@ -169,10 +160,10 @@ class PackageManager:
                 if key == name or key.endswith("/" + install_dir.name):
                     del self.installed[key]
                     break
-            print(f"[pkg] 已卸载: {name}")
+            Log.info("pkg", f"已卸载: {name}")
             return True
         except Exception as e:
-            print(f"[pkg] 卸载失败 {name}: {e}")
+            Log.error("pkg", f"卸载失败 {name}: {e}")
             return False
 
     def update(self, name: str = "") -> bool:
@@ -180,7 +171,7 @@ class PackageManager:
         if name:
             # 更新单个包
             if name not in self.installed:
-                print(f"[pkg] 包未安装: {name}")
+                Log.info("pkg", f"包未安装: {name}")
                 return False
             return self.install(name)
         else:
@@ -205,11 +196,11 @@ class PkgPlugin(Plugin):
     def init(self, deps: dict = None):
         """初始化"""
         PKG_DIR.mkdir(parents=True, exist_ok=True)
-        print("[pkg] 包管理器已初始化")
+        Log.info("pkg", "包管理器已初始化")
 
     def start(self):
         """启动"""
-        print(f"[pkg] 包管理器已启动，已安装 {len(self.manager.installed)} 个包")
+        Log.info("pkg", f"包管理器已启动，已安装 {len(self.manager.installed)} 个包")
 
     def stop(self):
         """停止"""

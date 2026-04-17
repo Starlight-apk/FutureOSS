@@ -3,6 +3,7 @@ import json
 from typing import Any, Callable, Optional
 from datetime import datetime
 
+from oss.logger.logger import Log
 from oss.plugin.types import Plugin, register_plugin_type
 
 
@@ -127,7 +128,7 @@ class JsonCodecPlugin(Plugin):
 
     def start(self):
         """启动"""
-        print("[json-codec] JSON 编解码器已启动")
+        Log.info("json-codec", "JSON 编解码器已启动")
 
     def stop(self):
         """停止"""

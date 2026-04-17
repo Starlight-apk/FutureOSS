@@ -2,6 +2,7 @@
 from typing import Any, Callable, Optional
 from dataclasses import dataclass, field
 
+from oss.logger.logger import Log
 from oss.plugin.types import Plugin, register_plugin_type
 
 
@@ -179,7 +180,7 @@ class PluginBridgePlugin(Plugin):
 
     def start(self):
         """启动"""
-        print("[plugin-bridge] 事件总线、广播、桥接、RPC、共享存储已启动")
+        Log.info("plugin-bridge", "事件总线、广播、桥接、RPC、共享存储已启动")
 
     def stop(self):
         """停止"""

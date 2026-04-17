@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FutureOSS - 插件开发演示</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+    .bg-grid {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image: 
+        linear-gradient(rgba(240, 147, 251, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240, 147, 251, 0.1) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+    #play-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      cursor: pointer;
+      transition: opacity 0.5s;
+    }
+    #play-overlay.hidden { opacity: 0; pointer-events: none; }
+    .play-circle {
+      width: 120px; height: 120px;
+      border: 4px solid #f093fb;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      animation: pulse 2s ease-in-out infinite;
+      transition: transform 0.3s, background 0.3s;
+    }
+    .play-circle:hover {
+      transform: scale(1.1);
+      background: rgba(240, 147, 251, 0.2);
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(240, 147, 251, 0.4); }
+      50% { box-shadow: 0 0 0 30px rgba(240, 147, 251, 0); }
+    }
+
+    /* 时间线 */
+    #timeline {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+    .step {
+      position: absolute;
+      width: 70%;
+      padding: 40px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 20px;
+      border: 1px solid rgba(240, 147, 251, 0.3);
+      opacity: 0;
+      transform: scale(0.8) translateY(50px);
+      transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    .step.active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    .step.prev {
+      opacity: 0;
+      transform: scale(0.6) translateX(-100px);
+    }
+    .step-number {
+      width: 50px; height: 50px;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .step h3 { font-size: 1.5rem; margin-bottom: 15px; }
+    .step p { color: #aaa; line-height: 1.8; font-size: 1.05rem; }
+    .step code {
+      display: block;
+      margin-top: 15px;
+      padding: 15px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.9rem;
+      color: #4facfe;
+      overflow-x: auto;
+    }
+
+    #progress {
+      position: fixed;
+      bottom: 0; left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #f093fb, #f5576c, #4facfe);
+      width: 0%;
+      transition: width 0.3s;
+      z-index: 50;
+    }
+    #title {
+      position: fixed;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.8rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity 0.8s;
+      z-index: 10;
+      text-shadow: 0 4px 20px rgba(240, 147, 251, 0.5);
+    }
+    #title.show { opacity: 1; }
+    #controls {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    #controls.show { opacity: 1; }
+    .ctrl-btn {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .ctrl-btn:hover { background: rgba(240, 147, 251, 0.5); transform: scale(1.1); }
+
+    /* 装饰几何 */
+    .geo {
+      position: absolute;
+      border: 2px solid rgba(240, 147, 251, 0.2);
+      border-radius: 4px;
+      animation: spin 10s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="geo" style="width:80px;height:80px;top:15%;left:10%;"></div>
+  <div class="geo" style="width:60px;height:60px;bottom:20%;right:15%;border-radius:50%;animation-duration:8s;"></div>
+  <div class="geo" style="width:100px;height:100px;top:60%;left:80%;animation-duration:12s;animation-direction:reverse;"></div>
+
+  <div id="play-overlay">
+    <div class="play-circle">▶</div>
+  </div>
+
+  <div id="title">🔌 从零开发一个插件</div>
+
+  <div id="timeline">
+    <div class="step" data-step="0">
+      <div class="step-number">1</div>
+      <h3>📁 创建插件目录</h3>
+      <p>按照规范在 <code>store/@{作者名}/插件名/</code> 下创建目录</p>
+      <code>
+        store/@{myname}/hello-world/<br>
+        ├── main.py<br>
+        ├── manifest.json<br>
+        └── README.md
+      </code>
+    </div>
+    <div class="step" data-step="1">
+      <div class="step-number">2</div>
+      <h3>📝 编写 manifest.json</h3>
+      <p>声明插件名称、版本、依赖和描述信息</p>
+      <code>
+        {<br>
+        &nbsp;&nbsp;"name": "hello-world",<br>
+        &nbsp;&nbsp;"version": "1.0.0",<br>
+        &nbsp;&nbsp;"author": "@{myname}",<br>
+        &nbsp;&nbsp;"description": "我的第一个插件"<br>
+        }
+      </code>
+    </div>
+    <div class="step" data-step="2">
+      <div class="step-number">3</div>
+      <h3>🐍 编写 main.py</h3>
+      <p>实现插件的初始化逻辑，注册路由或事件</p>
+      <code>
+        class Plugin:<br>
+        &nbsp;&nbsp;def init(self, app):<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;@app.route("/hello")<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;def hello():<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return {"msg": "Hello, FutureOSS!"}
+      </code>
+    </div>
+    <div class="step" data-step="3">
+      <div class="step-number">4</div>
+      <h3>🚀 启动 & 测试</h3>
+      <p>运行项目，访问 <code>http://localhost:8080/hello</code> 验证插件是否正常工作</p>
+      <code>
+        bash start.sh<br>
+        curl http://localhost:8080/hello<br>
+        # → {"msg": "Hello, FutureOSS!"}
+      </code>
+    </div>
+    <div class="step" data-step="4">
+      <div class="step-number">5</div>
+      <h3>📦 发布到商店</h3>
+      <p>打包插件并上传到 Gitee 商店，其他人一键安装！</p>
+      <code>
+        python tools/sign_single_plugin.py @{myname}/hello-world<br>
+        # 上传到 Gitee 商店仓库
+      </code>
+    </div>
+  </div>
+
+  <div id="progress"></div>
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-replay" title="重播">↻</button>
+    <button class="ctrl-btn" id="btn-sound" title="音效">🔊</button>
+    <button class="ctrl-btn" id="btn-back" title="返回">←</button>
+  </div>
+
+  <script>
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null, soundEnabled = true, bgMusic = null;
+    function initAudio() { if (!audioCtx) audioCtx = new AudioCtx(); }
+    function playBgMusic() {
+      if (!soundEnabled || !audioCtx) return;
+      stopBgMusic();
+      const dur = 30, sr = audioCtx.sampleRate;
+      const buf = audioCtx.createBuffer(2, sr * dur, sr);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = buf.getChannelData(ch);
+        for (let i = 0; i < d.length; i++) {
+          const t = i / sr;
+          d[i] = (Math.sin(2*Math.PI*262*t)*0.1 + Math.sin(2*Math.PI*330*t)*0.08 + Math.sin(2*Math.PI*392*t)*0.06) * Math.exp(-t%5);
+        }
+      }
+      bgMusic = audioCtx.createBufferSource();
+      bgMusic.buffer = buf; bgMusic.loop = true;
+      const g = audioCtx.createGain(); g.gain.value = 0.12;
+      bgMusic.connect(g).connect(audioCtx.destination);
+      bgMusic.start();
+    }
+    function stopBgMusic() { if (bgMusic) { try{bgMusic.stop();}catch(e){} bgMusic=null; } }
+    function playPop() {
+      if (!soundEnabled || !audioCtx) return;
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(900, audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime+0.15);
+      g.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.15);
+      o.connect(g).connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.15);
+    }
+    document.getElementById('btn-sound').addEventListener('click', () => {
+      soundEnabled=!soundEnabled;
+      document.getElementById('btn-sound').textContent=soundEnabled?'🔊':'🔇';
+      if(!soundEnabled) stopBgMusic(); else playBgMusic();
+    });
+
+    const overlay = document.getElementById('play-overlay');
+    const title = document.getElementById('title');
+    const progress = document.getElementById('progress');
+    const controls = document.getElementById('controls');
+    const steps = document.querySelectorAll('.step');
+    let animationTimer = null;
+
+    function setProgress(p) { progress.style.width = p + '%'; }
+
+    function startAnimation() {
+      setProgress(0);
+      steps.forEach(s => { s.classList.remove('active','prev'); });
+      title.classList.remove('show');
+      controls.classList.remove('show');
+      overlay.classList.add('hidden');
+      initAudio(); playBgMusic(); playPop();
+
+      setTimeout(() => { title.classList.add('show'); setProgress(5); }, 300);
+
+      steps.forEach((step, i) => {
+        setTimeout(() => {
+          steps.forEach((s, j) => {
+            if (j < i) s.classList.add('prev'), s.classList.remove('active');
+            else s.classList.remove('prev');
+          });
+          step.classList.add('active');
+          playPop();
+          setProgress(10 + (i + 1) * 18);
+        }, 1000 + i * 3500);
+      });
+
+      setTimeout(() => { controls.classList.add('show'); setProgress(100); }, 1000 + steps.length * 3500 + 500);
+    }
+
+    overlay.addEventListener('click', startAnimation);
+    document.getElementById('btn-replay').addEventListener('click', startAnimation);
+    document.getElementById('btn-back').addEventListener('click', () => { stopBgMusic(); location.href='index.html'; });
+  </script>
+</body>
+</html>

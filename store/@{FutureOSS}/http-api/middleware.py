@@ -23,9 +23,12 @@ class CorsMiddleware(Middleware):
 
 class LoggerMiddleware(Middleware):
     """日志中间件"""
+    # 静默的路由（不打印日志）
+    _silent_paths = {"/api/dashboard/stats", "/favicon.ico", "/health"}
+    
     def process(self, ctx: dict, next_fn: Callable) -> Optional[Response]:
         req = ctx.get("request")
-        if req:
+        if req and req.path not in self._silent_paths:
             print(f"[http-api] {req.method} {req.path}")
         return None
 

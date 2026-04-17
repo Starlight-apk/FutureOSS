@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "name": "pkg-manager",
+    "version": "1.0.0",
+    "author": "FutureOSS",
+    "description": "插件包管理器 - 配置管理和商店",
+    "type": "webui-extension"
+  },
+  "config": {
+    "enabled": true,
+    "args": {}
+  },
+  "dependencies": ["http-api", "webui", "plugin-storage"],
+  "permissions": ["*"]
+}

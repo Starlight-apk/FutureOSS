@@ -3,144 +3,215 @@ chcp 65001 >nul 2>&1
 setlocal enabledelayedexpansion
 
 :: ═══════════════════════════════════════════════════════════
-::  FutureOSS 启动脚本 — Windows
-::  自动检测 Python / 依赖 / 守护 / 崩溃重启
+::  FutureOSS 智能启动脚本 - Windows
+::  自动检测环境 / 安装依赖 / 进度显示 / 守护重启
 :: ═══════════════════════════════════════════════════════════
 
-set "RED=[31m"
-set "GREEN=[32m"
-set "YELLOW=[33m"
-set "CYAN=[36m"
-set "WHITE=[37m"
-set "BOLD=[1m"
-set "NC=[0m"
+cd /d "%~dp0"
 
-call :color_echo "BOLD" "CYAN" ""
-echo  ███████╗ ██████╗  ██████╗  ██████╗ ██████╗  ██████╗
-echo  ██╔════╝ ██╔══██╗ ██╔══██╗ ██╔══██╗ ██╔══██╗██╔════╝
-echo  █████╗   ██████╔╝ ██████╔╝ ██████╔╝ ██║  ██║██║  ███╗
-echo  ██╔══╝   ██╔══██╗ ██╔══██╗ ██╔══██╗ ██║  ██║██║   ██║
-echo  ██║      ██║  ██║ ██║  ██║ ██║  ██║ ██████╔╝╚██████╔╝
-echo  ╚═╝      ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝
-call :color_echo "BOLD" "WHITE" ""         一切皆为插件 · 零编译热插拔
-call :color_echo "" "WHITE" ""         https://gitee.com/starlight-apk/feature-oss
+:: ── 颜色代码 ──
+for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
+    set "DEL=%%a"
+)
+
+:: ── 工具函数 ──
+call :colorEcho 0B "[信息] 环境检测中..."
+call :colorEcho 0A "[成功] 检测完成"
+call :colorEcho 0E "[警告] 某些组件缺失"
+call :colorEcho 0C "[错误] 检测失败"
+
+:: ── Logo ──
+echo.
+call :colorEcho 0B " ███████╗ ██████╗  ██████╗  ██████╗ ██████╗  ██████╗ "
+call :colorEcho 0B " ██╔════╝ ██╔══██╗ ██╔══██╗ ██╔══██╗ ██╔══██╗██╔════╝ "
+call :colorEcho 0B " █████╗   ██████╔╝ ██████╔╝ ██████╔╝ ██║  ██║██║  ███╗"
+call :colorEcho 0B " ██╔══╝   ██╔══██╗ ██╔══██╗ ██╔══██╗ ██║  ██║██║   ██║"
+call :colorEcho 0B " ██║      ██║  ██║ ██║  ██║ ██║  ██║ ██████╔╝╚██████╔╝"
+call :colorEcho 0B " ╚═╝      ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ "
+echo.
+call :colorEcho 0F "         开发者通用工具套组 · 一切皆为插件"
+call :colorEcho 07 "         https://gitee.com/starlight-apk/feature-oss"
 echo.
 
-:: ── 目录 ──
-cd /d "%~dp0"
+:: ═══════════════════════════════════════════════════════════
+::  1. 检测 Python
+:: ═══════════════════════════════════════════════════════════
+call :colorEcho 0B "[信息] 检测 Python..."
+
 set "PYTHON_CMD="
-set "PIP_CMD="
-
-:: ═══════════════════════════════════════════════════════════
-::  1. 检查 Python
-:: ═══════════════════════════════════════════════════════════
-call :section "环境检测"
-
-where python 2>nul && set "PYTHON_CMD=python" || (
-    where python3 2>nul && set "PYTHON_CMD=python3" || (
-        where py 2>nul && set "PYTHON_CMD=py" || (
-            call :color_echo "" "YELLOW" "" [!] 未检测到 Python
-            echo.
-            echo    请安装 Python 3.10+ :
-            echo    ^> https://www.python.org/downloads/
-            echo.
-            echo    安装时请勾选 "Add Python to PATH"
-            echo.
-            pause
-            exit /b 1
-        )
+for %%p in (python python3 py py3) do (
+    where %%p >nul 2>&1
+    if !errorlevel! equ 0 (
+        set "PYTHON_CMD=%%p"
+        goto :found_python
     )
+)
+
+:found_python
+if "%PYTHON_CMD%"=="" (
+    call :colorEcho 0C "[错误] 未找到 Python，请先安装 Python 3.10+"
+    call :colorEcho 0E "[提示] 下载地址: https://www.python.org/downloads/"
+    pause
+    exit /b 1
 )
 
 for /f "tokens=*" %%i in ('%PYTHON_CMD% --version 2^>^&1') do set "PY_VER=%%i"
-call :color_echo "" "GREEN" "" [✓] Python: %PY_VER%
+call :colorEcho 0A "[成功] %PY_VER%"
 
 :: ═══════════════════════════════════════════════════════════
-::  2. 虚拟环境 & 依赖
+::  2. 虚拟环境
 :: ═══════════════════════════════════════════════════════════
-call :section "依赖安装"
+echo.
+call :colorEcho 0B "[信息] 配置 Python 环境..."
 
 if not exist ".venv" (
-    call :color_echo "" "CYAN" "" [i] 创建虚拟环境...
-    %PYTHON_CMD% -m venv .venv
+    call :colorEcho 0E "[信息] 创建虚拟环境..."
+    %PYTHON_CMD% -m venv .venv >nul 2>&1
+    if errorlevel 1 (
+        call :colorEcho 0C "[错误] 无法创建虚拟环境"
+        pause
+        exit /b 1
+    )
+    call :colorEcho 0A "[成功] 虚拟环境已创建"
+) else (
+    call :colorEcho 0A "[成功] 虚拟环境已存在"
 )
 
-set "VENV_PYTHON=.venv\Scripts\python.exe"
-set "VENV_PIP=.venv\Scripts\pip.exe"
+call .venv\Scripts\activate.bat >nul 2>&1
 
-if exist "pyproject.toml" (
-    call :color_echo "" "CYAN" "" [i] 安装项目依赖...
-    %VENV_PIP% install -e . -q 2>nul
-)
+:: ═══════════════════════════════════════════════════════════
+::  3. 安装依赖
+:: ═══════════════════════════════════════════════════════════
+echo.
+call :colorEcho 0B "[信息] 安装 Python 依赖..."
 
-if exist "requirements.txt" (
-    call :color_echo "" "CYAN" "" [i] 安装 requirements.txt...
-    %VENV_PIP% install -r requirements.txt -q 2>nul
-)
+set "DEPS=click pyyaml websockets psutil cryptography"
+set "TOTAL=5"
+set "CURRENT=0"
 
-:: 核心依赖兜底
-for %%p in (click pyyaml websockets) do (
-    %VENV_PYTHON% -c "import %%p" 2>nul || (
-        call :color_echo "" "CYAN" "" [i] 安装 %%p ...
-        %VENV_PIP% install %%p -q 2>nul
+for %%d in (%DEPS%) do (
+    set /a CURRENT+=1
+    call :printProgress !CURRENT! !TOTAL! "安装 %%d"
+    
+    %PYTHON_CMD% -c "import %%d" 2>nul
+    if errorlevel 1 (
+        pip install %%d -q 2>nul
     )
 )
 
-call :color_echo "" "GREEN" "" [✓] 依赖就绪
+echo.
+echo.
+call :colorEcho 0A "[成功] Python 依赖安装完成"
+
+:: 安装项目依赖
+if exist "pyproject.toml" (
+    call :colorEcho 0E "[信息] 安装项目配置依赖..."
+    pip install -e . -q 2>nul
+)
+
+if exist "requirements.txt" (
+    call :colorEcho 0E "[信息] 安装 requirements.txt..."
+    pip install -r requirements.txt -q 2>nul
+)
 
 :: ═══════════════════════════════════════════════════════════
-::  3. 确保 data 目录
+::  4. 检查 PHP
 :: ═══════════════════════════════════════════════════════════
-if not exist "data\html-render"    mkdir "data\html-render"
-if not exist "data\web-toolkit"    mkdir "data\web-toolkit"
-if not exist "data\plugin-storage" mkdir "data\plugin-storage"
-if not exist "data\DCIM"           mkdir "data\DCIM"
-if not exist "data\pkg"            mkdir "data\pkg"
+echo.
+call :colorEcho 0B "[信息] 检查 PHP..."
+
+where php >nul 2>&1
+if errorlevel 1 (
+    call :colorEcho 0E "[警告] PHP 未安装，WebUI 可能无法正常工作"
+    call :colorEcho 07 "[提示] 安装: choco install php 或从 https://windows.php.net/download/ 下载"
+) else (
+    for /f "tokens=*" %%i in ('php --version 2^>^&1 ^| findstr /r "PHP"') do set "PHP_VER=%%i"
+    call :colorEcho 0A "[成功] !PHP_VER!"
+)
 
 :: ═══════════════════════════════════════════════════════════
-::  4. 启动
+::  5. 创建数据目录
 :: ═══════════════════════════════════════════════════════════
-call :section "启动 FutureOSS"
+echo.
+call :colorEcho 0B "[信息] 初始化数据目录..."
+
+set "DIRS=data data\html-render data\web-toolkit data\plugin-storage data\DCIM data\pkg data\signature-verifier\keys\private data\signature-verifier\keys\public logs"
+
+for %%d in (%DIRS%) do (
+    if not exist "%%d" mkdir "%%d"
+)
+
+call :colorEcho 0A "[成功] 数据目录已就绪"
+
+:: ═══════════════════════════════════════════════════════════
+::  6. 启动服务
+:: ═══════════════════════════════════════════════════════════
+echo.
+call :colorEcho 0B "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+call :colorEcho 0B "  启动 FutureOSS"
+call :colorEcho 0B "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo.
+
+if "%1"=="--daemon" goto :daemon_mode
+if "%1"=="-d" goto :daemon_mode
+
+:: 前台模式
+call :colorEcho 0F "运行中... 按 Ctrl+C 停止"
+echo.
 
 set "RESTART_DELAY=3"
 set "RESTART_COUNT=0"
 
-:LOOP
-    echo.
-    call :color_echo "" "CYAN" "" [i] 启动服务...
-    echo.
-    %VENV_PYTHON% -m oss.cli serve
-    set "EXIT_CODE=!ERRORLEVEL!"
+:loop
+%PYTHON_CMD% -m oss.cli serve
+set "EXIT_CODE=%errorlevel%"
 
-    if !EXIT_CODE! equ 0 (
-        echo.
-        call :color_echo "" "GREEN" "" [✓] 服务正常退出
-        goto :END
-    )
+if %EXIT_CODE% equ 0 (
+    call :colorEcho 0A "[成功] 服务正常退出"
+    goto :end
+)
 
-    set /a RESTART_COUNT+=1
-    echo.
-    call :color_echo "" "YELLOW" "" [!] 服务异常退出 (code: !EXIT_CODE!)，!RESTART_DELAY!s 后重启... (第 !RESTART_COUNT! 次)
-    timeout /t !RESTART_DELAY! /nobreak >nul
+set /a RESTART_COUNT+=1
+call :colorEcho 0E "[警告] 服务异常退出 (code: %EXIT_CODE%)，!RESTART_DELAY!s 后重启... (第 !RESTART_COUNT! 次)"
+timeout /t !RESTART_DELAY! /nobreak >nul
 
-    if !RESTART_DELAY! lss 30 set /a RESTART_DELAY=!RESTART_DELAY!*2
+:: 指数退避
+if !RESTART_DELAY! lss 30 (
+    set /a RESTART_DELAY=!RESTART_DELAY! * 2
+)
 
-    goto :LOOP
+goto :loop
 
-:END
+:daemon_mode
+call :colorEcho 0E "[警告] Windows 守护模式需要额外配置"
+call :colorEcho 07 "[提示] 建议使用任务计划程序或 nssm 工具实现"
 echo.
+%PYTHON_CMD% -m oss.cli serve
+goto :end
+
+:end
+call .venv\Scripts\deactivate.bat >nul 2>&1
 pause
 exit /b 0
 
-:: ── 辅助函数 ──
-:color_echo
-    if "%~1" neq "" set /p "=^<ESC>%BOLD%%~2%<ESC>%NC%" <nul
-    echo.
-    goto :eof
+:: ── 进度条函数 ──
+:printProgress
+set /a "pct=%1 * 100 / %2"
+set /a "filled=pct / 2"
+set /a "empty=50-filled"
+set "bar="
+for /l %%i in (1,1,%filled%) do set "bar=!bar!█"
+for /l %%i in (1,1,%empty%) do set "bar=!bar!░"
+echo   [!bar!] !pct!%% - %3
+exit /b 0
 
-:section
-    echo.
-    call :color_echo "BOLD" "WHITE" "══════════════════════════════════════"
-    call :color_echo "BOLD" "WHITE" "  %~1"
-    call :color_echo "BOLD" "WHITE" "══════════════════════════════════════"
-    goto :eof
+:: ── 颜色输出函数 ──
+:colorEcho
+set "params=%1"
+set "msg=%~2"
+call :colorText %params% "%msg%"
+exit /b 0
+
+:colorText
+echo %~2
+exit /b 0

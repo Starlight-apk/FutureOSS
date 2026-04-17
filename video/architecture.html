@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FutureOSS - 架构解析</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+    .bg-lines {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: 
+        repeating-linear-gradient(45deg, rgba(79,172,254,0.05) 0px, rgba(79,172,254,0.05) 1px, transparent 1px, transparent 40px),
+        repeating-linear-gradient(-45deg, rgba(79,172,254,0.05) 0px, rgba(79,172,254,0.05) 1px, transparent 1px, transparent 40px);
+      z-index: 0;
+    }
+    #play-overlay {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; cursor: pointer; transition: opacity 0.5s;
+    }
+    #play-overlay.hidden { opacity: 0; pointer-events: none; }
+    .play-circle {
+      width: 120px; height: 120px;
+      border: 4px solid #4facfe; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; animation: pulse 2s ease-in-out infinite;
+      transition: transform 0.3s, background 0.3s;
+    }
+    .play-circle:hover { transform: scale(1.1); background: rgba(79,172,254,0.2); }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(79,172,254,0.4); }
+      50% { box-shadow: 0 0 0 30px rgba(79,172,254,0); }
+    }
+
+    #stage { position: relative; width: 100%; height: 100%; z-index: 1; display: flex; align-items: center; justify-content: center; }
+
+    /* 架构图 */
+    .arch-diagram {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      opacity: 0; transform: scale(0.5); transition: all 1s cubic-bezier(0.68,-0.55,0.265,1.55);
+    }
+    .arch-diagram.show { opacity: 1; transform: scale(1); }
+    
+    .layer {
+      display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+      opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.68,-0.55,0.265,1.55);
+    }
+    .layer.show { opacity: 1; transform: translateY(0); }
+    
+    .block {
+      padding: 20px 30px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      min-width: 140px;
+      position: relative;
+    }
+    .block::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      z-index: -1;
+      opacity: 0.5;
+    }
+    .block.core { background: #1a3a5c; }
+    .block.plugin { background: #1a2a4c; }
+    .block.infra { background: #0f2a3c; }
+    .block span { display: block; font-size: 1.5rem; margin-bottom: 8px; }
+
+    .arrow-down {
+      font-size: 1.5rem;
+      color: #4facfe;
+      opacity: 0;
+      animation: none;
+    }
+    .arrow-down.show {
+      opacity: 1;
+      animation: bounce 1s infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+
+    .layer-label {
+      position: absolute;
+      left: -180px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      color: #888;
+      writing-mode: vertical-lr;
+      letter-spacing: 4px;
+    }
+
+    #desc {
+      position: absolute;
+      bottom: 15%;
+      width: 80%;
+      text-align: center;
+      font-size: 1.2rem;
+      color: #aaa;
+      opacity: 0;
+      transition: opacity 0.8s;
+    }
+    #desc.show { opacity: 1; }
+
+    #progress {
+      position: fixed; bottom: 0; left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #4facfe, #00f2fe, #f093fb);
+      width: 0%; transition: width 0.3s; z-index: 50;
+    }
+    #title {
+      position: fixed; top: 40px; left: 50%; transform: translateX(-50%);
+      font-size: 1.8rem; font-weight: 700; opacity: 0; transition: opacity 0.8s; z-index: 10;
+      text-shadow: 0 4px 20px rgba(79,172,254,0.5);
+    }
+    #title.show { opacity: 1; }
+    #controls {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 20px; z-index: 50; opacity: 0; transition: opacity 0.5s;
+    }
+    #controls.show { opacity: 1; }
+    .ctrl-btn {
+      width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1);
+      border: none; color: #fff; font-size: 1.3rem; cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .ctrl-btn:hover { background: rgba(79,172,254,0.5); transform: scale(1.1); }
+  </style>
+</head>
+<body>
+  <div class="bg-lines"></div>
+  <div id="play-overlay">
+    <div class="play-circle">▶</div>
+  </div>
+
+  <div id="title">🏗️ 架构解析</div>
+
+  <div id="stage">
+    <div class="arch-diagram" id="arch">
+      <!-- 前端层 -->
+      <div class="layer" id="layer-frontend">
+        <div class="label" style="position:absolute;left:-160px;top:50%;transform:translateY(-50%);color:#666;font-size:0.8rem;writing-mode:vertical-lr;letter-spacing:3px;">前端层</div>
+        <div class="block plugin"><span>🌐</span>WebUI 容器</div>
+        <div class="block plugin"><span>📊</span>Dashboard</div>
+        <div class="block plugin"><span>💻</span>Log Terminal</div>
+      </div>
+
+      <div class="arrow-down">⬇</div>
+
+      <!-- HTTP 层 -->
+      <div class="layer" id="layer-http">
+        <div class="label" style="position:absolute;left:-160px;top:50%;transform:translateY(-50%);color:#666;font-size:0.8rem;writing-mode:vertical-lr;letter-spacing:3px;">服务层</div>
+        <div class="block plugin"><span>🔌</span>HTTP API<br><small style="color:#888">:8080</small></div>
+        <div class="block plugin"><span>🔌</span>TCP Server<br><small style="color:#888">:8082</small></div>
+        <div class="block plugin"><span>🔌</span>WebSocket</div>
+      </div>
+
+      <div class="arrow-down">⬇</div>
+
+      <!-- 核心层 -->
+      <div class="layer" id="layer-core">
+        <div class="label" style="position:absolute;left:-160px;top:50%;transform:translateY(-50%);color:#666;font-size:0.8rem;writing-mode:vertical-lr;letter-spacing:3px;">核心层</div>
+        <div class="block core"><span>📦</span>Plugin Loader</div>
+        <div class="block core"><span>🌉</span>Plugin Bridge</div>
+        <div class="block core"><span>🔐</span>签名验证</div>
+      </div>
+
+      <div class="arrow-down">⬇</div>
+
+      <!-- 基础设施 -->
+      <div class="layer" id="layer-infra">
+        <div class="label" style="position:absolute;left:-160px;top:50%;transform:translateY(-50%);color:#666;font-size:0.8rem;writing-mode:vertical-lr;letter-spacing:3px;">基础设施</div>
+        <div class="block infra"><span>💾</span>Plugin Storage</div>
+        <div class="block infra"><span>🎨</span>Logger</div>
+        <div class="block infra"><span>📦</span>Pkg Manager</div>
+        <div class="block infra"><span>🔗</span>Dependency</div>
+      </div>
+    </div>
+
+    <div id="desc">一切皆为插件，从核心到界面</div>
+  </div>
+
+  <div id="progress"></div>
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-replay" title="重播">↻</button>
+    <button class="ctrl-btn" id="btn-sound" title="音效">🔊</button>
+    <button class="ctrl-btn" id="btn-back" title="返回">←</button>
+  </div>
+
+  <script>
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx=null, soundEnabled=true, bgMusic=null;
+    function initAudio(){if(!audioCtx)audioCtx=new AudioCtx();}
+    function playBgMusic(){
+      if(!soundEnabled||!audioCtx)return;stopBgMusic();
+      const dur=30,sr=audioCtx.sampleRate,buf=audioCtx.createBuffer(2,sr*dur,sr);
+      for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<d.length;i++){const t=i/sr;d[i]=(Math.sin(2*Math.PI*196*t)*0.08+Math.sin(2*Math.PI*294*t)*0.06+Math.sin(2*Math.PI*392*t)*0.05)*Math.exp(-t%6);}}
+      bgMusic=audioCtx.createBufferSource();bgMusic.buffer=buf;bgMusic.loop=true;
+      const g=audioCtx.createGain();g.gain.value=0.1;bgMusic.connect(g).connect(audioCtx.destination);bgMusic.start();
+    }
+    function stopBgMusic(){if(bgMusic){try{bgMusic.stop();}catch(e){}bgMusic=null;}}
+    function playPop(){
+      if(!soundEnabled||!audioCtx)return;
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';
+      o.frequency.setValueAtTime(700,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(250,audioCtx.currentTime+0.18);
+      g.gain.setValueAtTime(0.2,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.18);
+      o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.18);
+    }
+    document.getElementById('btn-sound').addEventListener('click',()=>{
+      soundEnabled=!soundEnabled;document.getElementById('btn-sound').textContent=soundEnabled?'🔊':'🔇';
+      if(!soundEnabled)stopBgMusic();else playBgMusic();
+    });
+
+    const overlay=document.getElementById('play-overlay');
+    const title=document.getElementById('title');
+    const progress=document.getElementById('progress');
+    const controls=document.getElementById('controls');
+    const arch=document.getElementById('arch');
+    const desc=document.getElementById('desc');
+    const layers=[document.getElementById('layer-frontend'),document.getElementById('layer-http'),document.getElementById('layer-core'),document.getElementById('layer-infra')];
+    const arrows=document.querySelectorAll('.arrow-down');
+
+    function setProgress(p){progress.style.width=p+'%';}
+
+    function startAnimation(){
+      setProgress(0);
+      arch.classList.remove('show');
+      layers.forEach(l=>l.classList.remove('show'));
+      arrows.forEach(a=>a.classList.remove('show'));
+      title.classList.remove('show');
+      desc.classList.remove('show');
+      controls.classList.remove('show');
+      overlay.classList.add('hidden');
+      initAudio();playBgMusic();playPop();
+
+      setTimeout(()=>{title.classList.add('show');setProgress(10);},300);
+      setTimeout(()=>{arch.classList.add('show');setProgress(15);playPop();},800);
+
+      layers.forEach((layer,i)=>{
+        setTimeout(()=>{layer.classList.add('show');playPop();setProgress(25+(i+1)*15);},1500+i*1200);
+      });
+
+      arrows.forEach((arrow,i)=>{
+        setTimeout(()=>{arrow.classList.add('show');},2000+i*1200);
+      });
+
+      setTimeout(()=>{desc.classList.add('show');setProgress(85);},1500+layers.length*1200+500);
+      setTimeout(()=>{controls.classList.add('show');setProgress(100);},1500+layers.length*1200+2000);
+    }
+
+    overlay.addEventListener('click',startAnimation);
+    document.getElementById('btn-replay').addEventListener('click',startAnimation);
+    document.getElementById('btn-back').addEventListener('click',()=>{stopBgMusic();location.href='index.html';});
+  </script>
+</body>
+</html>

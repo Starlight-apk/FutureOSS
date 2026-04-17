@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "name": "webui",
+    "version": "2.0.0",
+    "author": "FutureOSS",
+    "description": "Web 控制台 - 使用 PHP 前端和 MySQL 数据库",
+    "type": "webui"
+  },
+  "config": {
+    "enabled": true,
+    "args": {
+      "port": 8080,
+      "theme": "dark",
+      "title": "FutureOSS"
+    }
+  },
+  "dependencies": ["http-api"],
+  "permissions": ["*"],
+  "frontend": "php",
+  "database": {
+    "type": "mysql",
+    "name": "futureoss",
+    "init_script": "config/database.sql"
+  }
+}

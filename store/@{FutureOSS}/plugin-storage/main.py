@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Optional, BinaryIO
 from datetime import datetime
 
+from oss.logger.logger import Log
 from oss.plugin.types import Plugin, register_plugin_type, Response
 
 
@@ -35,7 +36,7 @@ class PluginStorage:
                     else:
                         self._data = {}
             except (json.JSONDecodeError, IOError) as e:
-                print(f"[plugin-storage] 加载数据失败 {self.plugin_name}: {e}")
+                Log.error("plugin-storage", f"加载数据失败 {self.plugin_name}: {e}")
                 self._data = {}
 
     def _save(self):
@@ -123,7 +124,7 @@ class PluginStorage:
             with open(file_path, mode, encoding="utf-8" if mode == "r" else None) as f:
                 return f.read()
         except Exception as e:
-            print(f"[plugin-storage] 读取文件失败 {self.plugin_name}/{path}: {e}")
+            Log.error("plugin-storage", f"读取文件失败 {self.plugin_name}/{path}: {e}")
             return None
 
     def write_file(self, path: str, content: str | bytes):
@@ -143,7 +144,7 @@ class PluginStorage:
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
         except Exception as e:
-            print(f"[plugin-storage] 写入文件失败 {self.plugin_name}/{path}: {e}")
+            Log.error("plugin-storage", f"写入文件失败 {self.plugin_name}/{path}: {e}")
 
     def delete_file(self, path: str) -> bool:
         """删除插件目录内的文件"""
@@ -154,7 +155,7 @@ class PluginStorage:
                 return True
             return False
         except Exception as e:
-            print(f"[plugin-storage] 删除文件失败 {self.plugin_name}/{path}: {e}")
+            Log.error("plugin-storage", f"删除文件失败 {self.plugin_name}/{path}: {e}")
             return False
 
     def list_files(self, prefix: str = "") -> list[str]:
@@ -290,7 +291,7 @@ class PluginStoragePlugin(Plugin):
 
     def start(self):
         """启动"""
-        print(f"[plugin-storage] 插件存储服务已启动 (root={self.data_root})")
+        Log.info("plugin-storage", f"插件存储服务已启动 (root={self.data_root})")
 
     def stop(self):
         """停止"""
@@ -306,7 +307,7 @@ class PluginStoragePlugin(Plugin):
             shared_dir_name = self.config.get("shared_dir", "DCIM")
             shared_dir = self.data_root / shared_dir_name
         else:
-            print("[plugin-storage] config.json 不存在，使用默认配置")
+            Log.warn("plugin-storage", "config.json 不存在，使用默认配置")
             self.config = {"data_root": "./data", "shared_dir": "DCIM"}
             self.data_root = Path("./data")
             shared_dir = self.data_root / "DCIM"

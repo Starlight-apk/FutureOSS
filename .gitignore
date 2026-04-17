@@ -22,3 +22,9 @@ mizukiblog-master.zip
 # 日志
 logs/
 *.log
+
+# 签名验证 - 私钥（绝不要提交！）
+data/signature-verifier/keys/private/
+
+# 签名文件（可选，本地开发可能不需要）
+# store/**/SIGNATURE

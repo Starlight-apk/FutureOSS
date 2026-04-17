@@ -43,26 +43,73 @@ class TemplateEngine:
         return content
 
     def _safe_eval(self, expression: str, context: dict) -> Any:
-        """安全评估表达式（仅允许简单的属性访问和比较）"""
-        # 只允许访问 context 中的变量
-        # 支持的运算符: and, or, not, ==, !=, <, >, <=, >=, in
-        # 不允许函数调用、导入、属性访问等
-        
-        # 使用 AST 解析并验证
+        """安全评估表达式（使用 AST 验证，不使用 eval）"""
         try:
             tree = ast.parse(expression, mode='eval')
         except SyntaxError:
             return False
-        
+
         # 验证 AST 节点
         if not self._validate_ast(tree.body[0].value, set(context.keys())):
             return False
-        
-        # 在受限环境中评估
+
+        # 使用安全的 AST 解释器，不使用 eval
         try:
-            return eval(expression, {"__builtins__": {}}, context)
+            return self._eval_ast(tree.body[0].value, context)
         except Exception:
             return False
+
+    def _eval_ast(self, node: ast.AST, context: dict) -> Any:
+        """安全地评估 AST 节点"""
+        if isinstance(node, ast.Constant):
+            return node.value
+        elif isinstance(node, ast.Name):
+            return context.get(node.id, False)
+        elif isinstance(node, ast.BoolOp):
+            if isinstance(node.op, ast.And):
+                return all(self._eval_ast(v, context) for v in node.values)
+            elif isinstance(node.op, ast.Or):
+                return any(self._eval_ast(v, context) for v in node.values)
+        elif isinstance(node, ast.Compare):
+            return self._eval_compare(node, context)
+        elif isinstance(node, ast.UnaryOp):
+            if isinstance(node.op, ast.Not):
+                return not self._eval_ast(node.operand, context)
+        elif isinstance(node, ast.Subscript):
+            return self._eval_subscript(node, context)
+        return False
+
+    def _eval_compare(self, node: ast.Compare, context: dict) -> bool:
+        """评估比较表达式"""
+        left = self._eval_ast(node.left, context)
+        for op, comp in zip(node.ops, node.comparators):
+            right = self._eval_ast(comp, context)
+            if isinstance(op, ast.Eq):
+                if not (left == right): return False
+            elif isinstance(op, ast.NotEq):
+                if not (left != right): return False
+            elif isinstance(op, ast.Lt):
+                if not (left < right): return False
+            elif isinstance(op, ast.Gt):
+                if not (left > right): return False
+            elif isinstance(op, ast.LtE):
+                if not (left <= right): return False
+            elif isinstance(op, ast.GtE):
+                if not (left >= right): return False
+            elif isinstance(op, ast.In):
+                if not (left in right): return False
+            elif isinstance(op, ast.NotIn):
+                if not (left not in right): return False
+            left = right
+        return True
+
+    def _eval_subscript(self, node: ast.Subscript, context: dict) -> Any:
+        """评估下标访问"""
+        value = self._eval_ast(node.value, context)
+        key = self._eval_ast(node.slice, context)
+        if isinstance(value, (dict, list, str)):
+            return value[key]
+        return None
 
     def _validate_ast(self, node: ast.AST, allowed_names: set) -> bool:
         """验证 AST 只包含安全的操作"""

@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "name": "dashboard",
+    "version": "1.0.0",
+    "author": "FutureOSS",
+    "description": "WebUI 仪表盘",
+    "type": "webui-extension"
+  },
+  "config": {
+    "enabled": true,
+    "args": {}
+  },
+  "dependencies": ["http-api", "webui"],
+  "permissions": ["*"]
+}

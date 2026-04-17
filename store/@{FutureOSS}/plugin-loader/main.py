@@ -9,6 +9,45 @@ from oss.plugin.types import Plugin, register_plugin_type
 from oss.plugin.capabilities import scan_capabilities
 
 
+# ===== 彩色日志 =====
+class Log:
+    """智能彩色日志"""
+    _TTY = sys.stdout.isatty()
+    _C = {
+        "reset": "\033[0m",
+        "white": "\033[0;37m",
+        "yellow": "\033[1;33m",
+        "blue": "\033[1;34m",
+        "red": "\033[1;31m",
+    }
+
+    @classmethod
+    def c(cls, text: str, color: str) -> str:
+        if not cls._TTY:
+            return text
+        return f"{cls._C.get(color, '')}{text}{cls._C['reset']}"
+
+    @classmethod
+    def info(cls, tag: str, msg: str):
+        print(f"{cls.c(f'[{tag}]', 'white')} {cls.c(msg, 'white')}")
+
+    @classmethod
+    def warn(cls, tag: str, msg: str):
+        print(f"{cls.c(f'[{tag}]', 'yellow')} {cls.c('⚠', 'yellow')} {cls.c(msg, 'yellow')}")
+
+    @classmethod
+    def tip(cls, tag: str, msg: str):
+        print(f"{cls.c(f'[{tag}]', 'blue')} {cls.c('ℹ', 'blue')} {cls.c(msg, 'blue')}")
+
+    @classmethod
+    def error(cls, tag: str, msg: str):
+        print(f"{cls.c(f'[{tag}]', 'red')} {cls.c('✗', 'red')} {cls.c(msg, 'red')}")
+
+    @classmethod
+    def ok(cls, tag: str, msg: str):
+        print(f"{cls.c(f'[{tag}]', 'white')} {cls.c(msg, 'white')}")
+
+
 class PluginInfo:
     """插件信息"""
     def __init__(self):
@@ -114,8 +153,14 @@ class PluginManager:
         self.plugins: dict[str, dict[str, Any]] = {}
         self.lifecycle_plugin: Optional[Any] = None
         self._dependency_plugin: Optional[Any] = None  # dependency 插件引用
+        self._signature_verifier: Optional[Any] = None  # signature-verifier 插件引用
         self.capability_registry = CapabilityRegistry(permission_check=permission_check)
         self.permission_check = permission_check
+        self.enforce_signature = True  # 是否强制验证官方插件签名
+
+    def set_signature_verifier(self, verifier: Any):
+        """设置签名验证器"""
+        self._signature_verifier = verifier
 
     def set_lifecycle(self, lifecycle_plugin: Any):
         """设置生命周期插件"""
@@ -143,6 +188,17 @@ class PluginManager:
         if not config_file.exists():
             return {}
 
+        # 读取并验证文件内容
+        with open(config_file, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # 安全检查：禁止危险操作
+        dangerous_patterns = ['import ', 'open(', 'exec(', 'eval(', 'os.', 'sys.', 'subprocess']
+        for pattern in dangerous_patterns:
+            if pattern in content:
+                Log.warn("plugin-loader", f"{config_file} 包含危险代码: {pattern}")
+                return {}
+
         safe_globals = {
             "__builtins__": {
                 "True": True,
@@ -158,9 +214,12 @@ class PluginManager:
         }
         local_vars = {}
 
-        with open(config_file, "r", encoding="utf-8") as f:
-            code = compile(f.read(), str(config_file), "exec")
+        try:
+            code = compile(content, str(config_file), "exec")
             exec(code, safe_globals, local_vars)
+        except Exception as e:
+            Log.error("plugin-loader", f"配置文件解析失败: {e}")
+            return {}
 
         return {
             k: v for k, v in local_vars.items()
@@ -173,6 +232,17 @@ class PluginManager:
         if not ext_file.exists():
             return {}
 
+        # 读取并验证文件内容
+        with open(ext_file, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # 安全检查：禁止危险操作
+        dangerous_patterns = ['import ', 'open(', 'exec(', 'eval(', 'os.', 'sys.', 'subprocess']
+        for pattern in dangerous_patterns:
+            if pattern in content:
+                Log.warn("plugin-loader", f"{ext_file} 包含危险代码: {pattern}")
+                return {}
+
         safe_globals = {
             "__builtins__": {
                 "True": True,
@@ -188,9 +258,12 @@ class PluginManager:
         }
         local_vars = {}
 
-        with open(ext_file, "r", encoding="utf-8") as f:
-            code = compile(f.read(), str(ext_file), "exec")
+        try:
+            code = compile(content, str(ext_file), "exec")
             exec(code, safe_globals, local_vars)
+        except Exception as e:
+            Log.error("plugin-loader", f"扩展文件解析失败: {e}")
+            return {}
 
         return {
             k: v for k, v in local_vars.items()
@@ -212,7 +285,7 @@ class PluginManager:
         capabilities = scan_capabilities(plugin_dir)
 
         plugin_name = plugin_dir.name
-        
+
         # 清理插件名（去掉 } 后缀）
         plugin_name = plugin_dir.name.rstrip("}")
 
@@ -233,6 +306,8 @@ class PluginManager:
                 f"plugin.{plugin_name}", str(main_file)
             )
             module = importlib.util.module_from_spec(spec)
+            module.__package__ = f"plugin.{plugin_name}"
+            module.__path__ = [str(plugin_dir)]  # 启用相对导入子模块
             sys.modules[spec.name] = module
             spec.loader.exec_module(module)
 
@@ -276,14 +351,23 @@ class PluginManager:
 
     def load_all(self, store_dir: str = "store"):
         """加载 store 和 data/pkg 下所有插件（跳过自己）"""
+        # 确保 plugin 命名空间包存在（必须在最开头）
+        import types
+        if 'plugin' not in sys.modules:
+            plugin_pkg = types.ModuleType('plugin')
+            plugin_pkg.__path__ = []
+            plugin_pkg.__package__ = 'plugin'
+            sys.modules['plugin'] = plugin_pkg
+            Log.tip("plugin-loader", "已创建 plugin 命名空间包")
+
         # 检查是否有任何插件存在
         has_plugins = self._check_any_plugins(store_dir)
-        
+
         if not has_plugins:
-            print("[plugin-loader] 未检测到任何插件，自动引导安装...")
+            Log.warn("plugin-loader", "未检测到任何插件，自动引导安装...")
             self._bootstrap_installation()
 
-        # 可选：加载 lifecycle
+        # 加载 lifecycle
         lifecycle_plugin = None
         lifecycle_dir = Path(store_dir) / "@{FutureOSS}" / "lifecycle"
         if lifecycle_dir.exists() and (lifecycle_dir / "main.py").exists():
@@ -295,7 +379,7 @@ class PluginManager:
             except Exception:
                 pass
 
-        # 可选：加载 dependency
+        # 加载 dependency
         dependency_plugin = None
         dependency_dir = Path(store_dir) / "@{FutureOSS}" / "dependency"
         if dependency_dir.exists() and (dependency_dir / "main.py").exists():
@@ -303,10 +387,23 @@ class PluginManager:
                 instance = self.load(dependency_dir)
                 if instance:
                     dependency_plugin = instance
-                    self._dependency_plugin = instance  # 保存引用供拓扑排序使用
+                    self._dependency_plugin = instance
                     self.plugins.pop("dependency", None)
             except Exception:
                 pass
+
+        # 加载 signature-verifier
+        signature_verifier = None
+        sig_verifier_dir = Path(store_dir) / "@{FutureOSS}" / "signature-verifier"
+        if sig_verifier_dir.exists() and (sig_verifier_dir / "main.py").exists():
+            try:
+                instance = self.load(sig_verifier_dir)
+                if instance:
+                    signature_verifier = instance
+                    self.set_signature_verifier(instance.verifier)
+                    Log.ok("plugin-loader", "签名验证服务已加载")
+            except Exception as e:
+                Log.warn("plugin-loader", f"signature-verifier 加载失败: {e}")
 
         # 加载 lifecycle
         if lifecycle_plugin:
@@ -316,7 +413,7 @@ class PluginManager:
         self._load_plugins_from_dir(Path(store_dir))
         self._load_plugins_from_dir(Path("./data/pkg"))
 
-        # 可选：按依赖排序
+        # 按依赖排序
         if dependency_plugin:
             self._sort_by_dependencies(dependency_plugin)
 
@@ -325,13 +422,18 @@ class PluginManager:
         if not store_dir.exists():
             return
 
+        # 核心插件列表（不使用沙箱，允许完整功能）
+        core_plugins = {"webui", "dashboard", "pkg-manager"}
+
         # 第一遍：加载所有插件
         for author_dir in store_dir.iterdir():
             if author_dir.is_dir():
                 for plugin_dir in author_dir.iterdir():
-                    if plugin_dir.is_dir() and plugin_dir.name not in ("plugin-loader", "lifecycle", "dependency"):
+                    if plugin_dir.is_dir() and plugin_dir.name not in ("plugin-loader", "lifecycle", "dependency", "signature-verifier"):
                         if (plugin_dir / "main.py").exists():
-                            self.load(plugin_dir)
+                            # 核心插件不使用沙箱
+                            use_sandbox = plugin_dir.name not in core_plugins
+                            self.load(plugin_dir, use_sandbox=use_sandbox)
 
         # 第二遍：关联能力
         self._link_capabilities()
@@ -364,26 +466,26 @@ class PluginManager:
                 if pkg_instance:
                     pkg_mgr = pkg_instance.manager
                     
-                    print("[plugin-loader] 正在搜索可用插件...")
+                    Log.info("plugin-loader", "正在搜索可用插件...")
                     results = pkg_mgr.search()
                     if not results:
-                        print("[plugin-loader] 未找到远程插件")
+                        Log.warn("plugin-loader", "未找到远程插件")
                         return
                     
-                    print(f"[plugin-loader] 发现 {len(results)} 个插件，开始安装...")
+                    Log.info("plugin-loader", f"发现 {len(results)} 个插件，开始安装...")
                     installed_count = 0
                     for pkg_info in results:
-                        print(f"[plugin-loader] 安装: {pkg_info.name}")
+                        Log.info("plugin-loader", f"安装: {pkg_info.name}")
                         if pkg_mgr.install(pkg_info.name):
                             installed_count += 1
                     
                     if installed_count > 0:
-                        print(f"[plugin-loader] 已安装 {installed_count} 个插件，重新扫描加载...")
+                        Log.info("plugin-loader", f"已安装 {installed_count} 个插件，重新扫描加载...")
                         # pkg 保留，重新加载其他插件
             except Exception as e:
-                print(f"[plugin-loader] 引导安装失败: {e}")
+                Log.error("plugin-loader", f"引导安装失败: {e}")
         else:
-            print("[plugin-loader] pkg 插件不存在，跳过引导安装")
+            Log.info("plugin-loader", "pkg 插件不存在，跳过引导安装")
 
     def _sort_by_dependencies(self, dep_plugin):
         """按依赖关系排序"""
@@ -410,7 +512,7 @@ class PluginManager:
             
             self.plugins = sorted_plugins
         except Exception as e:
-            print(f"[plugin-loader] 依赖解析失败: {e}")
+            Log.error("plugin-loader", f"依赖解析失败: {e}")
 
     def _link_capabilities(self):
         """关联能力：带权限检查"""
@@ -437,7 +539,7 @@ class PluginManager:
                                 if provider and hasattr(consumer_info, "extensions"):
                                     consumer_info.extensions[f"_{cap}_provider"] = provider
                             except PermissionError as e:
-                                print(f"[plugin-loader] 权限拒绝: {e}")
+                                Log.error("plugin-loader", f"权限拒绝: {e}")
 
     def start_all(self):
         """启动所有插件（假设已初始化）"""
@@ -449,7 +551,7 @@ class PluginManager:
             try:
                 info["instance"].start()
             except Exception as e:
-                print(f"[plugin-loader] 启动失败 {name}: {e}")
+                Log.error("plugin-loader", f"启动失败 {name}: {e}")
 
     def init_and_start_all(self):
         """初始化并启动所有插件
@@ -459,38 +561,38 @@ class PluginManager:
         2. 按拓扑顺序 init() 所有插件
         3. 按拓扑顺序 start() 所有插件
         """
-        print(f"[plugin-loader] init_and_start_all 被调用，plugins={len(self.plugins)}")
+        Log.info("plugin-loader", f"init_and_start_all 被调用，plugins={len(self.plugins)}")
         
         # 1. 注入依赖实例
         self._inject_dependencies()
 
         # 2. 获取拓扑排序
         ordered_plugins = self._get_ordered_plugins()
-        print(f"[plugin-loader] 插件启动顺序: {' -> '.join(ordered_plugins)}")
+        Log.tip("plugin-loader", f"插件启动顺序: {' -> '.join(ordered_plugins)}")
 
         # 3. 初始化所有插件（跳过 plugin-loader 自己）
-        print("[plugin-loader] 开始初始化所有插件...")
+        Log.info("plugin-loader", "开始初始化所有插件...")
         for name in ordered_plugins:
             if "plugin-loader" in name:
                 continue
             info = self.plugins[name]
             try:
-                print(f"[plugin-loader] 初始化: {name}")
+                Log.info("plugin-loader", f"初始化: {name}")
                 info["instance"].init()
             except Exception as e:
-                print(f"[plugin-loader] 初始化失败 {name}: {e}")
+                Log.error("plugin-loader", f"初始化失败 {name}: {e}")
 
         # 4. 启动所有插件（跳过 plugin-loader 自己）
-        print("[plugin-loader] 开始启动所有插件...")
+        Log.info("plugin-loader", "开始启动所有插件...")
         for name in ordered_plugins:
             if "plugin-loader" in name:
                 continue
             info = self.plugins[name]
             try:
-                print(f"[plugin-loader] 启动: {name}")
+                Log.info("plugin-loader", f"启动: {name}")
                 info["instance"].start()
             except Exception as e:
-                print(f"[plugin-loader] 启动失败 {name}: {e}")
+                Log.error("plugin-loader", f"启动失败 {name}: {e}")
 
     def _get_ordered_plugins(self) -> list[str]:
         """获取按依赖排序的插件列表"""
@@ -504,12 +606,12 @@ class PluginManager:
             # 过滤出实际存在的插件
             return [name for name in order if name in self.plugins]
         except Exception as e:
-            print(f"[plugin-loader] 依赖解析失败，使用原始顺序: {e}")
+            Log.warn("plugin-loader", f"依赖解析失败，使用原始顺序: {e}")
             return list(self.plugins.keys())
 
     def _inject_dependencies(self):
         """注入插件依赖实例"""
-        print(f"[plugin-loader] 开始注入依赖，共 {len(self.plugins)} 个插件")
+        Log.info("plugin-loader", f"开始注入依赖，共 {len(self.plugins)} 个插件")
         
         # 构建名称映射（处理 } 后缀问题）
         name_map = {}
@@ -527,22 +629,22 @@ class PluginManager:
             if not deps:
                 continue
 
-            print(f"[plugin-loader] {name} 依赖: {deps}")
+            Log.tip("plugin-loader", f"{name} 依赖: {deps}")
             for dep_name in deps:
                 # 使用名称映射查找
                 actual_dep = name_map.get(dep_name) or name_map.get(dep_name + "}")
                 if actual_dep and actual_dep in self.plugins:
                     dep_instance = self.plugins[actual_dep]["instance"]
                     setter_name = f"set_{dep_name.replace('-', '_')}"
-                    print(f"[plugin-loader] 尝试注入: {name} <- {actual_dep} ({setter_name})")
+                    Log.tip("plugin-loader", f"尝试注入: {name} <- {actual_dep} ({setter_name})")
                     if hasattr(instance, setter_name):
                         try:
                             getattr(instance, setter_name)(dep_instance)
-                            print(f"[plugin-loader] 注入成功: {name} <- {actual_dep}")
+                            Log.ok("plugin-loader", f"注入成功: {name} <- {actual_dep}")
                         except Exception as e:
-                            print(f"[plugin-loader] 注入依赖失败 {name}.{setter_name}: {e}")
+                            Log.error("plugin-loader", f"注入依赖失败 {name}.{setter_name}: {e}")
                     else:
-                        print(f"[plugin-loader] 警告: {name} 没有 {setter_name} 方法")
+                        Log.warn("plugin-loader", f"{name} 没有 {setter_name} 方法")
 
     def stop_all(self):
         """停止所有插件"""
@@ -576,13 +678,30 @@ class PluginLoaderPlugin(Plugin):
         self.manager = PluginManager()
         self._loaded = False
         self._started = False
+        self._ensure_plugin_package()
+
+    def _ensure_plugin_package(self):
+        """确保 plugin 命名空间包存在"""
+        import types
+        if 'plugin' not in sys.modules:
+            plugin_pkg = types.ModuleType('plugin')
+            plugin_pkg.__path__ = []
+            sys.modules['plugin'] = plugin_pkg
 
     def init(self, deps: dict = None):
         """加载所有插件"""
         if self._loaded:
             return
         self._loaded = True
-        print("[plugin-loader] 开始加载插件...")
+
+        # 确保 plugin 命名空间包存在（必须在加载任何插件之前）
+        import types
+        if 'plugin' not in sys.modules:
+            plugin_pkg = types.ModuleType('plugin')
+            plugin_pkg.__path__ = []
+            sys.modules['plugin'] = plugin_pkg
+
+        Log.info("plugin-loader", "开始加载插件...")
         self.manager.load_all()
 
     def start(self):
@@ -590,12 +709,12 @@ class PluginLoaderPlugin(Plugin):
         if self._started:
             return
         self._started = True
-        print("[plugin-loader] 启动插件...")
+        Log.info("plugin-loader", "启动插件...")
         self.manager.init_and_start_all()
 
     def stop(self):
         """停止所有插件"""
-        print("[plugin-loader] 停止插件...")
+        Log.info("plugin-loader", "停止插件...")
         self.manager.stop_all()
 
 

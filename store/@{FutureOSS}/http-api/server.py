@@ -95,14 +95,17 @@ class HttpServer:
                 self._send_response(resp)
 
             def _send_response(self, resp: Response):
-                self.send_response(resp.status)
-                for k, v in resp.headers.items():
-                    self.send_header(k, v)
-                self.end_headers()
-                if isinstance(resp.body, str):
-                    self.wfile.write(resp.body.encode("utf-8"))
-                else:
-                    self.wfile.write(resp.body)
+                try:
+                    self.send_response(resp.status)
+                    for k, v in resp.headers.items():
+                        self.send_header(k, v)
+                    self.end_headers()
+                    if isinstance(resp.body, str):
+                        self.wfile.write(resp.body.encode("utf-8"))
+                    else:
+                        self.wfile.write(resp.body)
+                except BrokenPipeError:
+                    pass  # 忽略客户端断开
 
             def log_message(self, format, *args):
                 pass

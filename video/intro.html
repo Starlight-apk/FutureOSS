@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FutureOSS</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#ddd;overflow:hidden;height:100vh;width:100vw;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
+
+.letterbox{position:fixed;left:0;width:100%;height:7vh;background:#000;z-index:300;pointer-events:none}
+.letterbox.top{top:0}.letterbox.bottom{bottom:0}
+
+#grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(100,120,180,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(100,120,180,.04) 1px,transparent 1px);background-size:50px 50px;animation:gs 30s linear infinite}
+@keyframes gs{to{background-position:50px 50px}}
+
+#stage{position:fixed;inset:0;z-index:10}
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .6s}
+.sc.active{opacity:1;pointer-events:auto}
+
+#subtitle-bar{position:fixed;bottom:12%;left:50%;transform:translateX(-50%);width:65%;text-align:center;z-index:100;pointer-events:none}
+#subtitle{font-size:.95rem;line-height:1.8;font-weight:300;color:rgba(255,255,255,.45);text-shadow:0 2px 20px rgba(0,0,0,.9);opacity:0}
+#subtitle.show{opacity:1;transition:opacity .4s}
+
+#progress{position:fixed;bottom:0;left:0;height:1px;background:rgba(100,120,180,.3);width:0%;transition:width .3s;z-index:400}
+
+#overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;cursor:pointer;background:#0a0a0a;transition:opacity .8s}
+#overlay.hidden{opacity:0;pointer-events:none}
+#overlay .pt{font-size:.65rem;color:#222;letter-spacing:8px;margin-bottom:30px}
+.pb{width:50px;height:50px;border:1px solid #333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#555}
+
+#controls{position:fixed;bottom:2.5%;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:400;opacity:0;transition:opacity .4s}
+#controls.show{opacity:1}
+.cb{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:#444;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cb:hover{color:#fff;background:rgba(255,255,255,.1)}
+
+/* 黑屏 */
+.blank{}
+
+/* 纯文字 */
+.plain-text{font-size:2.2rem;font-weight:200;text-align:center;padding:0 40px;color:rgba(255,255,255,.5);opacity:0;transform:translateY(15px)}
+.plain-text.show{opacity:1;transform:translateY(0);transition:all 1.2s ease}
+
+/* 左右分屏 */
+.split{display:flex;width:85%;max-width:1000px;gap:60px;align-items:center;padding:0 30px}
+.split-left{flex:1;font-size:1.8rem;font-weight:300;color:rgba(255,255,255,.6);line-height:1.6;opacity:0;transform:translateX(-30px)}
+.split-left.show{opacity:1;transform:translateX(0);transition:all .9s ease}
+.split-right{flex:1;opacity:0;transform:translateX(30px)}
+.split-right.show{opacity:1;transform:translateX(0);transition:all .9s ease .2s}
+
+/* 痛点列表 */
+.pain-list{list-style:none}
+.pain-list li{padding:8px 0;font-size:.95rem;color:rgba(255,255,255,.4);opacity:0;transform:translateY(8px)}
+.pain-list li.show{opacity:1;transform:translateY(0);transition:all .5s ease}
+.pain-list li::before{content:'\D7';color:#553333;margin-right:10px;font-weight:bold}
+
+/* 解决方案列表 */
+.sol-list{list-style:none}
+.sol-list li{padding:8px 0;font-size:.9rem;color:rgba(120,140,180,.7);opacity:0;transform:translateY(8px)}
+.sol-list li.show{opacity:1;transform:translateY(0);transition:all .5s ease}
+.sol-list li::before{content:'\2713';color:#4a6;margin-right:10px;font-weight:bold}
+
+/* 项目名 */
+.proj-name{font-size:3.5rem;font-weight:600;color:rgba(255,255,255,.7);opacity:0;transform:translateY(15px)}
+.proj-name.show{opacity:1;transform:translateY(0);transition:all 1s ease}
+.proj-tag{font-size:.85rem;color:#333;letter-spacing:4px;margin-top:12px;opacity:0}
+.proj-tag.show{opacity:1;transition:opacity .6s}
+
+/* 概念行 */
+.c-line{font-size:1.5rem;font-weight:300;text-align:center;padding:0 30px;color:rgba(255,255,255,.45);opacity:0;transform:translateY(10px)}
+.c-line.show{opacity:1;transform:translateY(0);transition:all .8s ease}
+.em{color:#8899bb;font-weight:400}
+
+/* 特性展示 */
+.feat-split{display:flex;width:88%;max-width:950px;gap:50px;align-items:flex-start}
+.feat-code{flex:1;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:20px;font-family:Consolas,'Courier New',monospace;font-size:.75rem;line-height:1.8;color:#666;opacity:0;transform:translateX(-20px)}
+.feat-code.show{opacity:1;transform:translateX(0);transition:all .7s ease}
+.feat-code .kw{color:#7788aa}
+.feat-code .str{color:#6a6}
+.feat-code .fn{color:#aaa}
+.feat-code .cm{color:#333}
+.feat-label{flex:1;padding:10px 0}
+.feat-label .title{font-size:1.3rem;font-weight:500;color:rgba(255,255,255,.7);margin-bottom:10px;opacity:0;transform:translateX(15px)}
+.feat-label .title.show{opacity:1;transform:translateX(0);transition:all .6s ease .15s}
+.feat-label .desc{font-size:.85rem;color:rgba(255,255,255,.3);line-height:1.7;opacity:0;transform:translateX(15px)}
+.feat-label .desc.show{opacity:1;transform:translateX(0);transition:all .6s ease .3s}
+
+/* 终端 */
+.term-box{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:20px 25px;font-family:Consolas,monospace;max-width:480px;width:85%;opacity:0;transform:translateY(8px)}
+.term-box.show{opacity:1;transform:translateY(0);transition:all .7s ease}
+.tline{font-size:.75rem;margin-bottom:5px;opacity:0;color:#444}
+.tline.show{opacity:1;transition:opacity .25s}
+.tline .p{color:#6677aa}
+.tline .c{color:#bbb}
+.tline .o{color:#4a5a4a}
+.tline .i{color:#333}
+.blk::after{content:'\2588';animation:blink .8s infinite;color:#6677aa}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* 对比 */
+.compare{display:flex;width:85%;max-width:800px;gap:30px}
+.compare-col{flex:1;padding:15px 20px;border-radius:8px;opacity:0;transform:translateY(10px)}
+.compare-col.show{opacity:1;transform:translateY(0);transition:all .7s ease}
+.compare-col.old{background:rgba(200,50,50,.03);border:1px solid rgba(200,50,50,.08)}
+.compare-col.new{background:rgba(50,150,100,.03);border:1px solid rgba(50,150,100,.08)}
+.compare-col h4{font-size:.6rem;letter-spacing:3px;margin-bottom:12px;font-weight:400}
+.compare-col.old h4{color:#553333}
+.compare-col.new h4{color:#3a5a3a}
+.compare-col p{font-size:.8rem;color:#444;line-height:1.8;font-family:Consolas,monospace}
+
+/* 数字 */
+.num-row{display:flex;gap:30px;align-items:center}
+.num-block{text-align:center;opacity:0;transform:translateY(8px)}
+.num-block.show{opacity:1;transform:translateY(0);transition:all .6s ease}
+.num-v{font-size:3rem;font-weight:600;color:rgba(255,255,255,.6);line-height:1}
+.num-u{font-size:1rem;color:#445;margin-top:3px}
+.num-l{font-size:.7rem;color:#2a2a2a;margin-top:5px;letter-spacing:2px}
+.nsep{width:1px;height:60px;background:rgba(255,255,255,.04)}
+
+/* 结尾 */
+.end-box{text-align:center}
+.end-n{font-size:2.5rem;font-weight:600;color:rgba(255,255,255,.6);opacity:0;transform:translateY(12px)}
+.end-n.show{opacity:1;transform:translateY(0);transition:all .8s ease}
+.end-t{font-size:.65rem;color:#222;letter-spacing:4px;margin-top:10px;opacity:0}
+.end-t.show{opacity:1;transition:opacity .5s}
+.end-u{margin-top:20px;opacity:0}
+.end-u.show{opacity:1;transition:opacity .5s}
+.end-u a{display:block;color:#333;font-size:.65rem;text-decoration:none;margin-bottom:4px}
+.end-u a:hover{color:#555}
+
+/* 闪光 */
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:400}
+
+@media(max-width:768px){
+.split,.feat-split,.compare{flex-direction:column;gap:20px}
+.plain-text{font-size:1.5rem}
+.proj-name{font-size:2.2rem}
+.num-row{flex-direction:column;gap:15px}
+.nsep{width:40px;height:1px}
+}
+</style>
+</head>
+<body>
+<div class="letterbox top"></div>
+<div class="letterbox bottom"></div>
+<div id="grid-bg"></div>
+
+<div id="overlay">
+  <div class="pt">FUTUREOSS</div>
+  <div class="pb"><i class="ri-play-fill"></i></div>
+</div>
+<div id="flash"></div>
+<div id="subtitle-bar"><div id="subtitle"></div></div>
+<div id="progress"></div>
+<div id="controls">
+  <button class="cb" id="btn-replay"><i class="ri-restart-line"></i></button>
+  <button class="cb" id="btn-sound"><i class="ri-volume-up-fill"></i></button>
+</div>
+
+<div id="stage">
+
+  <!-- 0: 黑屏 -->
+  <div class="sc" id="s0"></div>
+
+  <!-- 1: 开场文字 -->
+  <div class="sc" id="s1">
+    <div class="plain-text" id="m1">不知道你有没有这种感觉</div>
+  </div>
+
+  <!-- 2: 继续 -->
+  <div class="sc" id="s2">
+    <div class="plain-text" id="m2">每次搭一个新项目，都很累</div>
+  </div>
+
+  <!-- 3: 左右分屏 - 痛点在右 -->
+  <div class="sc" id="s3">
+    <div class="split">
+      <div class="split-left" id="sl-why">因为每次都在<br>重复同样的事</div>
+      <div class="split-right" id="sr-pain">
+        <ul class="pain-list">
+          <li id="p0">装环境装到怀疑人生</li>
+          <li id="p1">找个配置文件翻遍整个项目</li>
+          <li id="p2">加个小功能要大改架构</li>
+          <li id="p3">出了问题连日志都看不明白</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4: 转折 -->
+  <div class="sc" id="s4">
+    <div class="plain-text" id="m4">于是我们想</div>
+  </div>
+
+  <!-- 5: 左右分屏 - 解法在右 -->
+  <div class="sc" id="s5">
+    <div class="split">
+      <div class="split-left" id="sl-want">能不能做一个<br>不用操心的框架？</div>
+      <div class="split-right" id="sr-sol">
+        <ul class="sol-list">
+          <li id="s0">不用再重复写基础代码</li>
+          <li id="s1">不用再手动管理依赖</li>
+          <li id="s2">不用在几十个文件里找配置</li>
+          <li id="s3">不用担心插件被篡改</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6: 揭示 -->
+  <div class="sc" id="s6" style="text-align:center">
+    <div class="proj-name" id="rn">FutureOSS</div>
+    <div class="proj-tag" id="rt">一切皆为插件</div>
+  </div>
+
+  <!-- 7: 概念 -->
+  <div class="sc" id="s7">
+    <div class="c-line" id="c1">不是<span class="em">部分功能</span>可插拔</div>
+    <div class="c-line" id="c2">而是<span class="em">所有东西</span>都是插件</div>
+    <div class="c-line" id="c3">仪表盘、日志、前端<span class="em">全部是</span></div>
+  </div>
+
+  <!-- 8: 特性1 插件化 -->
+  <div class="sc" id="s8">
+    <div class="feat-split">
+      <div class="feat-code" id="f8c">
+<span class="cm"># 新建一个目录 丢进去</span>
+<span class="kw">store</span>/@{你}/<span class="str">hello/</span>
+<span class="fn">  main.py</span>
+<span class="fn">  manifest.json</span>
+<span class="fn">  README.md</span>
+
+<span class="cm"># 启动自动加载 删掉自动消失</span>
+<span class="cm"># 不用改一行核心代码</span>
+      </div>
+      <div class="feat-label">
+        <div class="title" id="f8t"><i class="ri-box-3-line" style="margin-right:8px"></i>插件化</div>
+        <div class="desc" id="f8d">想加功能？新建一个目录丢进去。想删？直接 rm -rf。不用改一行核心代码。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9: 特性2 签名 -->
+  <div class="sc" id="s9">
+    <div class="feat-split">
+      <div class="feat-code" id="f9c">
+<span class="kw">验证中...</span>
+<span class="o"> SHA-256 校验通过</span>
+<span class="o"> RSA-4096 签名合法</span>
+<span class="o"> 来源: @Falck</span>
+
+<span class="cm"># 每个官方插件启动前</span>
+<span class="cm"># 自动验证，失败直接拒绝加载</span>
+      </div>
+      <div class="feat-label">
+        <div class="title" id="f9t"><i class="ri-lock-password-line" style="margin-right:8px"></i>签名验证</div>
+        <div class="desc" id="f9d">不是事后检查，是加载前就验证。改了一个字节，整个插件拒绝加载。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10: 特性3 日志 -->
+  <div class="sc" id="s10">
+    <div class="feat-split">
+      <div class="feat-code" id="f10c">
+<span class="kw">Log</span>.<span class="str">info</span>(<span class="o">"app"</span>, <span class="o">"启动"</span>)
+<span class="kw">Log</span>.<span class="str">warn</span>(<span class="o">"db"</span>, <span class="o">"将满"</span>)
+<span class="kw">Log</span>.<span class="str">error</span>(<span class="o">"api"</span>, <span class="o">"超时"</span>)
+<span class="kw">Log</span>.<span class="str">tip</span>(<span class="o">"app"</span>, <span class="o">"已加载 20 插件"</span>)
+
+<span class="cm"># 终端自动着色</span>
+<span class="cm"># 不用 grep 找关键字</span>
+      </div>
+      <div class="feat-label">
+        <div class="title" id="f10t"><i class="ri-palette-line" style="margin-right:8px"></i>彩色日志</div>
+        <div class="desc" id="f10d">info 白 warn 黄 error 红。不用在一堆黑白文字里翻来覆去。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11: 特性4 商店 -->
+  <div class="sc" id="s11">
+    <div class="feat-split">
+      <div class="feat-code" id="f11c">
+<span class="kw">$</span> <span class="str">pkg install @author/plugin</span>
+<span class="o"> 下载完成</span>
+<span class="o"> 签名验证通过</span>
+<span class="o"> 已安装，重启生效</span>
+
+<span class="cm"># 不用 git clone</span>
+<span class="cm"># 不用手动复制目录</span>
+<span class="cm"># 一行命令搞定</span>
+      </div>
+      <div class="feat-label">
+        <div class="title" id="f11t"><i class="ri-store-3-line" style="margin-right:8px"></i>插件商店</div>
+        <div class="desc" id="f11d">一条命令安装插件。不用去仓库翻目录、不用手动复制文件。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12: 特性5 监控 -->
+  <div class="sc" id="s12">
+    <div class="feat-split">
+      <div class="feat-code" id="f12c">
+<span class="fn">仪表盘实时展示:</span>
+  CPU    78%
+  MEM    56%
+  NET    12.3M/s  4.1M/s
+  DISK   RD 45MB  WR 23MB
+  LOAD   1.2  0.8  0.6
+
+<span class="cm"># 打开浏览器就有</span>
+<span class="cm"># 不用装 Prometheus</span>
+<span class="cm"># 不用配 Grafana</span>
+      </div>
+      <div class="feat-label">
+        <div class="title" id="f12t"><i class="ri-dashboard-line" style="margin-right:8px"></i>实时监控</div>
+        <div class="desc" id="f12d">启动就有仪表盘。不用搭 Prometheus、不用配 Grafana，打开浏览器就行。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13: 对比 -->
+  <div class="sc" id="s13">
+    <div class="compare">
+      <div class="compare-col old" id="cm-old">
+        <h4>以前</h4>
+        <p>git clone xxx<br>pip install -r req.txt<br>python -m venv .venv<br>source .venv/bin/activate<br>pip install flask mysql...<br>改配置文件半小时<br>python main.py<br>报错 -> 查日志 -> 改配置<br>python main.py<br>又报错...</p>
+      </div>
+      <div class="compare-col new" id="cm-new">
+        <h4>现在</h4>
+        <p style="font-size:1.1rem;color:#fff;font-weight:600">bash start.sh</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14: 终端 -->
+  <div class="sc" id="s14">
+    <div class="term-box" id="term">
+      <div class="tline" id="t0"><span class="p">$</span> <span class="c">bash start.sh</span></div>
+      <div class="tline" id="t1"><span class="i">检测环境...</span></div>
+      <div class="tline" id="t2"><span class="i">自动安装依赖...</span></div>
+      <div class="tline" id="t3"><span class="o">虚拟环境创建完成</span></div>
+      <div class="tline" id="t4"><span class="o">20 个插件加载完成</span></div>
+      <div class="tline" id="t5"><span class="o">http://localhost:8080</span></div>
+      <div class="tline" id="t6"><span class="p">$</span> <span class="blk"></span></div>
+    </div>
+  </div>
+
+  <!-- 15: 数字 -->
+  <div class="sc" id="s15">
+    <div class="num-row">
+      <div class="num-block" id="nb0"><div class="num-v"><span id="nv0">0</span></div><div class="num-u">+ 官方插件</div></div>
+      <div class="nsep"></div>
+      <div class="num-block" id="nb1"><div class="num-v"><span id="nv1">0</span></div><div class="num-u">行命令</div></div>
+      <div class="nsep"></div>
+      <div class="num-block" id="nb2"><div class="num-v"><span id="nv2">0</span></div><div class="num-l">% 插件化</div></div>
+    </div>
+  </div>
+
+  <!-- 16: 结尾 -->
+  <div class="sc" id="s16" style="text-align:center">
+    <div class="end-box">
+      <div class="end-n" id="en">FutureOSS</div>
+      <div class="end-t" id="et">一切皆为插件</div>
+      <div class="end-u" id="eu">
+        <a href="https://gitee.com/starlight-apk/feature-oss" target="_blank">gitee.com/starlight-apk/feature-oss</a>
+        <a href="https://futureoss.date" target="_blank">futureoss.date</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// 音效
+var AC=window.AudioContext||window.webkitAudioContext;
+var ac=null,sfxOn=true,bgSrc=null,timer=null;
+function initA(){if(!ac)ac=new AC()}
+function startBg(){if(!sfxOn||!ac)return;stopBg();var d=120,sr=ac.sampleRate,b=ac.createBuffer(2,sr*d,sr);for(var c=0;c<2;c++){var ch=b.getChannelData(c);for(var i=0;i<ch.length;i++){var t=i/sr;ch[i]=(Math.sin(6.28*220*t)*.04+Math.sin(6.28*330*t)*.025+Math.sin(6.28*440*t)*.02)*(.5+.5*Math.sin(6.28*.1*t))}}bgSrc=ac.createBufferSource();bgSrc.buffer=b;bgSrc.loop=true;var g=ac.createGain();g.gain.value=.05;bgSrc.connect(g).connect(ac.destination);bgSrc.start()}
+function stopBg(){if(bgSrc){try{bgSrc.stop()}catch(e){}bgSrc=null}}
+function pop(){if(!sfxOn||!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(300+Math.random()*400,ac.currentTime);o.frequency.exponentialRampToValueAtTime(80,ac.currentTime+.06);g.gain.setValueAtTime(.1,ac.currentTime);g.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.06);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+.06)}
+function swo(){if(!sfxOn||!ac)return;var sz=ac.sampleRate*.35,bf=ac.createBuffer(1,sz,ac.sampleRate),d=bf.getChannelData(0);for(var i=0;i<sz;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(sz*.06));var s=ac.createBufferSource();s.buffer=bf;var f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=400;f.Q.value=.3;var g=ac.createGain();g.gain.value=.02;s.connect(f).connect(g).connect(ac.destination);s.start()}
+
+document.getElementById('btn-sound').onclick=function(){sfxOn=!sfxOn;var ic=this.querySelector('i');ic.className=sfxOn?'ri-volume-up-fill':'ri-volume-mute-line';if(!sfxOn)stopBg();else startBg()}
+
+// 工具
+var sub=document.getElementById('subtitle'),prog=document.getElementById('progress'),
+    overlay=document.getElementById('overlay'),ctrls=document.getElementById('controls'),
+    fl=document.getElementById('flash'),st0;
+function setSub(h){sub.innerHTML=h;sub.classList.add('show')}
+function hideSub(){sub.classList.remove('show')}
+function showS(id){var ss=document.querySelectorAll('.sc');for(var i=0;i<ss.length;i++)ss[i].classList.remove('active');var el=document.getElementById(id);if(el)el.classList.add('active');swo()}
+function doFlash(){fl.style.opacity='.08';fl.style.transition='opacity .5s';setTimeout(function(){fl.style.opacity='0'},50)}
+function setProg(p){prog.style.width=p+'%'}
+function animNum(elId,tg){var el=document.getElementById(elId),dur=1000,s=performance.now();function tk(n){var p=Math.min((n-s)/dur,1),e=1-Math.pow(1-p,3);el.textContent=Math.floor(tg*e);if(p<1)requestAnimationFrame(tk)}requestAnimationFrame(tk)}
+
+// 时间轴
+var tl=[],ti=0,tot;
+
+function build(){
+  tl=[];
+  var m=function(s){return s*1000}
+
+  // 0: 黑屏
+  tl.push({t:m(.5),fn:function(){showS('s0')}})
+  tl.push({t:m(2),fn:function(){setSub('......')}})
+  tl.push({t:m(4.5),fn:function(){hideSub()}})
+
+  // 1: 开场
+  tl.push({t:m(5),fn:function(){showS('s1')}})
+  tl.push({t:m(5.6),fn:function(){pop();document.getElementById('m1').classList.add('show')}})
+  tl.push({t:m(6.5),fn:function(){setSub('不知道你有没有这种感觉')}})
+
+  // 2: 继续
+  tl.push({t:m(9),fn:function(){document.getElementById('m1').classList.remove('show')}})
+  tl.push({t:m(10),fn:function(){showS('s2')}})
+  tl.push({t:m(10.6),fn:function(){pop();document.getElementById('m2').classList.add('show')}})
+  tl.push({t:m(11.5),fn:function(){setSub('每次搭一个新项目，都很累')}})
+
+  // 3: 痛点
+  tl.push({t:m(14),fn:function(){doFlash();showS('s3')}})
+  tl.push({t:m(14.5),fn:function(){pop();document.getElementById('sl-why').classList.add('show')}})
+  tl.push({t:m(15.5),fn:function(){setSub('因为每次都在重复同样的事')}})
+  tl.push({t:m(17),fn:function(){pop();document.getElementById('sr-pain').classList.add('show')}})
+  tl.push({t:m(17.8),fn:function(){pop();document.getElementById('p0').classList.add('show')}})
+  tl.push({t:m(19),fn:function(){pop();document.getElementById('p1').classList.add('show')}})
+  tl.push({t:m(20.2),fn:function(){pop();document.getElementById('p2').classList.add('show')}})
+  tl.push({t:m(21.4),fn:function(){pop();document.getElementById('p3').classList.add('show')}})
+
+  // 4: 转折
+  tl.push({t:m(24),fn:function(){showS('s4')}})
+  tl.push({t:m(24.6),fn:function(){pop();document.getElementById('m4').classList.add('show')}})
+  tl.push({t:m(25.5),fn:function(){setSub('于是我们想......')}})
+
+  // 5: 解法
+  tl.push({t:m(28),fn:function(){showS('s5')}})
+  tl.push({t:m(28.5),fn:function(){pop();document.getElementById('sl-want').classList.add('show')}})
+  tl.push({t:m(29.5),fn:function(){setSub('能不能做一个不用操心的框架？')}})
+  tl.push({t:m(31),fn:function(){pop();document.getElementById('sr-sol').classList.add('show')}})
+  tl.push({t:m(31.8),fn:function(){pop();document.getElementById('s0').classList.add('show')}})
+  tl.push({t:m(33),fn:function(){pop();document.getElementById('s1').classList.add('show')}})
+  tl.push({t:m(34.2),fn:function(){pop();document.getElementById('s2').classList.add('show')}})
+  tl.push({t:m(35.4),fn:function(){pop();document.getElementById('s3').classList.add('show')}})
+
+  // 6: 揭示
+  tl.push({t:m(38),fn:function(){doFlash();showS('s6')}})
+  tl.push({t:m(38.5),fn:function(){pop();document.getElementById('rn').classList.add('show')}})
+  tl.push({t:m(40),fn:function(){hideSub()}})
+  tl.push({t:m(41),fn:function(){pop();document.getElementById('rt').classList.add('show')}})
+  tl.push({t:m(42),fn:function(){setSub('FutureOSS -- 一切皆为插件')}})
+
+  // 7: 概念
+  tl.push({t:m(44),fn:function(){showS('s7')}})
+  tl.push({t:m(44.5),fn:function(){pop();document.getElementById('c1').classList.add('show')}})
+  tl.push({t:m(46),fn:function(){setSub('不是部分功能可插拔')}})
+  tl.push({t:m(47.5),fn:function(){pop();document.getElementById('c2').classList.add('show')}})
+  tl.push({t:m(49),fn:function(){setSub('而是所有东西都是插件')}})
+  tl.push({t:m(50.5),fn:function(){pop();document.getElementById('c3').classList.add('show')}})
+
+  // 8: 插件化
+  tl.push({t:m(52),fn:function(){doFlash();showS('s8')}})
+  tl.push({t:m(52.3),fn:function(){pop();document.getElementById('f8c').classList.add('show')}})
+  tl.push({t:m(53),fn:function(){pop();document.getElementById('f8t').classList.add('show');document.getElementById('f8d').classList.add('show')}})
+  tl.push({t:m(54),fn:function(){setSub('想加功能新建目录丢进去 想删直接删掉')}})
+
+  // 9: 签名
+  tl.push({t:m(56.5),fn:function(){showS('s9')}})
+  tl.push({t:m(56.8),fn:function(){pop();document.getElementById('f9c').classList.add('show')}})
+  tl.push({t:m(57.5),fn:function(){pop();document.getElementById('f9t').classList.add('show');document.getElementById('f9d').classList.add('show')}})
+  tl.push({t:m(58.5),fn:function(){setSub('改一个字节 整个插件拒绝加载')}})
+
+  // 10: 日志
+  tl.push({t:m(61),fn:function(){showS('s10')}})
+  tl.push({t:m(61.3),fn:function(){pop();document.getElementById('f10c').classList.add('show')}})
+  tl.push({t:m(62),fn:function(){pop();document.getElementById('f10t').classList.add('show');document.getElementById('f10d').classList.add('show')}})
+  tl.push({t:m(63),fn:function(){setSub('不用在一堆黑白文字里翻来覆去')}})
+
+  // 11: 商店
+  tl.push({t:m(65.5),fn:function(){showS('s11')}})
+  tl.push({t:m(65.8),fn:function(){pop();document.getElementById('f11c').classList.add('show')}})
+  tl.push({t:m(66.5),fn:function(){pop();document.getElementById('f11t').classList.add('show');document.getElementById('f11d').classList.add('show')}})
+  tl.push({t:m(67.5),fn:function(){setSub('一条命令安装 不用翻目录 不用手动复制')}})
+
+  // 12: 监控
+  tl.push({t:m(70),fn:function(){showS('s12')}})
+  tl.push({t:m(70.3),fn:function(){pop();document.getElementById('f12c').classList.add('show')}})
+  tl.push({t:m(71),fn:function(){pop();document.getElementById('f12t').classList.add('show');document.getElementById('f12d').classList.add('show')}})
+  tl.push({t:m(72),fn:function(){setSub('不用搭Prometheus 不用配Grafana')}})
+
+  // 13: 对比
+  tl.push({t:m(74.5),fn:function(){doFlash();showS('s13')}})
+  tl.push({t:m(74.8),fn:function(){pop();document.getElementById('cm-old').classList.add('show')}})
+  tl.push({t:m(77),fn:function(){setSub('以前: clone 装依赖 配环境 改配置 启动 报错 查日志 改...')}})
+  tl.push({t:m(79),fn:function(){pop();document.getElementById('cm-new').classList.add('show')}})
+  tl.push({t:m(80),fn:function(){hideSub()}})
+  tl.push({t:m(80.5),fn:function(){setSub('现在: bash start.sh')}})
+
+  // 14: 终端
+  tl.push({t:m(82),fn:function(){showS('s14')}})
+  tl.push({t:m(82.3),fn:function(){pop();document.getElementById('term').classList.add('show')}})
+  tl.push({t:m(83.5),fn:function(){pop();document.getElementById('t0').classList.add('show')}})
+  tl.push({t:m(84.5),fn:function(){pop();document.getElementById('t1').classList.add('show')}})
+  tl.push({t:m(85.5),fn:function(){pop();document.getElementById('t2').classList.add('show')}})
+  tl.push({t:m(86.5),fn:function(){pop();document.getElementById('t3').classList.add('show')}})
+  tl.push({t:m(87.2),fn:function(){pop();document.getElementById('t4').classList.add('show')}})
+  tl.push({t:m(88),fn:function(){pop();document.getElementById('t5').classList.add('show')}})
+  tl.push({t:m(88.8),fn:function(){pop();document.getElementById('t6').classList.add('show')}})
+  tl.push({t:m(90),fn:function(){setSub('一行命令 自动装依赖 创建环境 启动服务')}})
+
+  // 15: 数字
+  tl.push({t:m(92),fn:function(){doFlash();showS('s15')}})
+  tl.push({t:m(92.3),fn:function(){pop();document.getElementById('nb0').classList.add('show');animNum('nv0',20)}})
+  tl.push({t:m(93.5),fn:function(){pop();document.getElementById('nb1').classList.add('show');animNum('nv1',1)}})
+  tl.push({t:m(94.7),fn:function(){pop();document.getElementById('nb2').classList.add('show');animNum('nv2',100)}})
+  tl.push({t:m(96),fn:function(){setSub('20+ 插件  1 行命令  100% 插件化')}})
+
+  // 16: 结尾
+  tl.push({t:m(98),fn:function(){doFlash();showS('s16')}})
+  tl.push({t:m(98.3),fn:function(){pop();document.getElementById('en').classList.add('show')}})
+  tl.push({t:m(99.5),fn:function(){hideSub()}})
+  tl.push({t:m(100),fn:function(){pop();document.getElementById('et').classList.add('show')}})
+  tl.push({t:m(101),fn:function(){setSub('一切皆为插件')}})
+  tl.push({t:m(102.5),fn:function(){pop();document.getElementById('eu').classList.add('show')}})
+  tl.push({t:m(104),fn:function(){setSub('代码开源 欢迎贡献')}})
+  tl.push({t:m(106),fn:function(){ctrls.classList.add('show');setProg(100)}})
+
+  return m(108)
+}
+
+function resetAll(){
+  var ss=document.querySelectorAll('.sc');for(var i=0;i<ss.length;i++)ss[i].classList.remove('active')
+  var ids=['m1','m2','m4','sl-why','sr-pain','p0','p1','p2','p3','sl-want','sr-sol','s0','s1','s2','s3','rn','rt','c1','c2','c3',
+    'f8c','f8t','f8d','f9c','f9t','f9d','f10c','f10t','f10d','f11c','f11t','f11d','f12c','f12t','f12d',
+    'cm-old','cm-new','term','t0','t1','t2','t3','t4','t5','t6','nb0','nb1','nb2','en','et','eu']
+  for(var i=0;i<ids.length;i++){var e=document.getElementById(ids[i]);if(e)e.classList.remove('show')}
+  document.getElementById('nv0').textContent='0';document.getElementById('nv1').textContent='0';document.getElementById('nv2').textContent='0'
+  hideSub();setProg(0);ctrls.classList.remove('show')
+}
+
+function start(){
+  overlay.classList.add('hidden');resetAll();initA();startBg()
+  tot=build();ti=0;st0=performance.now()
+  function next(){while(ti<tl.length){var it=tl[ti],el=performance.now()-st0,dl=it.t-el;if(dl>0){timer=setTimeout(function(){it.fn();ti++;setProg(it.t/tot*100);next()},dl);return;}it.fn();ti++}}
+  next()
+}
+
+overlay.onclick=start
+document.getElementById('btn-replay').onclick=function(){clearTimeout(timer);start()}
+</script>
+</body>
+</html>

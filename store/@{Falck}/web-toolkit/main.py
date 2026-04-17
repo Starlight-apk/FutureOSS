@@ -1,10 +1,25 @@
 """Web 工具包 - 路由注册、静态文件服务、前端事件（不负责渲染）"""
 import json
+import sys
 from pathlib import Path
 from oss.plugin.types import Plugin, register_plugin_type, Response
 from .router import WebRouter
 from .static import StaticFileHandler
 from .template import TemplateEngine
+
+
+class _Log:
+    _TTY = sys.stdout.isatty()
+    _C = {"reset": "\033[0m", "white": "\033[0;37m", "yellow": "\033[1;33m", "blue": "\033[1;34m", "red": "\033[1;31m"}
+    @classmethod
+    def _c(cls, t, c):
+        return f"{cls._C.get(c,'')}{t}{cls._C['reset']}" if cls._TTY else t
+    @classmethod
+    def info(cls, m): print(f"{cls._c('[web-toolkit]', 'white')} {cls._c(m, 'white')}")
+    @classmethod
+    def warn(cls, m): print(f"{cls._c('[web-toolkit]', 'yellow')} {cls._c('⚠', 'yellow')} {cls._c(m, 'yellow')}")
+    @classmethod
+    def error(cls, m): print(f"{cls._c('[web-toolkit]', 'red')} {cls._c('✗', 'red')} {cls._c(m, 'red')}")
 
 
 class WebToolkitPlugin(Plugin):
@@ -26,7 +41,7 @@ class WebToolkitPlugin(Plugin):
         self.template_engine = TemplateEngine()
         self._load_config()
         self.static_handler = StaticFileHandler(root=str(self.root_dir))
-        print(f"[web-toolkit] 配置加载完成: root_dir={self.root_dir}")
+        _Log.info(f"配置加载完成: root_dir={self.root_dir}")
 
     def start(self):
         """启动"""
@@ -65,7 +80,7 @@ class WebToolkitPlugin(Plugin):
                     self._serve_static
                 )
 
-        print("[web-toolkit] Web 工具包已启动")
+        _Log.info("Web 工具包已启动")
 
     def stop(self):
         """停止"""
@@ -97,7 +112,7 @@ class WebToolkitPlugin(Plugin):
         """读取 config.json，解析网站根目录"""
         config_path = Path("./data/web-toolkit/config.json")
         if not config_path.exists():
-            print("[web-toolkit] 警告: config.json 不存在，使用默认配置")
+            _Log.warn("config.json 不存在，使用默认配置")
             self.config = {
                 "root_dir": "../website",
                 "index_file": "index.html",
@@ -145,6 +160,10 @@ class WebToolkitPlugin(Plugin):
             filename = path[len(static_prefix) + 1:]
         else:
             filename = path.lstrip("/")
+
+        # 安全检查：防止路径穿越
+        if ".." in filename or filename.startswith("/"):
+            return Response(status=403, body="Forbidden")
 
         if not filename:
             return self._serve_website_index(request)
