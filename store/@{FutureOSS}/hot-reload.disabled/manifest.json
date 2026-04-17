@@ -9,7 +9,7 @@
   "config": {
     "enabled": true,
     "args": {
-      "watch_dirs": ["store", "./data/pkg"],
+      "watch_dirs": ["store"],
       "watch_extensions": [".py", ".json"]
     }
   },

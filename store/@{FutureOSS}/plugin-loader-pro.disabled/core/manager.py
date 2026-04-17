@@ -43,7 +43,6 @@ class ProPluginManager:
         ProLogger.info("loader", "开始扫描插件...")
 
         self._load_from_dir(Path(store_dir))
-        self._load_from_dir(Path("./data/pkg"))
 
         ProLogger.info("loader", f"共加载 {len(self.plugins)} 个插件")
 

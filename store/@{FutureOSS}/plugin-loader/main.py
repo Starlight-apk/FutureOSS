@@ -350,7 +350,7 @@ class PluginManager:
         return instance
 
     def load_all(self, store_dir: str = "store"):
-        """加载 store 和 data/pkg 下所有插件（跳过自己）"""
+        """加载 store 下所有插件（跳过自己）"""
         # 确保 plugin 命名空间包存在（必须在最开头）
         import types
         if 'plugin' not in sys.modules:
@@ -411,7 +411,6 @@ class PluginManager:
 
         # 加载其他插件
         self._load_plugins_from_dir(Path(store_dir))
-        self._load_plugins_from_dir(Path("./data/pkg"))
 
         # 按依赖排序
         if dependency_plugin:
@@ -448,44 +447,11 @@ class PluginManager:
                         if plugin_dir.is_dir() and (plugin_dir / "main.py").exists():
                             return True
         
-        pkg_dir = Path("./data/pkg")
-        if pkg_dir.exists():
-            for d in pkg_dir.iterdir():
-                if d.is_dir() and (d / "main.py").exists():
-                    return True
-        
         return False
 
     def _bootstrap_installation(self):
         """引导安装 FutureOSS 官方插件"""
-        # 加载 pkg 插件
-        pkg_dir = Path("store/@{FutureOSS}/pkg")
-        if pkg_dir.exists() and (pkg_dir / "main.py").exists():
-            try:
-                pkg_instance = self.load(pkg_dir, use_sandbox=False)
-                if pkg_instance:
-                    pkg_mgr = pkg_instance.manager
-                    
-                    Log.info("plugin-loader", "正在搜索可用插件...")
-                    results = pkg_mgr.search()
-                    if not results:
-                        Log.warn("plugin-loader", "未找到远程插件")
-                        return
-                    
-                    Log.info("plugin-loader", f"发现 {len(results)} 个插件，开始安装...")
-                    installed_count = 0
-                    for pkg_info in results:
-                        Log.info("plugin-loader", f"安装: {pkg_info.name}")
-                        if pkg_mgr.install(pkg_info.name):
-                            installed_count += 1
-                    
-                    if installed_count > 0:
-                        Log.info("plugin-loader", f"已安装 {installed_count} 个插件，重新扫描加载...")
-                        # pkg 保留，重新加载其他插件
-            except Exception as e:
-                Log.error("plugin-loader", f"引导安装失败: {e}")
-        else:
-            Log.info("plugin-loader", "pkg 插件不存在，跳过引导安装")
+        Log.info("plugin-loader", "跳过引导安装（pkg 插件已移除）")
 
     def _sort_by_dependencies(self, dep_plugin):
         """按依赖关系排序"""

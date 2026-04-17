@@ -4,7 +4,7 @@
 
 ## 功能
 
-- 自动扫描 `store/` 和 `./data/pkg/` 目录
+- 自动扫描 `store/` 目录
 - 动态加载 `main.py` 并调用 `New()` 获取实例
 - 解析 `manifest.json` 获取插件元数据
 - 自动扫描插件能力（AST 分析）

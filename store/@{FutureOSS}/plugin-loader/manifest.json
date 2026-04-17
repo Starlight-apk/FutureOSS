@@ -9,7 +9,7 @@
   "config": {
     "enabled": true,
     "args": {
-      "scan_dirs": ["store", "./data/pkg"],
+      "scan_dirs": ["store"],
       "sandbox_enabled": true,
       "permission_check": true
     }

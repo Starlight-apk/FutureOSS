@@ -33,7 +33,7 @@ COPY pyproject.toml ./pyproject.toml
 COPY README.md ./README.md
 
 # 创建必要目录
-RUN mkdir -p /app/data/html-render /app/data/web-toolkit /app/data/plugin-storage /app/data/DCIM /app/data/pkg /app/logs
+RUN mkdir -p /app/data/html-render /app/data/web-toolkit /app/data/plugin-storage /app/data/DCIM /app/logs
 
 # 暴露端口
 EXPOSE 8080 8081 8082

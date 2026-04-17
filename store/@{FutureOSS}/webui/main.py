@@ -75,7 +75,6 @@ class WebUIPlugin(Plugin):
         dashboard_exists = False
         store_dirs = [
             Path("store/@{FutureOSS}/dashboard"),
-            Path("./data/pkg/dashboard"),
         ]
         for d in store_dirs:
             if d.exists() and (d / "main.py").exists():

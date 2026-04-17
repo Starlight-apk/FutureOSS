@@ -303,7 +303,7 @@ ok "Python 依赖安装完成"
 # ═══════════════════════════════════════════════════════════
 step "初始化数据目录"
 
-DATA_DIRS=("data" "data/html-render" "data/web-toolkit" "data/plugin-storage" "data/DCIM" "data/pkg" "data/signature-verifier/keys/private" "data/signature-verifier/keys/public" "logs")
+DATA_DIRS=("data" "data/html-render" "data/web-toolkit" "data/plugin-storage" "data/DCIM" "data/signature-verifier/keys/private" "data/signature-verifier/keys/public" "logs")
 DIR_COUNT=${#DATA_DIRS[@]}
 DIR_CURRENT=0
 
