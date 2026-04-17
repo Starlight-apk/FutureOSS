@@ -119,13 +119,27 @@ CURRENT_STEP=0
 # ═══════════════════════════════════════════════════════════
 step "安装系统依赖"
 
-DEPENDENCIES=("git" "curl" "wget" "php" "php-cli" "php-mbstring" "php-xml" "php-zip" "python3" "python3-pip" "python3-venv")
+# 系统命令依赖和PHP扩展分开处理
+CMD_DEPENDENCIES=("git" "curl" "wget" "php" "python3")
+PHP_EXTENSIONS=("php-cli" "php-mbstring" "php-xml" "php-zip")
+PYTHON_PKGS=("pip" "venv")
+
+DEPENDENCIES=(${CMD_DEPENDENCIES[@]} ${PHP_EXTENSIONS[@]} "python3-pip" "python3-venv")
 DEP_TOTAL=${#DEPENDENCIES[@]}
 DEP_INSTALLED=0
 
 for dep in "${DEPENDENCIES[@]}"; do
     DEP_INSTALLED=$((DEP_INSTALLED + 1))
     progress_bar $DEP_INSTALLED $DEP_TOTAL "检测 $dep"
+
+    # PHP扩展包不通过command检测，跳过
+    if [[ "$dep" == php-* ]]; then
+        continue
+    fi
+    # python3-venv也不通过command检测
+    if [[ "$dep" == "python3-venv" || "$dep" == "python3-pip" ]]; then
+        continue
+    fi
 
     if command -v "$dep" &>/dev/null; then
         continue
@@ -192,9 +206,66 @@ source "$VENV_DIR/bin/activate"
 PIP_CMD="$VENV_DIR/bin/pip"
 
 # ═══════════════════════════════════════════════════════════
+#  检测虚拟环境依赖完整性
+# ═══════════════════════════════════════════════════════════
+info "检测虚拟环境依赖完整性..."
+
+VENV_INCOMPLETE=false
+MISSING_VENV_DEPS=()
+
+for pkg in "${CORE_DEPS[@]}"; do
+    import_name="${PKG_IMPORT_MAP[$pkg]}"
+    if ! $PYTHON_CMD -c "import $import_name" 2>/dev/null; then
+        VENV_INCOMPLETE=true
+        MISSING_VENV_DEPS+=("$pkg")
+    fi
+done
+
+# 同时检测 requirements.txt 中的依赖
+if [[ -f "requirements.txt" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # 跳过空行和注释
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        # 提取包名（去除版本号）
+        pkg_name=$(echo "$line" | sed -E 's/([a-zA-Z0-9_-]+).*/\1/')
+        [[ -z "$pkg_name" ]] && continue
+        # 尝试导入（将连字符替换为下划线）
+        import_name="${pkg_name//-/_}"
+        if ! $PYTHON_CMD -c "import $import_name" 2>/dev/null; then
+            # 不在核心依赖列表中的才添加
+            if [[ ! " ${CORE_DEPS[@]} " =~ " ${pkg_name} " ]]; then
+                VENV_INCOMPLETE=true
+                MISSING_VENV_DEPS+=("$pkg_name")
+            fi
+        fi
+    done < "requirements.txt"
+fi
+
+if $VENV_INCOMPLETE; then
+    warn "虚拟环境依赖不完整，缺失: ${MISSING_VENV_DEPS[*]}"
+    info "正在安装缺失的依赖..."
+    for pkg in "${MISSING_VENV_DEPS[@]}"; do
+        $PIP_CMD install "$pkg" -q 2>/dev/null || \
+        $PIP_CMD install "$pkg" --break-system-packages -q 2>/dev/null || \
+        warn "无法安装 $pkg"
+    done
+else
+    ok "虚拟环境依赖完整"
+fi
+
+# ═══════════════════════════════════════════════════════════
 #  4. 安装 Python 依赖
 # ═══════════════════════════════════════════════════════════
 step "安装 Python 依赖"
+
+# 包名到导入名的映射
+declare -A PKG_IMPORT_MAP=(
+    ["click"]="click"
+    ["pyyaml"]="yaml"
+    ["websockets"]="websockets"
+    ["psutil"]="psutil"
+    ["cryptography"]="cryptography"
+)
 
 CORE_DEPS=("click" "pyyaml" "websockets" "psutil" "cryptography")
 DEP_COUNT=${#CORE_DEPS[@]}
@@ -204,7 +275,9 @@ for pkg in "${CORE_DEPS[@]}"; do
     DEP_CURRENT=$((DEP_CURRENT + 1))
     progress_bar $DEP_CURRENT $DEP_COUNT "安装 $pkg"
 
-    $PYTHON_CMD -c "import $pkg" 2>/dev/null && continue
+    # 使用正确的导入名检测
+    import_name="${PKG_IMPORT_MAP[$pkg]}"
+    $PYTHON_CMD -c "import $import_name" 2>/dev/null && continue
 
     $PIP_CMD install "$pkg" -q 2>/dev/null || \
     $PIP_CMD install "$pkg" --break-system-packages -q 2>/dev/null || true
