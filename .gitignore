@@ -1,23 +1,6 @@
 .qwen/
 QWEN.md
-.vscode/
-bin/
-logs/
-*.log
-config.yaml
-package.json
-.cache/
 data/
-
-# Web 运行时文件
-start-web.sh
-website/router.php
-admin/
-
-# Mizuki 博客主题
-website/mizuki/
-website/Mizuki/
-mizukiblog-master.zip
 
 # 日志
 logs/
