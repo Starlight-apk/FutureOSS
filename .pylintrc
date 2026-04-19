@@ -1,0 +1,287 @@
+[MASTER]
+jobs=4
+persistent=yes
+rcfile=
+load-plugins=
+extension-pkg-whitelist=
+ignore-patterns=^test_.*\.py$
+ignore=CVS
+output-format=colorized
+reports=yes
+evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
+score=yes
+fail-under=7.0
+
+[MESSAGES CONTROL]
+disable=all
+enable=
+  missing-docstring,
+  empty-docstring,
+  invalid-name,
+  too-few-public-methods,
+  too-many-arguments,
+  too-many-instance-attributes,
+  too-many-locals,
+  too-many-public-methods,
+  too-many-statements,
+  redefined-builtin,
+  redefined-outer-name,
+  unused-argument,
+  unused-import,
+  unused-variable,
+  unused-wildcard-import,
+  wrong-import-order,
+  wrong-import-position,
+  import-error,
+  no-name-in-module,
+  no-member,
+  no-self-use,
+  not-callable,
+  undefined-variable,
+  used-before-assignment,
+  broad-except,
+  bare-except,
+  try-except-raise,
+  duplicate-code,
+  fixme,
+  trailing-whitespace,
+  bad-whitespace,
+  line-too-long,
+  missing-final-newline,
+  mixed-line-endings,
+  bad-continuation,
+  trailing-newlines,
+  multiple-statements,
+  anomalous-backslash-in-string,
+  deprecated-module,
+  deprecated-method,
+  super-with-arguments,
+  raise-missing-from,
+  consider-using-f-string,
+  consider-using-with,
+  use-implicit-booleaness-not-comparison,
+  use-list-literal,
+  use-dict-literal,
+  consider-using-enumerate,
+  consider-iterating-dictionary,
+  consider-using-set-comprehension,
+  consider-using-generator,
+  consider-using-any-or-all,
+  consider-using-in,
+  consider-using-max-builtin,
+  consider-using-min-builtin,
+  consider-using-sum,
+  consider-merging-isinstance,
+  chained-comparison,
+  simplifiable-if-expression,
+  unnecessary-lambda,
+  unnecessary-comprehension,
+  unnecessary-dunder-call,
+  unnecessary-pass,
+  unnecessary-ellipsis,
+  useless-else-on-loop,
+  useless-return,
+  useless-object-inheritance,
+  useless-suppression,
+  wrong-spelling-in-comment,
+  wrong-spelling-in-docstring
+
+[REPORTS]
+output-format=text
+files-output=no
+reports=yes
+evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
+score=yes
+
+[REFACTORING]
+max-nested-blocks=5
+max-line-length=88
+max-module-lines=1000
+max-statements=50
+max-args=5
+max-locals=15
+max-returns=6
+max-branches=12
+max-statements-in-a-loop=20
+max-public-methods=20
+max-attributes=7
+max-parents=7
+max-bool-expr=5
+
+[BASIC]
+good-names=i,
+           j,
+           k,
+           ex,
+           Run,
+           _,
+           __,
+           fd,
+           msg,
+           v,
+           var,
+           x,
+           y,
+           z,
+           ax,
+           fig,
+           plt,
+           df,
+           idx,
+           cnt,
+           doc,
+           env,
+           app,
+           req,
+           res,
+           cls,
+           self,
+           mcs,
+           obj,
+           mod,
+           pkgs,
+           pkg,
+           cfg,
+           conf,
+           config,
+           opts,
+           args,
+           kwargs,
+           logger,
+           log
+bad-names=foo,
+          bar,
+          baz,
+          toto,
+          tutu,
+          tata
+docstring-min-length=-1
+
+[FORMAT]
+max-line-length=88
+ignore-long-lines=^\\s*(# )?<?https?://\\S+>?$
+single-line-if-stmt=no
+single-line-class-stmt=no
+max-module-lines=1000
+indent-string='    '
+
+[SIMILARITIES]
+min-similarity-lines=4
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=no
+
+[TYPECHECK]
+ignored-modules=
+ignored-classes=optparse.Values,thread._local,_thread._local
+generated-members=REQUEST,acl_users,aq_parent
+contextmanager-decorators=contextlib.contextmanager
+missing-member-hint=yes
+missing-member-hint-distance=1
+missing-member-max-choices=1
+missing-member-local-gt=2
+ignore-on-opaque-inference=yes
+ignored-checks-for-mixins=
+signature-mutators=
+ignore-mixin-members=yes
+ignore-none=yes
+ignored-parents=
+ignore-erase=no
+ignore-import-error=yes
+ignore-missing-imports=yes
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+additional-builtins=
+
+[VARIABLES]
+additional-builtins=
+init-import=no
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+callbacks=cb_,_cb
+redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
+allow-global-unused-variables=no
+
+[LOGGING]
+logging-modules=logging
+
+[MISCELLANEOUS]
+notes=FIXME,
+      XXX,
+      TODO,
+      HACK,
+      BUG,
+      NOTE,
+      OPTIMIZE,
+      REVIEW,
+      WARNING,
+      DEPRECATED
+max-string-length=100
+
+[DESIGN]
+max-args=5
+max-locals=15
+max-returns=6
+max-branches=12
+max-statements=50
+max-parents=7
+max-attributes=7
+min-public-methods=2
+max-public-methods=20
+
+[IMPORTS]
+deprecated-modules=
+import-graph=
+ext-import-graph=
+int-import-graph=
+known-standard-library=
+known-third-party=
+known-local-folder=
+preferred-modules=
+allow-wildcard-with-all=no
+allow-any-import-level=no
+allow-relative-imports=yes
+allow-from-import-under-package=yes
+allow-import-from-same-module=no
+allow-import-from-package=yes
+allow-unused-imports=no
+allow-cyclic-import=no
+cyclic-import-limit=10
+ignore-imports=no
+ignore-import-error=yes
+ignore-missing-imports=yes
+preferred-modules=
+single-line-exceptions=no
+
+[EXCEPTIONS]
+overgeneral-exceptions=Exception,BaseException,StandardError,ArithmeticError,LookupError,EnvironmentError,EOFError,ImportError
+ignore-on-exception=no
+
+[CLASSES]
+defining-attr-methods=__init__,
+                      __new__,
+                      setUp,
+                      __post_init__
+valid-classmethod-first-arg=cls
+valid-metaclass-classmethod-first-arg=mcs
+exclude-protected=_asdict,
+                  _fields,
+                  _replace,
+                  _source,
+                  _make
+bad-dunder-names=__authors__,
+                 __version__,
+                 __date__,
+                 __credits__,
+                 __status__,
+                 __maintainer__,
+                 __email__,
+                 __contact__,
+                 __copyright__,
+                 __license__,
+                 __uri__,
+                 __url__,
+                 __program__,
+                 __description__,
+                 __build__
+
+[STRING]
+check-str-concat-over-line-jumps=no

@@ -104,7 +104,7 @@ class HttpServer:
                         self.wfile.write(resp.body.encode("utf-8"))
                     else:
                         self.wfile.write(resp.body)
-                except BrokenPipeError:
+                except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
                     pass  # 忽略客户端断开
 
             def log_message(self, format, *args):

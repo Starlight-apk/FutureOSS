@@ -99,7 +99,8 @@ class WebUIServer:
 
             result = subprocess.run(
                 ["php", "-f", tmp_file],
-                capture_output=True, text=True, timeout=10, cwd=views_dir
+                capture_output=True, text=True, timeout=10, cwd=views_dir,
+                encoding='utf-8', errors='replace'
             )
 
             if result.returncode != 0:

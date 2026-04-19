@@ -1,0 +1,188 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "FutureOSS: 启动服务",
+      "type": "python",
+      "request": "launch",
+      "module": "oss.cli",
+      "args": ["serve"],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 调试模式启动",
+      "type": "python",
+      "request": "launch",
+      "module": "oss.cli",
+      "args": ["serve", "--debug"],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1",
+        "LOG_LEVEL": "DEBUG"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 运行测试",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "--tb=short",
+        "--cov=oss",
+        "--cov-report=html",
+        "--cov-report=term"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 调试插件加载器",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/oss/plugin/loader.py",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 调试日志终端插件",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/store/@{FutureOSS}/log-terminal/main.py",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 调试WebUI",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/store/@{FutureOSS}/webui/main.py",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 调试HTTP API",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/store/@{FutureOSS}/http-api/main.py",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 调试WS API",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/store/@{FutureOSS}/ws-api/main.py",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 调试特定文件",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS: 附加到进程",
+      "type": "python",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "host": "localhost",
+      "port": 5678,
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "."
+        }
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "FutureOSS: 运行CLI命令",
+      "type": "python",
+      "request": "launch",
+      "module": "oss.cli",
+      "args": ["${input:cliCommand}"],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "cwd": "${workspaceFolder}",
+      "python": "${command:python.interpreterPath}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "cliCommand",
+      "type": "promptString",
+      "description": "输入要执行的CLI命令（如：install, uninstall, list等）",
+      "default": "help"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "FutureOSS: 完整调试环境",
+      "configurations": [
+        "FutureOSS: 启动服务",
+        "FutureOSS: 调试日志终端插件"
+      ],
+      "stopAll": true
+    }
+  ]
+}

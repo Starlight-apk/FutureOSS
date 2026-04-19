@@ -589,7 +589,8 @@ class LogTerminalPlugin(Plugin):
                 f.write(f"<?php\n{php_vars}\n?>\n{php_content}")
             result = subprocess.run(
                 ["php", "-f", tmp_file],
-                capture_output=True, text=True, timeout=10
+                capture_output=True, text=True, timeout=10,
+                encoding='utf-8', errors='replace'
             )
             return result.stdout if result.returncode == 0 else f"<pre>{result.stderr}</pre>"
         finally:

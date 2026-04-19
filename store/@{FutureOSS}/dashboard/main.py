@@ -306,7 +306,8 @@ class DashboardPlugin(Plugin):
                 f.write(f"<?php\n{php_vars}\n?>\n{php_content}")
             result = subprocess.run(
                 ["php", "-f", tmp_file],
-                capture_output=True, text=True, timeout=10
+                capture_output=True, text=True, timeout=10,
+                encoding='utf-8', errors='replace'
             )
             return result.stdout if result.returncode == 0 else f"<pre>{result.stderr}</pre>"
         finally:
@@ -319,7 +320,8 @@ class DashboardPlugin(Plugin):
     @staticmethod
     def _get_php_version() -> str:
         try:
-            res = subprocess.run(['php', '-r', 'echo phpversion();'], capture_output=True, text=True, timeout=5)
+            res = subprocess.run(['php', '-r', 'echo phpversion();'], capture_output=True, text=True, timeout=5,
+                                encoding='utf-8', errors='replace')
             return res.stdout if res.returncode == 0 else 'N/A'
         except Exception:
             return 'N/A'
