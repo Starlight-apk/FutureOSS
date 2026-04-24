@@ -165,6 +165,59 @@
       },
       "cwd": "${workspaceFolder}",
       "python": "${command:python.interpreterPath}"
+    },
+    {
+      "name": "FutureOSS 网站: 启动Node.js服务器",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/website/src/server.js",
+      "outFiles": [
+        "${workspaceFolder}/website/**/*.js"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "autoAttachChildProcesses": true,
+      "sourceMaps": true,
+      "showAsyncStacks": true,
+      "smartStep": true,
+      "pauseForSourceMap": true,
+      "cwd": "${workspaceFolder}/website"
+    },
+    {
+      "name": "FutureOSS 网站: 开发模式启动",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "autoAttachChildProcesses": true,
+      "sourceMaps": true,
+      "cwd": "${workspaceFolder}/website"
+    },
+    {
+      "name": "FutureOSS 网站: 附加到Node.js进程",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "restart": true,
+      "localRoot": "${workspaceFolder}/website",
+      "remoteRoot": "${workspaceFolder}/website"
     }
   ],
   "inputs": [

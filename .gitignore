@@ -20,3 +20,4 @@ data/signature-verifier/keys/private/
 # 签名文件（可选，本地开发可能不需要）
 # store/**/SIGNATURE
 .clinerules
+website/
