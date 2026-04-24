@@ -1,18 +1,69 @@
-```gitignore
-# Python cache files
+```
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Compiled Python files
-*.cpython-*.pyc
-
-# Logs
+.Python
+env/
+venv/
+.venv/
+.ENV
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
 *.log
+*.pot
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
 
-# Environment files
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
 .env
 .env.local
-*.env.*
+.env.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 ```
