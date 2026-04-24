@@ -1,0 +1,5 @@
+{
+  "root_dir": "/workspace/data/website",
+  "index_file": "index.html",
+  "static_prefix": "/static"
+}
