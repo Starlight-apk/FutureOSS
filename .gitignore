@@ -1,23 +1,69 @@
-.qwen/
-QWEN.md
-data/
-
-# 虚拟环境（用户自行创建）
-.venv/
-venv/
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
 env/
-*.egg-info/
-dist/
-build/
-
-# 日志
-logs/
+venv/
+.venv/
+.ENV
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
 *.log
+*.pot
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
 
-# 签名验证 - 私钥（绝不要提交！）
-data/signature-verifier/keys/private/
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# 签名文件（可选，本地开发可能不需要）
-# store/**/SIGNATURE
-.clinerules
-website/
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+```
