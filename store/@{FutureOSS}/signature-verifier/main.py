@@ -18,6 +18,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 
 from oss.plugin.types import Plugin
+from oss.config import get_config
 
 
 # ========== 内置信任锚（Falck 公钥） ==========
@@ -62,8 +63,9 @@ class SignatureError(Exception):
 class SignatureVerifier:
     """签名验证器"""
 
-    def __init__(self, key_dir: str = "./data/signature-verifier/keys"):
-        self.key_dir = Path(key_dir)
+    def __init__(self, key_dir: str = None):
+        config = get_config()
+        self.key_dir = Path(key_dir or str(config.get("SIGNATURE_KEYS_DIR", "./data/signature-verifier/keys")))
         self.key_dir.mkdir(parents=True, exist_ok=True)
         self.public_keys: Dict[str, bytes] = {}
         self._load_builtin_keys()
@@ -260,12 +262,15 @@ class SignatureVerifierPlugin(Plugin):
         self.storage = instance
 
     def init(self, deps: dict = None):
+        # 从配置获取密钥目录
+        config = get_config()
+        key_dir = str(config.get("SIGNATURE_KEYS_DIR", "./data/signature-verifier/keys"))
+        
         # 初始化验证器
-        key_dir = "./data/signature-verifier/keys"
         self.verifier = SignatureVerifier(key_dir=key_dir)
         
         # 初始化签名器（如果有私钥）
-        private_key_path = "./data/signature-verifier/keys/private/falck_private.pem"
+        private_key_path = Path(key_dir) / "private" / "falck_private.pem"
         if Path(private_key_path).exists():
             self.signer = SignatureSigner(private_key_path)
         
