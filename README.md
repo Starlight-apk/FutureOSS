@@ -798,7 +798,7 @@ git push origin feature/your-amazing-feature
 
 <div align="center">
 
-[🏠 官网首页](https://futureoss.org) | [📖 完整文档](https://docs.futureoss.org) | [💬 社区论坛](https://community.futureoss.org) | [🐦 Twitter](https://twitter.com/FutureOSS) | [💼 LinkedIn](https://linkedin.com/company/futureoss)
+[🏠 官网首页](https://futureoss.date)
 
 </div>
 
