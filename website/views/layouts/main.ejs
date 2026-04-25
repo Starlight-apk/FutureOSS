@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <meta name="description" content="<%= description %>">
+    <meta name="keywords" content="FutureOSS, 插件化, 运行时框架, 微服务, Python, 开发者工具">
+    
+    <!-- 外部CSS引入 -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/animations.css">
+    
+    <!-- 字体和图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
+    
+    <!-- 页面特定CSS -->
+    <% if (page === 'home') { %>
+        <link rel="stylesheet" href="/css/pages/home.css">
+    <% } else if (page === 'features') { %>
+        <link rel="stylesheet" href="/css/pages/features.css">
+    <% } else if (page === 'architecture') { %>
+        <link rel="stylesheet" href="/css/pages/architecture.css">
+    <% } else if (page === 'plugins') { %>
+        <link rel="stylesheet" href="/css/pages/plugins.css">
+    <% } %>
+</head>
+<body class="page-<%= page %>">
+    <!-- 加载动画 - 默认隐藏，由JavaScript控制 -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div class="loading-text">FutureOSS 加载中...</div>
+        </div>
+    </div>
+    
+    <!-- 导航栏组件 -->
+    <%- include('../partials/navbar', { page: page }) %>
+    
+    <!-- 页面内容 -->
+    <main id="main-content" class="page-content">
+        <%- body %>
+    </main>
+    
+    <!-- 页脚组件 -->
+    <%- include('../partials/footer') %>
+    
+    <!-- 页面切换动画遮罩 -->
+    <div id="page-transition" class="page-transition"></div>
+    
+    <!-- 外部JS引入 -->
+    <script src="/js/main.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/animations.js"></script>
+    
+    <!-- 页面特定JS -->
+    <% if (page === 'home') { %>
+        <script src="/js/pages/home.js"></script>
+    <% } else if (page === 'features') { %>
+        <script src="/js/pages/features.js"></script>
+    <% } else if (page === 'architecture') { %>
+        <script src="/js/pages/architecture.js"></script>
+    <% } else if (page === 'plugins') { %>
+        <script src="/js/pages/plugins.js"></script>
+    <% } %>
+    
+    <!-- 初始化脚本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化页面
+            if (typeof initPage === 'function') {
+                initPage();
+            }
+            
+            // 初始化路由
+            if (typeof initRouter === 'function') {
+                initRouter();
+            }
+        });
+    </script>
+</body>
+</html>
