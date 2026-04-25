@@ -1,0 +1,188 @@
+{
+  "description": "全局系统依赖映射配置 - 所有插件共享的依赖定义中心",
+  "version": "1.0.0",
+  "package_managers": {
+    "debian": ["apt", "apt-get"],
+    "redhat": ["yum", "dnf"],
+    "arch": ["pacman"],
+    "macos": ["brew"],
+    "alpine": ["apk"]
+  },
+  "dependencies": {
+    "ffmpeg": {
+      "description": "音视频处理核心库",
+      "packages": {
+        "apt": ["ffmpeg", "libavcodec-dev", "libavformat-dev", "libswscale-dev"],
+        "yum": ["ffmpeg", "ffmpeg-devel"],
+        "dnf": ["ffmpeg", "ffmpeg-devel"],
+        "pacman": ["ffmpeg"],
+        "brew": ["ffmpeg"],
+        "apk": ["ffmpeg", "ffmpeg-dev"]
+      }
+    },
+    "opencv": {
+      "description": "计算机视觉库",
+      "packages": {
+        "apt": ["libopencv-dev", "python3-opencv"],
+        "yum": ["opencv", "opencv-devel"],
+        "dnf": ["opencv", "opencv-devel"],
+        "pacman": ["opencv"],
+        "brew": ["opencv"],
+        "apk": ["opencv", "opencv-dev"]
+      }
+    },
+    "sqlite": {
+      "description": "轻量级数据库",
+      "packages": {
+        "apt": ["sqlite3", "libsqlite3-dev"],
+        "yum": ["sqlite", "sqlite-devel"],
+        "dnf": ["sqlite", "sqlite-devel"],
+        "pacman": ["sqlite"],
+        "brew": ["sqlite"],
+        "apk": ["sqlite", "sqlite-dev"]
+      }
+    },
+    "mysql": {
+      "description": "MySQL 数据库客户端",
+      "packages": {
+        "apt": ["default-libmysqlclient-dev", "mysql-client"],
+        "yum": ["mysql", "mysql-devel"],
+        "dnf": ["mysql", "mysql-devel"],
+        "pacman": ["mysql", "libmariadbclient"],
+        "brew": ["mysql"],
+        "apk": ["mysql-client", "mysql-dev"]
+      }
+    },
+    "postgresql": {
+      "description": "PostgreSQL 数据库客户端",
+      "packages": {
+        "apt": ["libpq-dev", "postgresql-client"],
+        "yum": ["postgresql", "postgresql-devel"],
+        "dnf": ["postgresql", "postgresql-devel"],
+        "pacman": ["postgresql", "postgresql-libs"],
+        "brew": ["postgresql"],
+        "apk": ["postgresql-dev", "postgresql-client"]
+      }
+    },
+    "redis": {
+      "description": "Redis 缓存数据库",
+      "packages": {
+        "apt": ["libredis-dev", "redis-tools"],
+        "yum": ["redis", "hiredis-devel"],
+        "dnf": ["redis", "hiredis-devel"],
+        "pacman": ["redis", "hiredis"],
+        "brew": ["redis", "hiredis"],
+        "apk": ["redis", "hiredis-dev"]
+      }
+    },
+    "curl": {
+      "description": "HTTP 客户端库",
+      "packages": {
+        "apt": ["libcurl4-openssl-dev", "curl"],
+        "yum": ["libcurl-devel", "curl"],
+        "dnf": ["libcurl-devel", "curl"],
+        "pacman": ["curl"],
+        "brew": ["curl"],
+        "apk": ["curl-dev", "curl"]
+      }
+    },
+    "ssl": {
+      "description": "SSL/TLS 加密库",
+      "packages": {
+        "apt": ["libssl-dev", "openssl"],
+        "yum": ["openssl", "openssl-devel"],
+        "dnf": ["openssl", "openssl-devel"],
+        "pacman": ["openssl"],
+        "brew": ["openssl"],
+        "apk": ["openssl-dev", "openssl"]
+      }
+    },
+    "zlib": {
+      "description": "数据压缩库",
+      "packages": {
+        "apt": ["zlib1g-dev"],
+        "yum": ["zlib", "zlib-devel"],
+        "dnf": ["zlib", "zlib-devel"],
+        "pacman": ["zlib"],
+        "brew": ["zlib"],
+        "apk": ["zlib-dev"]
+      }
+    },
+    "git": {
+      "description": "版本控制工具",
+      "packages": {
+        "apt": ["git"],
+        "yum": ["git"],
+        "dnf": ["git"],
+        "pacman": ["git"],
+        "brew": ["git"],
+        "apk": ["git"]
+      }
+    },
+    "nodejs": {
+      "description": "Node.js 运行时",
+      "packages": {
+        "apt": ["nodejs", "npm"],
+        "yum": ["nodejs", "npm"],
+        "dnf": ["nodejs", "npm"],
+        "pacman": ["nodejs", "npm"],
+        "brew": ["nodejs"],
+        "apk": ["nodejs", "npm"]
+      }
+    },
+    "python3": {
+      "description": "Python3 运行时",
+      "packages": {
+        "apt": ["python3", "python3-pip", "python3-dev"],
+        "yum": ["python3", "python3-pip", "python3-devel"],
+        "dnf": ["python3", "python3-pip", "python3-devel"],
+        "pacman": ["python", "python-pip"],
+        "brew": ["python@3"],
+        "apk": ["python3", "py3-pip", "python3-dev"]
+      }
+    },
+    "build-essential": {
+      "description": "编译工具链",
+      "packages": {
+        "apt": ["build-essential", "gcc", "g++", "make"],
+        "yum": ["gcc", "gcc-c++", "make"],
+        "dnf": ["gcc", "gcc-c++", "make"],
+        "pacman": ["base-devel"],
+        "brew": ["gcc"],
+        "apk": ["build-base", "gcc", "g++", "make"]
+      }
+    },
+    "imagemagick": {
+      "description": "图像处理工具",
+      "packages": {
+        "apt": ["imagemagick", "libmagickwand-dev"],
+        "yum": ["ImageMagick", "ImageMagick-devel"],
+        "dnf": ["ImageMagick", "ImageMagick-devel"],
+        "pacman": ["imagemagick"],
+        "brew": ["imagemagick"],
+        "apk": ["imagemagick", "imagemagick-dev"]
+      }
+    },
+    "poppler": {
+      "description": "PDF 处理库",
+      "packages": {
+        "apt": ["poppler-utils", "libpoppler-cpp-dev"],
+        "yum": ["poppler-utils", "poppler-devel"],
+        "dnf": ["poppler-utils", "poppler-devel"],
+        "pacman": ["poppler"],
+        "brew": ["poppler"],
+        "apk": ["poppler", "poppler-dev"]
+      }
+    }
+  },
+  "usage": {
+    "plugin_manifest_example": {
+      "metadata": {
+        "name": "video-processor",
+        "version": "1.0.0"
+      },
+      "system_deps": ["ffmpeg", "opencv", "build-essential"]
+    },
+    "how_it_works": "插件在 manifest.json 中声明 system_deps 数组，系统自动根据当前操作系统选择合适的包管理器并安装对应依赖"
+  }
+}

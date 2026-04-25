@@ -225,6 +225,16 @@ class AutoDependencyPlugin(Plugin):
         if not base_path.exists():
             return results
         
+        # 扫描全局依赖配置文件
+        global_deps_file = Path("system-dependencies.json")
+        global_deps_config = {}
+        if global_deps_file.exists():
+            try:
+                with open(global_deps_file, "r", encoding="utf-8") as f:
+                    global_deps_config = json.load(f)
+            except Exception as e:
+                print(f"[警告] 读取全局依赖配置失败：{e}")
+        
         # 扫描所有插件目录
         for vendor_dir in base_path.iterdir():
             if not vendor_dir.is_dir():
@@ -242,11 +252,37 @@ class AutoDependencyPlugin(Plugin):
                     with open(manifest_file, "r", encoding="utf-8") as f:
                         manifest = json.load(f)
                     
-                    # 提取系统依赖
+                    # 提取系统依赖 - 支持两种方式
+                    # 方式 1: 直接在 manifest 中声明具体包名
                     system_deps = manifest.get("system_dependencies", [])
                     
+                    # 方式 2: 通过别名引用全局配置中的依赖（推荐）
+                    metadata = manifest.get("metadata", {})
+                    plugin_name = metadata.get("name", plugin_dir.name.rstrip("}/"))
+                    
+                    # 检查是否使用了全局依赖别名
+                    global_dep_aliases = manifest.get("global_deps", [])
+                    if isinstance(global_dep_aliases, bool) and global_dep_aliases:
+                        # 如果为 true，尝试使用插件名作为 key 查找
+                        if plugin_name in global_deps_config.get("dependencies", {}):
+                            dep_info = global_deps_config["dependencies"][plugin_name]
+                            pm = self.checker.detected_pm
+                            if pm in dep_info.get("packages", {}):
+                                system_deps.extend(dep_info["packages"][pm])
+                    elif isinstance(global_dep_aliases, list):
+                        # 如果是数组，每个元素是全局配置的依赖别名
+                        pm = self.checker.detected_pm
+                        for alias in global_dep_aliases:
+                            if alias in global_deps_config.get("dependencies", {}):
+                                dep_info = global_deps_config["dependencies"][alias]
+                                if pm in dep_info.get("packages", {}):
+                                    system_deps.extend(dep_info["packages"][pm])
+                    
+                    # 去重
+                    system_deps = list(dict.fromkeys(system_deps))
+                    
                     results.append({
-                        "plugin_name": plugin_dir.name.rstrip("}"),
+                        "plugin_name": plugin_name,
                         "plugin_dir": str(plugin_dir),
                         "manifest": manifest,
                         "system_dependencies": system_deps

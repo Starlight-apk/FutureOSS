@@ -1,9 +1,76 @@
-"""插件桥接器 - 共享事件、广播、桥接"""
-from typing import Any, Callable, Optional
+"""插件桥接器 - 全局插件引用中心
+让所有插件可以通过一行代码互相引用:
+    from plugin_bridge import use
+    http_api = use("http-api")
+"""
+from typing import Any, Optional
 from dataclasses import dataclass, field
 
 from oss.logger.logger import Log
 from oss.plugin.types import Plugin, register_plugin_type
+
+
+# 全局插件注册表（运行时填充）
+_global_registry: dict[str, Any] = {}
+_plugin_instances: dict[str, Any] = {}
+
+
+def register_plugin(name: str, instance: Any):
+    """注册插件到全局注册表"""
+    _global_registry[name] = instance
+    Log.debug("plugin-bridge", f"插件 '{name}' 已注册")
+
+
+def unregister_plugin(name: str):
+    """从全局注册表移除插件"""
+    if name in _global_registry:
+        del _global_registry[name]
+        Log.debug("plugin-bridge", f"插件 '{name}' 已注销")
+
+
+def use(name: str) -> Any:
+    """获取插件实例 - 一行代码引用任何插件！
+    
+    用法:
+        from plugin_bridge import use
+        http_api = use("http-api")
+        database = use("database")
+    
+    Args:
+        name: 插件名称
+        
+    Returns:
+        插件实例
+        
+    Raises:
+        RuntimeError: 插件未找到
+    """
+    if name in _plugin_instances:
+        return _plugin_instances[name]
+    if name in _global_registry:
+        return _global_registry[name]
+    raise RuntimeError(f"插件 '{name}' 未找到，请确保该插件已安装并启动")
+
+
+def get_plugin(name: str) -> Optional[Any]:
+    """安全获取插件实例，不存在则返回 None"""
+    return _plugin_instances.get(name) or _global_registry.get(name)
+
+
+def has_plugin(name: str) -> bool:
+    """检查插件是否存在"""
+    return name in _plugin_instances or name in _global_registry
+
+
+def list_plugins() -> list[str]:
+    """列出所有可用插件"""
+    return list(set(_plugin_instances.keys()) | set(_global_registry.keys()))
+
+
+def set_plugin_instance(name: str, instance: Any):
+    """设置插件实例（由框架调用）"""
+    _plugin_instances[name] = instance
+    Log.debug("plugin-bridge", f"插件实例 '{name}' 已设置")
 
 
 @dataclass
@@ -19,7 +86,7 @@ class EventBus:
     """事件总线"""
 
     def __init__(self):
-        self._handlers: dict[str, list[Callable]] = {}
+        self._handlers: dict[str, list[callable]] = {}
         self._history: list[BridgeEvent] = []
 
     def emit(self, event: BridgeEvent):
@@ -34,13 +101,13 @@ class EventBus:
                 import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                 pass
 
-    def on(self, event_type: str, handler: Callable):
+    def on(self, event_type: str, handler: callable):
         """订阅事件"""
         if event_type not in self._handlers:
             self._handlers[event_type] = []
         self._handlers[event_type].append(handler)
 
-    def off(self, event_type: str, handler: Callable):
+    def off(self, event_type: str, handler: callable):
         """取消订阅"""
         if event_type in self._handlers:
             try:
@@ -48,7 +115,7 @@ class EventBus:
             except ValueError:
                 pass
 
-    def once(self, event_type: str, handler: Callable):
+    def once(self, event_type: str, handler: callable):
         """仅触发一次"""
         def wrapper(event):
             self.off(event_type, wrapper)
@@ -97,9 +164,9 @@ class ServiceRegistry:
     """服务注册表（RPC）"""
 
     def __init__(self):
-        self._services: dict[str, dict[str, Callable]] = {}
+        self._services: dict[str, dict[str, callable]] = {}
 
-    def register(self, plugin_name: str, service_name: str, handler: Callable):
+    def register(self, plugin_name: str, service_name: str, handler: callable):
         """注册服务"""
         if plugin_name not in self._services:
             self._services[plugin_name] = {}
@@ -121,7 +188,7 @@ class ServiceRegistry:
             raise RuntimeError(f"插件 '{plugin_name}' 未注册服务 '{service_name}'")
         return self._services[plugin_name][service_name](*args, **kwargs)
 
-    def list_services(self, plugin_name: str = None) -> dict[str, dict[str, Callable]]:
+    def list_services(self, plugin_name: str = None) -> dict[str, dict[str, callable]]:
         """列出服务"""
         if plugin_name:
             return self._services.get(plugin_name, {}).copy()
@@ -165,7 +232,7 @@ class BridgeManager:
 
 
 class PluginBridgePlugin(Plugin):
-    """插件桥接器插件"""
+    """插件桥接器插件 - 提供全局 use() 函数"""
 
     def __init__(self):
         self.event_bus = EventBus()
@@ -178,10 +245,12 @@ class PluginBridgePlugin(Plugin):
         """初始化"""
         self.broadcast = BroadcastManager(self.event_bus)
         self.bridge = BridgeManager(self.event_bus)
+        Log.info("plugin-bridge", "全局插件引用系统已初始化")
 
     def start(self):
         """启动"""
         Log.info("plugin-bridge", "事件总线、广播、桥接、RPC、共享存储已启动")
+        Log.info("plugin-bridge", "使用方法：from plugin_bridge import use  →  use('插件名')")
 
     def stop(self):
         """停止"""
@@ -191,6 +260,23 @@ class PluginBridgePlugin(Plugin):
         """设置存储插件引用"""
         if storage_plugin:
             self.storage = storage_plugin.get_shared()
+
+    # 暴露全局 API 供其他插件使用
+    def get_use_function(self):
+        """返回 use 函数供其他插件导入"""
+        return use
+
+    def get_registry(self):
+        """返回注册表管理函数"""
+        return {
+            "register": register_plugin,
+            "unregister": unregister_plugin,
+            "set_instance": set_plugin_instance,
+            "get": get_plugin,
+            "has": has_plugin,
+            "list": list_plugins,
+            "use": use,
+        }
 
 
 # 注册类型
