@@ -1,43 +1,51 @@
 """共享路由工具函数"""
 from typing import Callable, Optional, Any
+from functools import lru_cache
 
 
 class BaseRoute:
     """路由定义基类"""
+    __slots__ = ('method', 'path', 'handler', '_pattern_parts')
+    
     def __init__(self, method: str, path: str, handler: Callable):
         self.method = method
         self.path = path
         self.handler = handler
+        # 预编译路径模式，避免重复解析
+        self._pattern_parts = path.strip("/").split("/") if ":" in path else None
 
 
+@lru_cache(maxsize=1024)
 def match_path(pattern: str, path: str) -> bool:
     """路径匹配
-    
+
     支持:
-    - 精确匹配: /api/users == /api/users
-    - 参数匹配: /api/users/:id 匹配 /api/users/123
-    - 通配符匹配: /api/:path 匹配 /api/users/123/profile
-    
+    - 精确匹配：/api/users == /api/users
+    - 参数匹配：/api/users/:id 匹配 /api/users/123
+    - 通配符匹配：/api/:path 匹配 /api/users/123/profile
+
     Args:
         pattern: 路由模式 (如 /api/users/:id)
         path: 实际请求路径 (如 /api/users/123)
-    
+
     Returns:
         是否匹配成功
     """
     if pattern == path:
         return True
     
-    if ":" not in pattern:
+    pattern_parts = _get_pattern_parts(pattern)
+    if pattern_parts is None:
         return False
     
-    pattern_parts = pattern.strip("/").split("/")
     path_parts = path.strip("/").split("/")
     
-    # 如果最后一个 pattern 是 :path（通配符），允许更多路径段
+    # 检查是否是通配符模式（最后一个参数以 : 开头且是通配符名称）
     last_pattern = pattern_parts[-1]
-    if last_pattern.startswith(":") and len(path_parts) >= len(pattern_parts):
-        # 检查前面的段是否匹配
+    is_wildcard = _is_wildcard_param(last_pattern)
+    
+    if is_wildcard and len(path_parts) >= len(pattern_parts):
+        # 通配符模式：允许更多路径段
         for i, p in enumerate(pattern_parts[:-1]):
             if i >= len(path_parts):
                 return False
@@ -56,32 +64,62 @@ def match_path(pattern: str, path: str) -> bool:
     return True
 
 
+def _is_wildcard_param(param: str) -> bool:
+    """判断参数是否为通配符（如 :path, :wildcard 等）"""
+    if not param.startswith(":"):
+        return False
+    name = param[1:].lower()
+    # 常见的通配符参数名
+    return name in ("path", "wildcard", "rest", "catch", "all")
+
+
+@lru_cache(maxsize=512)
+def _get_pattern_parts(pattern: str) -> Optional[list]:
+    """获取并缓存路径模式的分割结果"""
+    if ":" not in pattern:
+        return None
+    return pattern.strip("/").split("/")
+
+
+@lru_cache(maxsize=1024)
 def extract_path_params(pattern: str, path: str) -> dict[str, str]:
     """从路径中提取参数
-    
+
     Args:
         pattern: 路由模式 (如 /api/users/:id)
         path: 实际请求路径 (如 /api/users/123)
-    
+
     Returns:
         参数字典 (如 {"id": "123"})
     """
     params = {}
     
-    if ":" not in pattern:
+    pattern_parts = _get_pattern_parts(pattern)
+    if pattern_parts is None:
         return params
     
-    pattern_parts = pattern.strip("/").split("/")
     path_parts = path.strip("/").split("/")
     
-    for p, a in zip(pattern_parts, path_parts):
-        if p.startswith(":"):
-            param_name = p[1:]  # 去掉 :
-            params[param_name] = a
-    
-    # 处理通配符 :path
+    # 检查是否是通配符模式
     last_pattern = pattern_parts[-1]
-    if last_pattern.startswith(":") and len(path_parts) > len(pattern_parts):
+    is_wildcard = _is_wildcard_param(last_pattern)
+    use_wildcard = is_wildcard and len(path_parts) > len(pattern_parts)
+    
+    # 确定要迭代的模式部分数量
+    if use_wildcard:
+        # 通配符模式：只处理前面的固定部分
+        parts_to_process = pattern_parts[:-1]
+    else:
+        # 普通模式：处理所有部分
+        parts_to_process = pattern_parts
+    
+    for i, p in enumerate(parts_to_process):
+        if i < len(path_parts) and p.startswith(":"):
+            param_name = p[1:]  # 去掉 :
+            params[param_name] = path_parts[i]
+    
+    # 处理通配符
+    if use_wildcard:
         param_name = last_pattern[1:]
         # 将剩余的路径段合并
         remaining = "/".join(path_parts[len(pattern_parts) - 1:])
@@ -127,7 +165,7 @@ class BaseRouter:
             path: 请求路径
         
         Returns:
-            (路由, 路径参数) 或 None
+            (路由，路径参数) 或 None
         """
         for route in self.routes:
             if route.method == method and match_path(route.path, path):
