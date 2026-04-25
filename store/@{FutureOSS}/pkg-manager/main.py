@@ -104,46 +104,187 @@ class PkgManagerPlugin(Plugin):
     # ==================== 页面渲染 ====================
 
     def _packages_content(self) -> str:
-        return self._render_php_view('packages.php', {'pageTitle': '插件管理'})
+        """渲染插件管理页面 - 纯 HTML/Python 模板"""
+        try:
+            # 获取已安装的插件列表
+            plugins = self._get_installed_plugins()
+            plugin_rows = ""
+            for pkg_name, info in plugins.items():
+                status_class = "success" if info.get('enabled', False) else "secondary"
+                status_text = "已启用" if info.get('enabled', False) else "已禁用"
+                plugin_rows += f"""
+                <tr>
+                    <td>{pkg_name}</td>
+                    <td>{info.get('version', '未知')}</td>
+                    <td>{info.get('author', '未知')}</td>
+                    <td><span class="badge badge-{status_class}">{status_text}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="togglePlugin('{pkg_name}')">切换状态</button>
+                        <button class="btn btn-sm btn-danger" onclick="uninstallPlugin('{pkg_name}')">卸载</button>
+                    </td>
+                </tr>"""
+            
+            html = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插件管理</title>
+    <link rel="stylesheet" href="/assets/remixicon.css">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; padding: 20px; }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
+        .card {{ background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }}
+        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+        .card-title {{ font-size: 18px; font-weight: 600; color: #2c3e50; }}
+        .btn {{ padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }}
+        .btn-primary {{ background: #3498db; color: white; }}
+        .btn-primary:hover {{ background: #2980b9; }}
+        .btn-danger {{ background: #e74c3c; color: white; }}
+        .btn-danger:hover {{ background: #c0392b; }}
+        .btn-sm {{ padding: 4px 8px; font-size: 12px; }}
+        table {{ width: 100%; border-collapse: collapse; }}
+        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }}
+        th {{ background: #f8f9fa; font-weight: 600; color: #2c3e50; }}
+        tr:hover {{ background: #f8f9fa; }}
+        .badge {{ padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }}
+        .badge-success {{ background: #d5f5e3; color: #27ae60; }}
+        .badge-secondary {{ background: #e5e7eb; color: #6b7280; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="ri-plug-line"></i> 插件管理</h2>
+                <button class="btn btn-primary" onclick="location.href='/store'"><i class="ri-store-line"></i> 前往商店</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>插件名称</th>
+                        <th>版本</th>
+                        <th>作者</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {plugin_rows}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        function togglePlugin(name) {{
+            fetch('/api/plugins/toggle', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{plugin: name}})
+            }}).then(() => location.reload());
+        }}
+        function uninstallPlugin(name) {{
+            if (confirm('确定要卸载 ' + name + ' 吗？')) {{
+                fetch('/api/plugins/uninstall', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{plugin: name}})
+                }}).then(() => location.reload());
+            }}
+        }}
+    </script>
+</body>
+</html>"""
+            return html
+        except Exception as e:
+            return f"<p>插件管理页面渲染出错：{{e}}</p>"
 
     def _store_content(self) -> str:
-        return self._render_php_view('store.php', {'pageTitle': '插件商店'})
-
-    def _render_php_view(self, view_name: str, variables: dict) -> str:
-        import subprocess
-
-        views_dir = os.path.join(os.path.dirname(__file__), 'views')
-        php_file = os.path.join(views_dir, view_name)
-        if not os.path.exists(php_file):
-            return f"<h1>错误: 找不到 {view_name}</h1>"
-
-        php_vars = ""
-        for key, value in variables.items():
-            if isinstance(value, str):
-                php_vars += f"${key} = '{value}';\n"
-            else:
-                php_vars += f"${key} = {json.dumps(value)};\n"
-
-        with open(php_file, 'r', encoding='utf-8') as f:
-            php_content = f.read()
-
-        tmp_file = os.path.join(views_dir, '.temp_pkg.php')
+        """渲染插件商店页面 - 纯 HTML/Python 模板"""
         try:
-            with open(tmp_file, 'w', encoding='utf-8') as f:
-                f.write(f"<?php\n{php_vars}\n?>\n{php_content}")
+            # 获取可用插件列表
+            available = self._get_available_plugins()
+            installed = self._get_installed_plugins()
+            plugin_cards = ""
+            for pkg_name, info in available.items():
+                is_installed = pkg_name in installed
+                action_btn = f'<button class="btn btn-success" onclick="installPlugin(\'{pkg_name}\')">安装</button>' if not is_installed else '<button class="btn btn-secondary" disabled>已安装</button>'
+                plugin_cards += f"""
+                <div class="plugin-card">
+                    <div class="plugin-icon"><i class="ri-plug-line"></i></div>
+                    <h3>{info.get('name', pkg_name)}</h3>
+                    <p class="plugin-desc">{info.get('description', '暂无描述')}</p>
+                    <div class="plugin-meta">
+                        <span>版本：{info.get('version', '未知')}</span>
+                        <span>作者：{info.get('author', '未知')}</span>
+                    </div>
+                    <div class="plugin-actions">
+                        {action_btn}
+                    </div>
+                </div>"""
+            
+            html = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插件商店</title>
+    <link rel="stylesheet" href="/assets/remixicon.css">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; padding: 20px; }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
+        .card {{ background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }}
+        .card-header {{ margin-bottom: 20px; }}
+        .card-title {{ font-size: 18px; font-weight: 600; color: #2c3e50; }}
+        .btn {{ padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }}
+        .btn-success {{ background: #27ae60; color: white; }}
+        .btn-success:hover {{ background: #229954; }}
+        .btn-secondary {{ background: #95a5a6; color: white; cursor: not-allowed; }}
+        .plugins-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }}
+        .plugin-card {{ background: #f8f9fa; border-radius: 8px; padding: 20px; transition: transform 0.3s; }}
+        .plugin-card:hover {{ transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }}
+        .plugin-icon {{ width: 48px; height: 48px; background: #3498db; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: 15px; }}
+        .plugin-card h3 {{ font-size: 16px; color: #2c3e50; margin-bottom: 10px; }}
+        .plugin-desc {{ color: #7f8c8d; font-size: 14px; margin-bottom: 15px; line-height: 1.5; }}
+        .plugin-meta {{ display: flex; justify-content: space-between; font-size: 12px; color: #95a5a6; margin-bottom: 15px; }}
+        .plugin-actions {{ display: flex; gap: 10px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="ri-store-line"></i> 插件商店</h2>
+            </div>
+            <div class="plugins-grid">
+                {plugin_cards}
+            </div>
+        </div>
+    </div>
+    <script>
+        function installPlugin(name) {{
+            fetch('/api/plugins/install', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{plugin: name}})
+            }}).then(r => r.json()).then(data => {{
+                if (data.success) {{
+                    alert('安装成功！');
+                    location.reload();
+                }} else {{
+                    alert('安装失败：' + data.error);
+                }}
+            }});
+        }}
+    </script>
+</body>
+</html>"""
+            return html
+        except Exception as e:
+            return f"<p>插件商店页面渲染出错：{{e}}</p>"
 
-            result = subprocess.run(
-                ["php", "-f", tmp_file],
-                capture_output=True, text=True, timeout=10, cwd=views_dir,
-                encoding='utf-8', errors='replace'
-            )
-            return result.stdout if result.returncode == 0 else f"<pre>{result.stderr}</pre>"
-        finally:
-            try:
-                if os.path.exists(tmp_file):
-                    os.unlink(tmp_file)
-            except:
-                pass
 
     # ==================== API 处理 ====================
 

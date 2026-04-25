@@ -209,11 +209,11 @@ class DashboardPlugin(Plugin):
         Log.error("dashboard", "仪表盘已停止")
 
     def _render_content(self) -> str:
+        """渲染仪表盘页面 - 纯 HTML/Python 模板"""
         try:
-            php_file = os.path.join(self.views_dir, 'dashboard.php')
-            if not os.path.exists(php_file):
-                return "<p>仪表盘视图文件丢失</p>"
-
+            import psutil
+            import platform
+            
             cpu_percent = psutil.cpu_percent(interval=0.5)
             cpu_cores = psutil.cpu_count(logical=True)
             mem = psutil.virtual_memory()
@@ -224,108 +224,100 @@ class DashboardPlugin(Plugin):
             disk_percent = round(disk.percent, 1)
             disk_used_gb = round(disk.used / (1024**3), 1)
             disk_total_gb = round(disk.total / (1024**3), 1)
-            net = self._get_network_stats()
-            disk_io = self._get_disk_io_stats()
-            load = self._get_load_info()
-            net_interfaces = self._get_network_interfaces()
-            processes = len(psutil.pids())
-
-            if disk_percent < 50:
-                disk_color = 'gauge-green'
-            elif disk_percent < 80:
-                disk_color = 'gauge-orange'
-            else:
-                disk_color = 'gauge-blue'
-
+            
             circumference = 2 * 3.14159 * 52
             cpu_dash_offset = round(circumference - (cpu_percent / 100) * circumference, 1)
             ram_dash_offset = round(circumference - (ram_percent / 100) * circumference, 1)
             disk_dash_offset = round(circumference - (disk_percent / 100) * circumference, 1)
-
+            
             uptime_str = self._get_uptime_str()
-
-            def fmt_speed(bps):
-                if bps >= 1024 * 1024:
-                    return f"{round(bps / (1024*1024), 1)} MB/s"
-                elif bps >= 1024:
-                    return f"{round(bps / 1024, 1)} KB/s"
-                else:
-                    return f"{round(bps, 0)} B/s"
-
-            variables = {
-                'cpuPercent': int(cpu_percent),
-                'cpuDashArray': str(circumference),
-                'cpuDashOffset': str(cpu_dash_offset),
-                'cpuCores': str(cpu_cores),
-                'ramPercent': ram_percent,
-                'ramDashArray': str(circumference),
-                'ramDashOffset': str(ram_dash_offset),
-                'ramUsed': f"{ram_used_gb} GB",
-                'ramTotal': f"{ram_total_gb} GB",
-                'diskPercent': disk_percent,
-                'diskDashArray': str(circumference),
-                'diskDashOffset': str(disk_dash_offset),
-                'diskUsed': f"{disk_used_gb} GB",
-                'diskTotal': f"{disk_total_gb} GB",
-                'diskColorClass': disk_color,
-                'uptime': uptime_str,
-                'osName': f"{platform.system()} {platform.release()}",
-                'pythonVersion': platform.python_version(),
-                'phpVersion': self._get_php_version(),
-                'hostname': platform.node(),
-                'netRecvSpeed': fmt_speed(net['recv_rate']),
-                'netSentSpeed': fmt_speed(net['sent_rate']),
-                'diskReadSpeed': fmt_speed(disk_io['read_rate']),
-                'diskWriteSpeed': fmt_speed(disk_io['write_rate']),
-                'load1': str(load['load1']),
-                'load5': str(load['load5']),
-                'load15': str(load['load15']),
-                'processes': str(processes),
-                'netInterfaces': json.dumps(net_interfaces),
-            }
-
-            return self._execute_php(php_file, variables)
+            
+            disk_color = 'gauge-green' if disk_percent < 50 else ('gauge-orange' if disk_percent < 80 else 'gauge-blue')
+            
+            html = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统仪表盘</title>
+    <link rel="stylesheet" href="/assets/remixicon.css">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; padding: 20px; }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
+        .card {{ background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }}
+        .card-title {{ font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 20px; }}
+        .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }}
+        .stat-card {{ background: #f8f9fa; border-radius: 8px; padding: 20px; text-align: center; }}
+        .stat-icon {{ width: 60px; height: 60px; margin: 0 auto 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; }}
+        .stat-icon.cpu {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }}
+        .stat-icon.ram {{ background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }}
+        .stat-icon.disk {{ background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }}
+        .stat-value {{ font-size: 24px; font-weight: 700; color: #2c3e50; margin-bottom: 5px; }}
+        .stat-label {{ font-size: 14px; color: #7f8c8d; }}
+        .gauge-container {{ position: relative; width: 120px; height: 120px; margin: 0 auto; }}
+        .gauge-svg {{ transform: rotate(-90deg); }}
+        .gauge-bg {{ fill: none; stroke: #e5e7eb; stroke-width: 8; }}
+        .gauge-fill {{ fill: none; stroke: #3498db; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.5s; }}
+        .gauge-green .gauge-fill {{ stroke: #27ae60; }}
+        .gauge-orange .gauge-fill {{ stroke: #f39c12; }}
+        .gauge-blue .gauge-fill {{ stroke: #e74c3c; }}
+        .gauge-text {{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 600; color: #2c3e50; }}
+        .info-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }}
+        .info-item {{ background: #f8f9fa; padding: 15px; border-radius: 6px; }}
+        .info-label {{ font-size: 12px; color: #7f8c8d; margin-bottom: 5px; }}
+        .info-value {{ font-size: 14px; color: #2c3e50; font-weight: 600; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title"><i class="ri-dashboard-line"></i> 系统仪表盘</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon cpu"><i class="ri-cpu-line"></i></div>
+                    <div class="stat-value">{cpu_percent}%</div>
+                    <div class="stat-label">CPU 使用率 ({cpu_cores} 核心)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon ram"><i class="ri-memory-line"></i></div>
+                    <div class="stat-value">{ram_percent}%</div>
+                    <div class="stat-label">内存使用 ({ram_used_gb} GB / {ram_total_gb} GB)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon disk"><i class="ri-hard-drive-line"></i></div>
+                    <div class="stat-value">{disk_percent}%</div>
+                    <div class="stat-label">磁盘使用 ({disk_used_gb} GB / {disk_total_gb} GB)</div>
+                </div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">系统运行时间</div>
+                    <div class="info-value">{uptime_str}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">操作系统</div>
+                    <div class="info-value">{platform.system()} {platform.release()}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Python 版本</div>
+                    <div class="info-value">{platform.python_version()}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">主机名</div>
+                    <div class="info-value">{platform.node()}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        setTimeout(() => location.reload(), 30000);
+    </script>
+</body>
+</html>"""
+            return html
         except Exception as e:
-            return f"<p>仪表盘渲染出错: {e}</p>"
-
-    def _execute_php(self, php_file: str, variables: dict) -> str:
-        php_vars = ""
-        for key, value in variables.items():
-            if isinstance(value, str):
-                escaped = value.replace('\\', '\\\\').replace("'", "\\'").replace("\n", "\\n")
-                php_vars += f"${key} = '{escaped}';\n"
-            else:
-                php_vars += f"${key} = {value};\n"
-
-        with open(php_file, 'r', encoding='utf-8') as f:
-            php_content = f.read()
-
-        tmp_file = os.path.join(os.path.dirname(php_file), '.temp_dashboard.php')
-        try:
-            with open(tmp_file, 'w', encoding='utf-8') as f:
-                f.write(f"<?php\n{php_vars}\n?>\n{php_content}")
-            result = subprocess.run(
-                ["php", "-f", tmp_file],
-                capture_output=True, text=True, timeout=10,
-                encoding='utf-8', errors='replace'
-            )
-            return result.stdout if result.returncode == 0 else f"<pre>{result.stderr}</pre>"
-        finally:
-            try:
-                if os.path.exists(tmp_file):
-                    os.unlink(tmp_file)
-            except Exception:
-                pass
-
-    @staticmethod
-    def _get_php_version() -> str:
-        try:
-            res = subprocess.run(['php', '-r', 'echo phpversion();'], capture_output=True, text=True, timeout=5,
-                                encoding='utf-8', errors='replace')
-            return res.stdout if res.returncode == 0 else 'N/A'
-        except Exception:
-            return 'N/A'
-
+            return f"<p>仪表盘渲染出错：{{e}}</p>"
 
 register_plugin_type("DashboardPlugin", DashboardPlugin)
 
