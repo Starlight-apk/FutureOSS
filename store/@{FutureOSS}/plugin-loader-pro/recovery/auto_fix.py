@@ -46,7 +46,7 @@ class AutoRecovery:
                         return new_instance
 
         except Exception as e:
-            ProLogger.error("recovery", f"恢复插件 {name} 失败: {e}")
+            ProLogger.error("recovery", f"恢复插件 {name} 失败: {type(e).__name__}: {e}")
 
         self._recovery_attempts[name] = attempts + 1
         return False

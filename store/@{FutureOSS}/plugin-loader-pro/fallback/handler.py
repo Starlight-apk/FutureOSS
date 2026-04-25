@@ -29,7 +29,7 @@ class FallbackHandler:
             self._cache[plugin_name] = result
             return result
         except Exception as e:
-            ProLogger.warn("fallback", f"插件 {plugin_name} 执行失败，触发降级: {e}")
+            ProLogger.warn("fallback", f"插件 {plugin_name} 执行失败，触发降级: {type(e).__name__}: {e}")
             return self._apply_fallback(plugin_name)
 
     def _apply_fallback(self, plugin_name: str) -> Any:
@@ -45,5 +45,5 @@ class FallbackHandler:
                 try:
                     return self.alternative_func()
                 except Exception as e:
-                    ProLogger.error("fallback", f"备选方案也失败了: {e}")
+                    ProLogger.error("fallback", f"备选方案也失败了: {type(e).__name__}: {e}")
             return None

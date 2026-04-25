@@ -393,7 +393,8 @@ class PkgManagerPlugin(Plugin):
                         with _gitee_request(author_url, timeout=15) as resp:
                             plugin_dirs = json.loads(resp.read().decode("utf-8"))
                         break
-                    except Exception:
+                    except Exception as e:
+                        import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                         if attempt < 2:
                             time.sleep(1 + attempt)
                             continue
@@ -413,7 +414,8 @@ class PkgManagerPlugin(Plugin):
                             with _gitee_request(manifest_url, timeout=15) as resp:
                                 manifest = json.loads(resp.read().decode("utf-8"))
                             break
-                        except Exception:
+                        except Exception as e:
+                            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                             if attempt < 2:
                                 time.sleep(1 + attempt)
                                 continue
@@ -433,7 +435,7 @@ class PkgManagerPlugin(Plugin):
             self._remote_cache = plugins
             self._cache_time = now
         except Exception as e:
-            Log.error("pkg-manager", f"获取远程插件列表失败: {e}")
+            Log.error("pkg-manager", f"获取远程插件列表失败: {type(e).__name__}: {e}")
 
         return plugins
 
@@ -472,7 +474,7 @@ class PkgManagerPlugin(Plugin):
             Log.info("pkg-manager", f"已安装: {author}/{plugin_name}")
             return True
         except Exception as e:
-            Log.error("pkg-manager", f"安装失败 {plugin_name}: {e}")
+            Log.error("pkg-manager", f"安装失败 {plugin_name}: {type(e).__name__}: {e}")
             if install_dir.exists():
                 shutil.rmtree(install_dir)
             return False

@@ -192,8 +192,9 @@ class TcpHttpServer:
             return None
         except ValueError:
             return None
-        except Exception:
+        except Exception as e:
             # 其他解析错误
+            import traceback; print(f"[http-tcp] HTTP 解析失败：{type(e).__name__}: {e}"); traceback.print_exc()
             return None
 
     def _format_response(self, response: dict) -> bytes:

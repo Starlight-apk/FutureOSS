@@ -30,7 +30,8 @@ class EventBus:
         for handler in handlers + wildcard_handlers:
             try:
                 handler(event)
-            except Exception:
+            except Exception as e:
+                import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                 pass
 
     def on(self, event_type: str, handler: Callable):

@@ -86,7 +86,8 @@ class SystemDependencyChecker:
                     timeout=30
                 )
                 return result.returncode == 0
-        except Exception:
+        except Exception as e:
+            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
             pass
         return False
     
@@ -144,7 +145,8 @@ class SystemDependencyChecker:
                     timeout=300
                 )
                 return result.returncode == 0
-        except Exception:
+        except Exception as e:
+            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
             pass
         return False
     
@@ -249,7 +251,8 @@ class AutoDependencyPlugin(Plugin):
                         "manifest": manifest,
                         "system_dependencies": system_deps
                     })
-                except Exception:
+                except Exception as e:
+                    import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                     continue
         
         return results

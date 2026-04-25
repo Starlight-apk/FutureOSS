@@ -200,8 +200,16 @@ class PLInjector:
         except SyntaxError as e:
             Log.error("plugin-loader", f"插件 '{plugin_name}' PL/main.py 语法错误: {e}")
             return False
+        except FileNotFoundError as e:
+            Log.error("plugin-loader", f"插件 '{plugin_name}' PL 文件不存在：{e}")
+            return False
+        except PermissionError as e:
+            Log.error("plugin-loader", f"插件 '{plugin_name}' PL 文件权限错误：{e}")
+            return False
         except Exception as e:
-            Log.error("plugin-loader", f"加载插件 '{plugin_name}' 的 PL 失败: {e}")
+            Log.error("plugin-loader", f"加载插件 '{plugin_name}' 的 PL 失败：{type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     def _static_source_check(self, source: str, file_path: str):
@@ -502,7 +510,7 @@ class PluginManager:
             try:
                 inst = self.load(lc_dir)
                 if inst: lifecycle_plugin = inst; self.plugins.pop("lifecycle", None)
-            except Exception: pass
+            except Exception as e: Log.warn("plugin-loader", f"lifecycle 插件加载失败：{type(e).__name__}: {e}")
 
         dep_plugin = None
         dep_dir = Path(store_dir) / "@{FutureOSS}" / "dependency"
@@ -510,7 +518,7 @@ class PluginManager:
             try:
                 inst = self.load(dep_dir)
                 if inst: dep_plugin = inst; self._dependency_plugin = inst; self.plugins.pop("dependency", None)
-            except Exception: pass
+            except Exception as e: Log.warn("plugin-loader", f"dependency 插件加载失败：{type(e).__name__}: {e}")
 
         sig_dir = Path(store_dir) / "@{FutureOSS}" / "signature-verifier"
         if sig_dir.exists() and (sig_dir / "main.py").exists():
@@ -619,7 +627,7 @@ class PluginManager:
     def stop_all(self):
         for n, i in reversed(list(self.plugins.items())):
             try: i["instance"].stop()
-            except Exception: pass
+            except Exception as e: Log.error("plugin-loader", f"插件 {n} 停止失败：{type(e).__name__}: {e}")
         if self.lifecycle_plugin: self.lifecycle_plugin.stop_all()
 
     def get_info(self, name: str) -> Optional[PluginInfo]:

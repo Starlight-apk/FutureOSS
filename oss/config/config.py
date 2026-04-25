@@ -64,7 +64,7 @@ class Config:
                     if key in self.DEFAULTS:
                         self._config[key] = value
             except Exception as e:
-                print(f"[Config] 加载配置文件失败：{e}")
+                print(f"[Config] 加载配置文件失败：{type(e).__name__}: {e}")
     
     def _load_from_env(self):
         """从环境变量加载"""

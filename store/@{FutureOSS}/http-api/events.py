@@ -39,7 +39,8 @@ class HttpEventBus:
         for handler in handlers:
             try:
                 handler(event)
-            except Exception:
+            except Exception as e:
+                import traceback; print(f"[events.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                 pass
 
     def clear(self):

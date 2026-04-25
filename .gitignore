@@ -4,23 +4,82 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.mo
+MoeMyanmar-*
+!MoeMyanmar-*/**/*.py
+!MoeMyanmar-*/**/*.txt
+!MoeMyanmar-*/**/*.md
+!MoeMyanmar-*/**/*.json
+!MoeMyanmar-*/**/*.yml
+!MoeMyanmar-*/**/*.yaml
+julia-*/
+zig*/
 
 # Dependencies
-.venv/
-venv/
+node_modules/
+target/
+.gradle/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+
+# Distribution / packaging
+.Python
+_build/
+buck-out/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
 .env
 .env.local
 *.env.*
 
-# Editors
-.vscode/
-.idea/
-
 # Logs
 *.log
 
-# Build artifacts
-dist/
-build/
-target/
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Temporary files
+*.tmp
+*.temp
 ```

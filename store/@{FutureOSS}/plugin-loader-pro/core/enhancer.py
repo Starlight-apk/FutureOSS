@@ -104,7 +104,7 @@ class PluginLoaderEnhancer:
             try:
                 getattr(instance, method)()
             except Exception as e:
-                ProLogger.error("safe", f"{name} {action}失败: {e}")
+                ProLogger.error("safe", f"{name} {action}失败: {type(e).__name__}: {e}")
                 self._on_plugin_error(name, info, str(e))
             return
 
@@ -117,7 +117,7 @@ class PluginLoaderEnhancer:
             info["info"].error_count = 0
             ProLogger.info("safe", f"{name} {action}成功")
         except Exception as e:
-            ProLogger.error("safe", f"{name} {action}失败: {e}")
+            ProLogger.error("safe", f"{name} {action}失败: {type(e).__name__}: {e}")
             self._on_plugin_error(name, info, str(e))
 
     def _on_plugin_error(self, name: str, info: dict, error: str):

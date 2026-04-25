@@ -89,7 +89,8 @@ class DashboardPlugin(Plugin):
             sent_rate = (net.bytes_sent - self._last_net[2]) / elapsed
             self._last_net = (now, net.bytes_recv, net.bytes_sent)
             return {'recv_rate': round(recv_rate, 1), 'sent_rate': round(sent_rate, 1), 'total_recv': net.bytes_recv, 'total_sent': net.bytes_sent}
-        except Exception:
+        except Exception as e:
+            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
             return {'recv_rate': 0, 'sent_rate': 0, 'total_recv': 0, 'total_sent': 0}
 
     def _get_disk_io_stats(self):
@@ -107,7 +108,8 @@ class DashboardPlugin(Plugin):
             write_rate = (disk_io.write_bytes - self._last_disk[2]) / elapsed
             self._last_disk = (now, disk_io.read_bytes, disk_io.write_bytes)
             return {'read_rate': round(read_rate, 1), 'write_rate': round(write_rate, 1)}
-        except Exception:
+        except Exception as e:
+            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
             return {'read_rate': 0, 'write_rate': 0}
 
     def _get_network_latency(self) -> float:
@@ -120,7 +122,8 @@ class DashboardPlugin(Plugin):
             elapsed = (time.time() - start) * 1000  # 毫秒
             s.close()
             return round(elapsed, 1)
-        except Exception:
+        except Exception as e:
+            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
             return 0.0
 
     def _get_network_interfaces(self):
@@ -142,7 +145,8 @@ class DashboardPlugin(Plugin):
                     info['speed'] = stats[name].speed
                 interfaces.append(info)
             return interfaces
-        except Exception:
+        except Exception as e:
+            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
             return []
 
     def _get_load_info(self):
