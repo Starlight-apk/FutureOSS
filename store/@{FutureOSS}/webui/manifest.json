@@ -1,9 +1,9 @@
 {
   "metadata": {
     "name": "webui",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "author": "FutureOSS",
-    "description": "Web 控制台 - 使用 PHP 前端和 MySQL 数据库",
+    "description": "Web 控制台 - 多语言支持/插件管理/安全配置/系统监控",
     "type": "webui"
   },
   "config": {
@@ -11,10 +11,17 @@
     "args": {
       "port": 8080,
       "theme": "dark",
-      "title": "FutureOSS"
+      "title": "FutureOSS",
+      "language": "zh-CN",
+      "supported_languages": ["zh-CN", "en-US", "zh-TW", "ja-JP", "ko-KR", "fr-FR", "de-DE", "es-ES"],
+      "session_timeout": 3600,
+      "enable_2fa": false,
+      "show_plugins": true,
+      "show_security": true,
+      "show_deployments": true
     }
   },
-  "dependencies": ["http-api"],
+  "dependencies": ["http-api", "i18n"],
   "permissions": ["*"],
   "frontend": "php",
   "database": {

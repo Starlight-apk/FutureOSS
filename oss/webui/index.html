@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FutureOSS v1.1.0 - 安全全能发行版</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--light); color: var(--dark); }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header { background: linear-gradient(135deg, var(--primary), #7c3aed); color: white; padding: 2rem 0; margin-bottom: 2rem; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 2rem; }
+        .version-badge { background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .card { background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: var(--dark); }
+        .card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .icon-security { background: #dbeafe; }
+        .icon-ops { background: #dcfce7; }
+        .icon-deploy { background: #fef3c7; }
+        .icon-lang { background: #ede9fe; }
+        
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .stat-label { color: #64748b; font-size: 0.9rem; margin-top: 0.25rem; }
+        
+        .status-indicator { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; }
+        .status-ok { background: #dcfce7; color: var(--success); }
+        .status-warning { background: #fef9c3; color: var(--warning); }
+        .status-error { background: #fee2e2; color: var(--danger); }
+        
+        .section-title { font-size: 1.5rem; font-weight: 700; margin: 2rem 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .plugins-table { width: 100%; border-collapse: collapse; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .plugins-table th, .plugins-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .plugins-table th { background: #f8fafc; font-weight: 600; color: #475569; }
+        .plugins-table tr:last-child td { border-bottom: none; }
+        .plugins-table tr:hover { background: #f8fafc; }
+        
+        .action-btn { padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s; }
+        
+        footer { text-align: center; padding: 2rem; color: #64748b; font-size: 0.9rem; margin-top: 3rem; }
+        
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; gap: 1rem; text-align: center; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .plugins-table { font-size: 0.9rem; }
+            .plugins-table th, .plugins-table td { padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div>
+                <h1>🚀 FutureOSS</h1>
+                <p style="opacity: 0.9; margin-top: 0.5rem;">安全全能发行版 v1.1.0</p>
+            </div>
+            <div class="version-badge">
+                <span id="system-status" class="status-indicator status-ok">
+                    <span>●</span> 系统运行正常
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 核心指标看板 -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">安全网关</span>
+                    <div class="card-icon icon-security">🛡️</div>
+                </div>
+                <div class="stat-value" id="security-events">0</div>
+                <div class="stat-label">今日安全事件</div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 5%"></div></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">运维状态</span>
+                    <div class="card-icon icon-ops">⚙️</div>
+                </div>
+                <div class="stat-value" id="system-health">100%</div>
+                <div class="stat-label">系统健康度</div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 100%; background: var(--success)"></div></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">部署项目</span>
+                    <div class="card-icon icon-deploy">📦</div>
+                </div>
+                <div class="stat-value" id="deployed-projects">0</div>
+                <div class="stat-label">多语言项目</div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">运行时环境</span>
+                    <div class="card-icon icon-lang">🌐</div>
+                </div>
+                <div class="stat-value" id="runtimes-ready">0/5</div>
+                <div class="stat-label">已就绪语言环境</div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+            </div>
+        </div>
+
+        <!-- 新增功能模块 -->
+        <h2 class="section-title">🔒 安全中心</h2>
+        <div class="card" style="margin-bottom: 2rem;">
+            <table class="plugins-table">
+                <thead>
+                    <tr>
+                        <th>功能</th>
+                        <th>状态</th>
+                        <th>今日拦截</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>API 限流</strong>
+                            <div style="font-size: 0.85rem; color: #64748b;">防止 DDoS 攻击</div>
+                        </td>
+                        <td><span class="status-indicator status-ok">● 启用</span></td>
+                        <td id="rate-limit-count">0</td>
+                        <td><button class="action-btn btn-primary">配置</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>IP 黑白名单</strong>
+                            <div style="font-size: 0.85rem; color: #64748b;">访问控制</div>
+                        </td>
+                        <td><span class="status-indicator status-ok">● 启用</span></td>
+                        <td id="ip-block-count">0</td>
+                        <td><button class="action-btn btn-primary">管理</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>操作审计</strong>
+                            <div style="font-size: 0.85rem; color: #64748b;">记录所有关键操作</div>
+                        </td>
+                        <td><span class="status-indicator status-ok">● 启用</span></td>
+                        <td id="audit-logs-count">0</td>
+                        <td><button class="action-btn btn-primary">查看日志</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>熔断保护</strong>
+                            <div style="font-size: 0.85rem; color: #64748b;">异常自动隔离</div>
+                        </td>
+                        <td><span class="status-indicator status-ok">● 待机</span></td>
+                        <td id="circuit-breaker-count">0</td>
+                        <td><button class="action-btn btn-primary">重置</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title">📦 多语言部署</h2>
+        <div class="card" style="margin-bottom: 2rem;">
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <button class="action-btn btn-success" onclick="alert('检测项目语言')">🔍 检测项目</button>
+                <button class="action-btn btn-primary" onclick="alert('构建项目')">🔨 构建</button>
+                <button class="action-btn btn-primary" onclick="alert('启动项目')">▶️ 启动</button>
+                <button class="action-btn btn-danger" onclick="alert('停止项目')">⏹️ 停止</button>
+            </div>
+            <table class="plugins-table">
+                <thead>
+                    <tr>
+                        <th>项目名称</th>
+                        <th>语言</th>
+                        <th>状态</th>
+                        <th>构建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="projects-table-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #64748b; padding: 2rem;">暂无部署项目</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title">⚙️ 运维工具箱</h2>
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">备份管理</span>
+                </div>
+                <p style="color: #64748b; margin-bottom: 1rem;">一键备份/恢复系统配置和数据</p>
+                <button class="action-btn btn-primary" style="width: 100%" onclick="alert('创建备份')">📥 创建备份</button>
+                <button class="action-btn btn-primary" style="width: 100%; margin-top: 0.5rem" onclick="alert('恢复备份')">📤 恢复备份</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">健康检查</span>
+                </div>
+                <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>CPU 使用率</span>
+                    <span id="cpu-usage">12%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 12%"></div></div>
+                
+                <div style="margin: 1rem 0 0.5rem; display: flex; justify-content: space-between;">
+                    <span>内存使用率</span>
+                    <span id="mem-usage">34%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 34%; background: var(--success)"></div></div>
+                
+                <button class="action-btn btn-primary" style="width: 100%; margin-top: 1rem" onclick="alert('运行健康检查')">🏥 立即检查</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">资源配额</span>
+                </div>
+                <p style="color: #64748b; margin-bottom: 1rem;">限制插件资源使用，防止系统过载</p>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" placeholder="插件 ID" style="flex: 1; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <button class="action-btn btn-primary" onclick="alert('设置配额')">设置</button>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">🔌 已加载插件</h2>
+        <table class="plugins-table">
+            <thead>
+                <tr>
+                    <th>插件名称</th>
+                    <th>版本</th>
+                    <th>描述</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="plugins-table-body">
+                <!-- 动态加载 -->
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p>FutureOSS v1.1.0 安全全能发行版 | 基于进程隔离的安全架构 | HTML5 + CSS3 + Vanilla JS</p>
+        <p style="margin-top: 0.5rem;">© 2024 FutureOSS Team. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // 模拟实时数据更新
+        function updateStats() {
+            document.getElementById('security-events').textContent = Math.floor(Math.random() * 50);
+            document.getElementById('rate-limit-count').textContent = Math.floor(Math.random() * 100);
+            document.getElementById('ip-block-count').textContent = Math.floor(Math.random() * 20);
+            document.getElementById('audit-logs-count').textContent = Math.floor(Math.random() * 500);
+            document.getElementById('cpu-usage').textContent = Math.floor(Math.random() * 30 + 10) + '%';
+            document.getElementById('mem-usage').textContent = Math.floor(Math.random() * 20 + 30) + '%';
+        }
+        
+        // 模拟插件列表
+        const plugins = [
+            { name: "security_gateway", version: "1.1.0", desc: "统一安全网关：限流、鉴权、审计、熔断", status: "running" },
+            { name: "ops_toolbox", version: "1.1.0", desc: "自动化运维工具箱：备份、健康检查、资源配额", status: "running" },
+            { name: "multi_lang_deploy", version: "1.1.0", desc: "多语言项目部署编排器", status: "running" },
+            { name: "http_api", version: "1.0.0", desc: "HTTP RESTful API 服务", status: "running" },
+            { name: "websocket", version: "1.0.0", desc: "WebSocket 实时通信", status: "running" }
+        ];
+        
+        function renderPlugins() {
+            const tbody = document.getElementById('plugins-table-body');
+            tbody.innerHTML = plugins.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>v${p.version}</td>
+                    <td>${p.desc}</td>
+                    <td><span class="status-indicator status-ok">● ${p.status}</span></td>
+                    <td>
+                        <button class="action-btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">配置</button>
+                        <button class="action-btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; margin-left: 0.5rem;">卸载</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // 初始化
+        updateStats();
+        renderPlugins();
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>

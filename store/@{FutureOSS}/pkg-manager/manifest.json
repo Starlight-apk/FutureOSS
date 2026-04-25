@@ -1,15 +1,21 @@
 {
   "metadata": {
     "name": "pkg-manager",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "FutureOSS",
-    "description": "插件包管理器 - 配置管理和商店",
+    "description": "插件包管理器 - 配置管理/商店/多语言项目部署支持",
     "type": "webui-extension"
   },
   "config": {
     "enabled": true,
-    "args": {}
+    "args": {
+      "store_url": "https://store.futureoss.org",
+      "auto_update": false,
+      "verify_signatures": true,
+      "cache_enabled": true,
+      "max_cache_size": 524288000
+    }
   },
-  "dependencies": ["http-api", "webui", "plugin-storage"],
-  "permissions": ["*"]
+  "dependencies": ["http-api", "webui", "plugin-storage", "i18n"],
+  "permissions": ["lifecycle", "plugin-storage"]
 }
