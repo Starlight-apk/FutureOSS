@@ -2,6 +2,7 @@
 import os
 import sys
 import json
+import html
 import urllib.request
 from pathlib import Path
 from oss.logger.logger import Log
@@ -112,15 +113,19 @@ class PkgManagerPlugin(Plugin):
             for pkg_name, info in plugins.items():
                 status_class = "success" if info.get('enabled', False) else "secondary"
                 status_text = "已启用" if info.get('enabled', False) else "已禁用"
+                # XSS 防护：对所有用户数据进行 HTML 转义
+                safe_pkg_name = html.escape(pkg_name)
+                safe_version = html.escape(str(info.get('version', '未知')))
+                safe_author = html.escape(str(info.get('author', '未知')))
                 plugin_rows += f"""
                 <tr>
-                    <td>{pkg_name}</td>
-                    <td>{info.get('version', '未知')}</td>
-                    <td>{info.get('author', '未知')}</td>
+                    <td>{safe_pkg_name}</td>
+                    <td>{safe_version}</td>
+                    <td>{safe_author}</td>
                     <td><span class="badge badge-{status_class}">{status_text}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="togglePlugin('{pkg_name}')">切换状态</button>
-                        <button class="btn btn-sm btn-danger" onclick="uninstallPlugin('{pkg_name}')">卸载</button>
+                        <button class="btn btn-sm btn-primary" onclick="togglePlugin('{safe_pkg_name}')">切换状态</button>
+                        <button class="btn btn-sm btn-danger" onclick="uninstallPlugin('{safe_pkg_name}')">卸载</button>
                     </td>
                 </tr>"""
             
@@ -209,15 +214,23 @@ class PkgManagerPlugin(Plugin):
             plugin_cards = ""
             for pkg_name, info in available.items():
                 is_installed = pkg_name in installed
-                action_btn = f'<button class="btn btn-success" onclick="installPlugin(\'{pkg_name}\')">安装</button>' if not is_installed else '<button class="btn btn-secondary" disabled>已安装</button>'
+                # XSS 防护：对所有用户数据进行 HTML 转义
+                safe_pkg_name = html.escape(pkg_name)
+                safe_name = html.escape(str(info.get('name', pkg_name)))
+                safe_desc = html.escape(str(info.get('description', '暂无描述')))
+                safe_version = html.escape(str(info.get('version', '未知')))
+                safe_author = html.escape(str(info.get('author', '未知')))
+                # JavaScript 中的字符串也需要转义
+                js_safe_pkg_name = pkg_name.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"')
+                action_btn = f'<button class="btn btn-success" onclick="installPlugin(\'{js_safe_pkg_name}\')">安装</button>' if not is_installed else '<button class="btn btn-secondary" disabled>已安装</button>'
                 plugin_cards += f"""
                 <div class="plugin-card">
                     <div class="plugin-icon"><i class="ri-plug-line"></i></div>
-                    <h3>{info.get('name', pkg_name)}</h3>
-                    <p class="plugin-desc">{info.get('description', '暂无描述')}</p>
+                    <h3>{safe_name}</h3>
+                    <p class="plugin-desc">{safe_desc}</p>
                     <div class="plugin-meta">
-                        <span>版本：{info.get('version', '未知')}</span>
-                        <span>作者：{info.get('author', '未知')}</span>
+                        <span>版本：{safe_version}</span>
+                        <span>作者：{safe_author}</span>
                     </div>
                     <div class="plugin-actions">
                         {action_btn}
