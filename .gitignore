@@ -1,24 +1,4 @@
-```gitignore
-# Dependencies
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
 
-# Environment
-.env
-.env.local
-*.env.*
-
-# Logs and temporary files
-*.log
-*.tmp
-*.swp
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
 
 # IDE specific
 .vscode/
@@ -26,17 +6,7 @@ htmlcov/
 *.swp
 *.swo
 
-# Build artifacts
-dist/
-build/
-*.egg-info/
 
 # OS generated files
 .DS_Store
 Thumbs.db
-
-# MyPy cache
-.mypy_cache/
-# Pytest cache
-.pytest_cache/
-```
