@@ -1,0 +1,7 @@
+{
+    "name": "ftp_server",
+    "version": "1.0.0",
+    "description": "FTP 服务器插件",
+    "system_dependencies": ["vsftpd", "proftpd"],
+    "package_manager": "apt-get"
+}
