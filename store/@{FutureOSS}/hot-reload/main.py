@@ -139,7 +139,7 @@ class HotReloadPlugin(Plugin):
                 elif change_type == "deleted":
                     self.unload_plugin(plugin_name)
             except Exception as e:
-                Log.error("hot-reload", f"处理变化失败: {e}")
+                Log.error("hot-reload", f"处理变化失败: {type(e).__name__}: {e}")
 
     def load_plugin(self, plugin_dir: Path) -> bool:
         """运行时加载插件"""

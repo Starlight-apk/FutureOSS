@@ -55,7 +55,7 @@ class HealthChecker:
             else:
                 self._failure_counts[name] = 0
         except Exception as e:
-            ProLogger.error("health", f"插件 {name} 健康检查失败: {e}")
+            ProLogger.error("health", f"插件 {name} 健康检查失败: {type(e).__name__}: {e}")
             self._on_failure(name)
 
     def _on_failure(self, name: str):

@@ -151,7 +151,8 @@ class LogTerminalPlugin(Plugin):
             try:
                 if 'process' in session:
                     session['process'].terminate()
-            except Exception:
+            except Exception as e:
+                import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                 pass
         
         self._ssh_sessions.clear()
@@ -192,13 +193,14 @@ class LogTerminalPlugin(Plugin):
                                         if line:
                                             self.add_log_entry("info", "system", line)
                         except Exception as e:
-                            pass
+                            import traceback
+                            traceback.print_exc()
                 
                 # 等待下一次同步
                 time.sleep(2)
                 
         except Exception as e:
-            Log.error("log-terminal", f"日志同步线程异常: {e}")
+            Log.error("log-terminal", f"日志同步线程异常: {type(e).__name__}: {e}")
 
     def add_log_entry(self, level: str, tag: str, message: str):
         """向日志缓冲区添加日志条目"""
@@ -226,7 +228,8 @@ class LogTerminalPlugin(Plugin):
         try:
             result = subprocess.run(['which', 'sshd'], capture_output=True, text=True, timeout=5)
             return result.returncode == 0
-        except Exception:
+        except Exception as e:
+            import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
             return False
 
     def _install_ssh(self):
@@ -264,7 +267,7 @@ class LogTerminalPlugin(Plugin):
             Log.error("log-terminal", "未找到支持的包管理器")
             return False
         except Exception as e:
-            Log.error("log-terminal", f"安装 SSH 服务时出错: {e}")
+            Log.error("log-terminal", f"安装 SSH 服务时出错: {type(e).__name__}: {e}")
             return False
 
     def _start_ssh_server(self, port=8022):
@@ -290,7 +293,7 @@ class LogTerminalPlugin(Plugin):
                 Log.error("log-terminal", "SSH 服务器启动失败")
                 return False
         except Exception as e:
-            Log.error("log-terminal", f"启动 SSH 服务器时出错: {e}")
+            Log.error("log-terminal", f"启动 SSH 服务器时出错: {type(e).__name__}: {e}")
             return False
 
     def _handle_connect_ssh(self, request):
@@ -357,7 +360,7 @@ class LogTerminalPlugin(Plugin):
                     })
                 )
             except Exception as e:
-                Log.error("log-terminal", f"创建终端会话失败: {e}")
+                Log.error("log-terminal", f"创建终端会话失败: {type(e).__name__}: {e}")
                 return Response(
                     status=500,
                     headers={"Content-Type": "application/json"},
@@ -365,7 +368,7 @@ class LogTerminalPlugin(Plugin):
                 )
                 
         except Exception as e:
-            Log.error("log-terminal", f"SSH 连接请求异常: {e}")
+            Log.error("log-terminal", f"SSH 连接请求异常: {type(e).__name__}: {e}")
             return Response(
                 status=500,
                 headers={"Content-Type": "application/json"},
@@ -402,7 +405,8 @@ class LogTerminalPlugin(Plugin):
                     if not line:
                         break
                     output += line
-            except Exception:
+            except Exception as e:
+                import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                 pass
             
             return Response(
@@ -414,7 +418,7 @@ class LogTerminalPlugin(Plugin):
                 })
             )
         except Exception as e:
-            Log.error("log-terminal", f"发送命令时出错: {e}")
+            Log.error("log-terminal", f"发送命令时出错: {type(e).__name__}: {e}")
             return Response(
                 status=500,
                 headers={"Content-Type": "application/json"},
@@ -431,7 +435,8 @@ class LogTerminalPlugin(Plugin):
                 session = self._ssh_sessions[session_id]
                 try:
                     session['process'].terminate()
-                except Exception:
+                except Exception as e:
+                    import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                     pass
                 del self._ssh_sessions[session_id]
                 Log.info("log-terminal", f"SSH 终端会话 #{session_id} 已断开")
@@ -447,7 +452,7 @@ class LogTerminalPlugin(Plugin):
                     body=json.dumps({'success': False, 'error': '会话不存在'})
                 )
         except Exception as e:
-            Log.error("log-terminal", f"断开连接时出错: {e}")
+            Log.error("log-terminal", f"断开连接时出错: {type(e).__name__}: {e}")
             return Response(
                 status=500,
                 headers={"Content-Type": "application/json"},
@@ -545,7 +550,8 @@ class LogTerminalPlugin(Plugin):
                                         'tag': 'system',
                                         'message': line
                                     })
-                except Exception:
+                except Exception as e:
+                    import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                     pass
         
         return logs[-limit:]

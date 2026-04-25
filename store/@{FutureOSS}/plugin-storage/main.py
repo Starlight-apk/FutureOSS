@@ -124,7 +124,7 @@ class PluginStorage:
             with open(file_path, mode, encoding="utf-8" if mode == "r" else None) as f:
                 return f.read()
         except Exception as e:
-            Log.error("plugin-storage", f"读取文件失败 {self.plugin_name}/{path}: {e}")
+            Log.error("plugin-storage", f"读取文件失败 {self.plugin_name}/{path}: {type(e).__name__}: {e}")
             return None
 
     def write_file(self, path: str, content: str | bytes):
@@ -144,7 +144,7 @@ class PluginStorage:
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
         except Exception as e:
-            Log.error("plugin-storage", f"写入文件失败 {self.plugin_name}/{path}: {e}")
+            Log.error("plugin-storage", f"写入文件失败 {self.plugin_name}/{path}: {type(e).__name__}: {e}")
 
     def delete_file(self, path: str) -> bool:
         """删除插件目录内的文件"""
@@ -155,7 +155,7 @@ class PluginStorage:
                 return True
             return False
         except Exception as e:
-            Log.error("plugin-storage", f"删除文件失败 {self.plugin_name}/{path}: {e}")
+            Log.error("plugin-storage", f"删除文件失败 {self.plugin_name}/{path}: {type(e).__name__}: {e}")
             return False
 
     def list_files(self, prefix: str = "") -> list[str]:
@@ -176,7 +176,8 @@ class PluginStorage:
                 if f.is_file():
                     files.append(str(f.relative_to(self.data_dir)))
             return sorted(files)
-        except Exception:
+        except Exception as e:
+            Log.error("plugin-storage", f"列出文件失败：{type(e).__name__}: {e}")
             return []
 
     def file_exists(self, path: str) -> bool:
@@ -184,7 +185,8 @@ class PluginStorage:
         try:
             file_path = self._resolve_path(path)
             return file_path.exists() and file_path.is_file()
-        except Exception:
+        except Exception as e:
+            Log.error("plugin-storage", f"检查文件存在性失败：{type(e).__name__}: {e}")
             return False
 
     def serve_file(self, path: str) -> Response:

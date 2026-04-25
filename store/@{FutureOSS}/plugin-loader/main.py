@@ -200,8 +200,16 @@ class PLInjector:
         except SyntaxError as e:
             Log.error("plugin-loader", f"插件 '{plugin_name}' PL/main.py 语法错误: {e}")
             return False
+        except FileNotFoundError as e:
+            Log.error("plugin-loader", f"插件 '{plugin_name}' PL 文件不存在：{e}")
+            return False
+        except PermissionError as e:
+            Log.error("plugin-loader", f"插件 '{plugin_name}' PL 文件权限错误：{e}")
+            return False
         except Exception as e:
-            Log.error("plugin-loader", f"加载插件 '{plugin_name}' 的 PL 失败: {e}")
+            Log.error("plugin-loader", f"加载插件 '{plugin_name}' 的 PL 失败：{type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     def _static_source_check(self, source: str, file_path: str):
@@ -371,15 +379,47 @@ class PluginManager:
         with open(rf, "r", encoding="utf-8") as f: return f.read()
 
     def _load_config(self, plugin_dir: Path) -> dict:
+        """加载插件配置文件"""
         cf = plugin_dir / "config.py"
-        if not cf.exists(): return {}
-        with open(cf, "r", encoding="utf-8") as f: content = f.read()
+        if not cf.exists():
+            return {}
+        try:
+            with open(cf, "r", encoding="utf-8") as f:
+                content = f.read()
+        except FileNotFoundError:
+            Log.warn("plugin-loader", f"配置文件不存在：{cf}")
+            return {}
+        except PermissionError as e:
+            Log.error("plugin-loader", f"配置文件无权限读取：{cf} - {e}")
+            return {}
+        except UnicodeDecodeError as e:
+            Log.error("plugin-loader", f"配置文件编码错误：{cf} - {e}")
+            return {}
+        
+        # 安全检查
         for p in ['import ', 'open(', 'exec(', 'eval(', 'os.', 'sys.', 'subprocess']:
-            if p in content: Log.warn("plugin-loader", f"{cf} 包含危险代码: {p}"); return {}
+            if p in content:
+                Log.warn("plugin-loader", f"{cf} 包含危险代码：{p}")
+                return {}
+        
         sg = {"__builtins__": {"True": True, "False": False, "None": None, "dict": dict, "list": list, "str": str, "int": int, "float": float, "bool": bool}}
         lv = {}
-        try: code = compile(content, str(cf), "exec"); exec(code, sg, lv)
-        except Exception as e: Log.error("plugin-loader", f"配置文件解析失败: {e}"); return {}
+        try:
+            code = compile(content, str(cf), "exec")
+            exec(code, sg, lv)
+        except SyntaxError as e:
+            Log.error("plugin-loader", f"配置文件语法错误：{cf} - {e}")
+            return {}
+        except NameError as e:
+            Log.error("plugin-loader", f"配置文件名称错误：{cf} - {e}")
+            return {}
+        except TypeError as e:
+            Log.error("plugin-loader", f"配置文件类型错误：{cf} - {e}")
+            return {}
+        except Exception as e:
+            Log.error("plugin-loader", f"配置文件解析失败：{cf} - {type(e).__name__}: {e}")
+            return {}
+        
         return {k: v for k, v in lv.items() if not k.startswith("_") and not callable(v)}
 
     def _load_extensions(self, plugin_dir: Path) -> dict:
@@ -470,7 +510,7 @@ class PluginManager:
             try:
                 inst = self.load(lc_dir)
                 if inst: lifecycle_plugin = inst; self.plugins.pop("lifecycle", None)
-            except Exception: pass
+            except Exception as e: Log.warn("plugin-loader", f"lifecycle 插件加载失败：{type(e).__name__}: {e}")
 
         dep_plugin = None
         dep_dir = Path(store_dir) / "@{FutureOSS}" / "dependency"
@@ -478,7 +518,7 @@ class PluginManager:
             try:
                 inst = self.load(dep_dir)
                 if inst: dep_plugin = inst; self._dependency_plugin = inst; self.plugins.pop("dependency", None)
-            except Exception: pass
+            except Exception as e: Log.warn("plugin-loader", f"dependency 插件加载失败：{type(e).__name__}: {e}")
 
         sig_dir = Path(store_dir) / "@{FutureOSS}" / "signature-verifier"
         if sig_dir.exists() and (sig_dir / "main.py").exists():
@@ -587,7 +627,7 @@ class PluginManager:
     def stop_all(self):
         for n, i in reversed(list(self.plugins.items())):
             try: i["instance"].stop()
-            except Exception: pass
+            except Exception as e: Log.error("plugin-loader", f"插件 {n} 停止失败：{type(e).__name__}: {e}")
         if self.lifecycle_plugin: self.lifecycle_plugin.stop_all()
 
     def get_info(self, name: str) -> Optional[PluginInfo]:

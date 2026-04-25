@@ -128,7 +128,7 @@ class ProPluginManager:
             return instance
 
         except Exception as e:
-            ProLogger.error("loader", f"加载失败 {plugin_dir.name}: {e}")
+            ProLogger.error("loader", f"加载失败 {plugin_dir.name}: {type(e).__name__}: {e}")
             return None
 
     def init_and_start_all(self):
@@ -160,7 +160,7 @@ class ProPluginManager:
             info["info"].status = "initialized"
             ProLogger.info("manager", f"已初始化: {name}")
         except Exception as e:
-            ProLogger.error("manager", f"初始化失败 {name}: {e}")
+            ProLogger.error("manager", f"初始化失败 {name}: {type(e).__name__}: {e}")
             info["info"].status = "error"
             info["info"].error_count += 1
             info["info"].last_error = str(e)
@@ -177,7 +177,7 @@ class ProPluginManager:
             self._health_checker.add_plugin(name, instance)
             ProLogger.info("manager", f"已启动: {name}")
         except Exception as e:
-            ProLogger.error("manager", f"启动失败 {name}: {e}")
+            ProLogger.error("manager", f"启动失败 {name}: {type(e).__name__}: {e}")
             info["info"].status = "error"
             info["info"].error_count += 1
             info["info"].last_error = str(e)
@@ -199,7 +199,7 @@ class ProPluginManager:
             info["info"].status = "stopped"
             ProLogger.info("manager", f"已停止: {name}")
         except Exception as e:
-            ProLogger.warn("manager", f"停止异常 {name}: {e}")
+            ProLogger.warn("manager", f"停止异常 {name}: {type(e).__name__}: {e}")
 
     def _on_plugin_failure(self, name: str):
         """插件失败回调"""
@@ -249,7 +249,7 @@ class ProPluginManager:
                             getattr(info["instance"], setter)(dep_instance)
                             ProLogger.info("inject", f"{name} <- {actual_dep}")
                         except Exception as e:
-                            ProLogger.error("inject", f"注入失败 {name}.{setter}: {e}")
+                            ProLogger.error("inject", f"注入失败 {name}.{setter}: {type(e).__name__}: {e}")
 
     def _get_ordered_plugins(self) -> list[str]:
         """获取插件顺序"""

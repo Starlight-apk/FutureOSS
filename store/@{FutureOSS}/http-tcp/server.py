@@ -133,9 +133,18 @@ class TcpHttpServer:
 
                         buffer = b""
 
+        except ConnectionResetError:
+            # 客户端断开连接，正常情况
+            pass
+        except BrokenPipeError:
+            # 管道破裂，正常情况
+            pass
+        except OSError as e:
+            if self.event_bus:
+                self.event_bus.emit(TcpEvent(type=EVENT_ERROR, client=client, context={"error": f"OSError: {e}"}))
         except Exception as e:
             if self.event_bus:
-                self.event_bus.emit(TcpEvent(type=EVENT_ERROR, client=client, context={"error": str(e)}))
+                self.event_bus.emit(TcpEvent(type=EVENT_ERROR, client=client, context={"error": f"{type(e).__name__}: {e}"}))
         finally:
             del self._clients[client.id]
             client.close()
@@ -179,7 +188,13 @@ class TcpHttpServer:
                 "headers": headers,
                 "body": body,
             }
-        except Exception:
+        except UnicodeDecodeError:
+            return None
+        except ValueError:
+            return None
+        except Exception as e:
+            # 其他解析错误
+            import traceback; print(f"[http-tcp] HTTP 解析失败：{type(e).__name__}: {e}"); traceback.print_exc()
             return None
 
     def _format_response(self, response: dict) -> bytes:
