@@ -551,55 +551,279 @@ class LogTerminalPlugin(Plugin):
         return logs[-limit:]
 
     def _render_logs(self) -> str:
-        """渲染日志查看界面"""
+        """渲染日志查看界面 - 纯 HTML/Python 模板"""
         try:
-            php_file = os.path.join(self.views_dir, 'logs.php')
-            if not os.path.exists(php_file):
-                return "<p>日志视图文件丢失</p>"
-            return self._execute_php(php_file, {})
+            logs = self._get_logs(limit=100)
+            log_rows = ""
+            for log in logs:
+                level_class = {
+                    'info': 'log-info',
+                    'warn': 'log-warn',
+                    'error': 'log-error',
+                    'ok': 'log-ok',
+                    'tip': 'log-tip'
+                }.get(log['level'], 'log-info')
+                log_rows += f"""
+                <tr class="{level_class}">
+                    <td>{log['timestamp']}</td>
+                    <td><span class="badge badge-{log['level']}">{log['level']}</span></td>
+                    <td>{log['tag']}</td>
+                    <td>{log['message']}</td>
+                </tr>"""
+            
+            html = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统日志</title>
+    <link rel="stylesheet" href="/assets/remixicon.css">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; padding: 20px; }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
+        .card {{ background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }}
+        .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }}
+        .card-title {{ font-size: 18px; font-weight: 600; color: #2c3e50; }}
+        .btn {{ padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }}
+        .btn-primary {{ background: #3498db; color: white; }}
+        .btn-primary:hover {{ background: #2980b9; }}
+        .btn-success {{ background: #27ae60; color: white; }}
+        .btn-success:hover {{ background: #229954; }}
+        table {{ width: 100%; border-collapse: collapse; }}
+        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }}
+        th {{ background: #f8f9fa; font-weight: 600; color: #2c3e50; position: sticky; top: 0; }}
+        tr:hover {{ background: #f8f9fa; }}
+        .log-info {{ border-left: 3px solid #3498db; }}
+        .log-warn {{ border-left: 3px solid #f39c12; }}
+        .log-error {{ border-left: 3px solid #e74c3c; }}
+        .log-ok {{ border-left: 3px solid #27ae60; }}
+        .log-tip {{ border-left: 3px solid #9b59b6; }}
+        .badge {{ padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; }}
+        .badge-info {{ background: #d6eaf8; color: #3498db; }}
+        .badge-warn {{ background: #fdebd0; color: #f39c12; }}
+        .badge-error {{ background: #fadbd8; color: #e74c3c; }}
+        .badge-ok {{ background: #d5f5e3; color: #27ae60; }}
+        .badge-tip {{ background: #ebdef0; color: #9b59b6; }}
+        .log-table-container {{ max-height: 600px; overflow-y: auto; }}
+        .refresh-indicator {{ font-size: 12px; color: #7f8c8d; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="ri-file-list-3-line"></i> 系统日志</h2>
+                <div>
+                    <button class="btn btn-primary" onclick="loadLogs()"><i class="ri-refresh-line"></i> 刷新</button>
+                    <button class="btn btn-success" onclick="clearLogs()"><i class="ri-delete-bin-line"></i> 清空</button>
+                </div>
+            </div>
+            <div class="log-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>级别</th>
+                            <th>标签</th>
+                            <th>消息</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-body">
+                        {log_rows}
+                    </tbody>
+                </table>
+            </div>
+            <p class="refresh-indicator">最后更新：{logs[-1]['timestamp'] if logs else '无数据'}</p>
+        </div>
+    </div>
+    <script>
+        function loadLogs() {{
+            fetch('/api/logs/get?limit=100')
+                .then(r => r.json())
+                .then(data => {{
+                    if (data.success) {{
+                        location.reload();
+                    }}
+                }});
+        }}
+        function clearLogs() {{
+            if (confirm('确定要清空日志吗？')) {{
+                fetch('/api/logs/clear', {{ method: 'POST' }})
+                    .then(r => r.json())
+                    .then(data => {{
+                        if (data.success) {{
+                            location.reload();
+                        }}
+                    }});
+            }}
+        }}
+        // 自动刷新
+        setTimeout(loadLogs, 30000);
+    </script>
+</body>
+</html>"""
+            return html
         except Exception as e:
-            return f"<p>日志视图渲染出错: {e}</p>"
-
+            return f"<p>日志视图渲染出错：{e}</p>"
     def _render_terminal(self) -> str:
-        """渲染终端界面"""
+        """渲染终端界面 - 纯 HTML/Python 模板"""
         try:
-            php_file = os.path.join(self.views_dir, 'terminal.php')
-            if not os.path.exists(php_file):
-                return "<p>终端视图文件丢失</p>"
-            return self._execute_php(php_file, {})
+            html = """<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSH 终端</title>
+    <link rel="stylesheet" href="/assets/remixicon.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; padding: 20px; height: 100vh; display: flex; flex-direction: column; }
+        .container { max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; display: flex; flex-direction: column; }
+        .card { background: #16213e; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); padding: 20px; margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 600; color: #fff; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        .btn-primary { background: #0f3460; color: #e94560; }
+        .btn-primary:hover { background: #1a4a7a; }
+        .btn-danger { background: #e94560; color: white; }
+        .btn-danger:hover { background: #c0394d; }
+        .terminal-container { flex: 1; background: #0f0f1a; border-radius: 8px; padding: 15px; font-family: 'Courier New', monospace; font-size: 14px; overflow: hidden; display: flex; flex-direction: column; }
+        .terminal-output { flex: 1; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; color: #0f0; }
+        .terminal-input { display: flex; margin-top: 10px; }
+        .terminal-input input { flex: 1; background: #1a1a2e; border: 1px solid #0f3460; color: #0f0; padding: 10px; font-family: 'Courier New', monospace; font-size: 14px; border-radius: 4px; outline: none; }
+        .terminal-input input:focus { border-color: #e94560; }
+        .status-bar { display: flex; justify-content: space-between; padding: 10px; background: #16213e; border-radius: 6px; margin-bottom: 15px; }
+        .status-item { display: flex; align-items: center; gap: 8px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .status-connected { background: #27ae60; }
+        .status-disconnected { background: #e74c3c; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: #0f3460; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="ri-terminal-box-line"></i> SSH 终端</h2>
+                <div>
+                    <button class="btn btn-primary" id="connectBtn" onclick="connectTerminal()">连接</button>
+                    <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTerminal()" style="display:none;">断开</button>
+                </div>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot status-disconnected" id="statusDot"></span>
+                    <span id="statusText">未连接</span>
+                </div>
+                <div class="status-item">
+                    <span>会话 ID: <strong id="sessionId">-</strong></span>
+                </div>
+            </div>
+        </div>
+        <div class="terminal-container">
+            <div class="terminal-output" id="terminalOutput">欢迎使用 SSH 终端！点击"连接"按钮开始...</div>
+            <div class="terminal-input">
+                <input type="text" id="commandInput" placeholder="输入命令..." disabled onkeypress="handleKeyPress(event)">
+            </div>
+        </div>
+    </div>
+    <script>
+        let sessionId = null;
+        const output = document.getElementById('terminalOutput');
+        const input = document.getElementById('commandInput');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const sessionIdEl = document.getElementById('sessionId');
+
+        function connectTerminal() {
+            output.textContent = '正在连接...';
+            fetch('/api/terminal/connect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({port: 8022, auto_install: true})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    sessionId = data.session_id;
+                    sessionIdEl.textContent = sessionId;
+                    statusDot.className = 'status-dot status-connected';
+                    statusText.textContent = '已连接';
+                    input.disabled = false;
+                    connectBtn.style.display = 'none';
+                    disconnectBtn.style.display = 'inline-block';
+                    output.textContent = 'SSH 终端已连接。输入命令开始使用...
+';
+                    input.focus();
+                } else {
+                    output.textContent = '连接失败：' + data.error;
+                }
+            })
+            .catch(e => {
+                output.textContent = '连接错误：' + e.message;
+            });
+        }
+
+        function disconnectTerminal() {
+            if (!sessionId) return;
+            fetch('/api/terminal/disconnect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({session_id: sessionId})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    sessionId = null;
+                    sessionIdEl.textContent = '-';
+                    statusDot.className = 'status-dot status-disconnected';
+                    statusText.textContent = '未连接';
+                    input.disabled = true;
+                    connectBtn.style.display = 'inline-block';
+                    disconnectBtn.style.display = 'none';
+                    output.textContent += '
+会话已断开。';
+                }
+            });
+        }
+
+        function sendCommand(cmd) {
+            if (!sessionId) return;
+            fetch('/api/terminal/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({session_id: sessionId, command: cmd})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    output.textContent += '$ ' + cmd + '
+' + data.output;
+                    output.scrollTop = output.scrollHeight;
+                } else {
+                    output.textContent += '
+命令执行失败：' + data.error;
+                }
+            });
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendCommand(input.value);
+                input.value = '';
+            }
+        }
+    </script>
+</body>
+</html>"""
+            return html
         except Exception as e:
-            return f"<p>终端视图渲染出错: {e}</p>"
-
-    def _execute_php(self, php_file: str, variables: dict) -> str:
-        """执行 PHP 文件"""
-        php_vars = ""
-        for key, value in variables.items():
-            if isinstance(value, str):
-                escaped = value.replace('\\', '\\\\').replace("'", "\\'").replace("\n", "\\n")
-                php_vars += f"${key} = '{escaped}';\n"
-            else:
-                php_vars += f"${key} = {value};\n"
-
-        with open(php_file, 'r', encoding='utf-8') as f:
-            php_content = f.read()
-
-        tmp_file = os.path.join(os.path.dirname(php_file), '.temp_lt.php')
-        try:
-            with open(tmp_file, 'w', encoding='utf-8') as f:
-                f.write(f"<?php\n{php_vars}\n?>\n{php_content}")
-            result = subprocess.run(
-                ["php", "-f", tmp_file],
-                capture_output=True, text=True, timeout=10,
-                encoding='utf-8', errors='replace'
-            )
-            return result.stdout if result.returncode == 0 else f"<pre>{result.stderr}</pre>"
-        finally:
-            try:
-                if os.path.exists(tmp_file):
-                    os.unlink(tmp_file)
-            except Exception:
-                pass
-
+            return f"<p>终端视图渲染出错：{e}</p>"
 
 register_plugin_type("LogTerminalPlugin", LogTerminalPlugin)
 
