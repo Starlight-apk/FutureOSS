@@ -103,7 +103,7 @@
   "task.saveBeforeRun": "always",
   "explorer.autoReveal": true,
   "explorer.compactFolders": false,
-  "explorer.confirmDelete": true,
+  "explorer.confirmDelete": false,
   "explorer.confirmDragAndDrop": false,
   "workbench.editor.enablePreview": false,
   "workbench.editor.enablePreviewFromQuickOpen": false,
