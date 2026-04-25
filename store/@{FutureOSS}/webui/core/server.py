@@ -36,29 +36,54 @@ class WebUIServer:
         self.router.get(path, lambda req: self._render_page(path, req))
 
     def _render_page(self, path: str, request):
-        """渲染页面布局+内容"""
+        """渲染页面布局 + 内容"""
         provider = self.pages.get(path)
         content = provider() if provider else ""
         
         # 排序导航项（首页在前）
         sorted_nav = sorted(self.nav_items, key=lambda x: 0 if x.get('url') == '/' else 1)
 
-        variables = {
-            "pageTitle": self.config.get("title", "FutureOSS"),
-            "currentPage": path,
-            "navItems": sorted_nav,
-            "content": content
+        # 构建导航项 HTML
+        nav_html = ""
+        icon_map = {
+            '🏠': 'ri-home-4-line',
+            '📊': 'ri-dashboard-line',
+            '📋': 'ri-file-list-3-line',
+            '🧩': 'ri-puzzle-line',
+            '⚙️': 'ri-settings-3-line',
+            '🔌': 'ri-plug-line',
+            '📦': 'ri-box-3-line',
+            '🌐': 'ri-global-line',
         }
+        for item in sorted_nav:
+            url = item.get('url', '#')
+            is_active = 'active' if url == path else ''
+            icon = item.get('icon', 'ri-dashboard-line')
+            text = item.get('text', '')
+            ri_icon = icon_map.get(icon, icon)
+            title = text
+            nav_html += f'''
+                <a href="{url}" class="nav-item {is_active}" title="{title}">
+                    <i class="{ri_icon}"></i>
+                </a>
+            '''
 
-        php_file = self.frontend_dir / "views" / "layout.php"
-        html = self._execute_php(str(php_file), variables)
+        page_title = self.config.get("title", "FutureOSS")
+        
+        # 读取 HTML 模板
+        template_file = self.frontend_dir / "views" / "layout.html"
+        with open(template_file, 'r', encoding='utf-8') as f:
+            html_template = f.read()
+        
+        html = html_template.replace('{{ pageTitle }}', page_title)
+        html = html.replace('{{ navItems }}', nav_html)
+        html = html.replace('{{ content }}', content)
         
         return Response(
             status=200,
             headers={"Content-Type": "text/html; charset=utf-8"},
             body=html
         )
-
     def _default_home_content(self) -> str:
         """默认首页内容"""
         return """

@@ -1,15 +1,20 @@
 {
   "metadata": {
     "name": "plugin-bridge",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "FutureOSS",
-    "description": "插件桥接器 - 共享事件、广播、桥接",
+    "description": "插件桥接器 - 共享事件/广播/桥接/多语言支持",
     "type": "core"
   },
   "config": {
     "enabled": true,
-    "args": {}
+    "args": {
+      "max_events": 1000,
+      "event_ttl": 3600,
+      "broadcast_enabled": true,
+      "queue_size": 5000
+    }
   },
-  "dependencies": ["plugin-storage"],
-  "permissions": ["plugin-storage"]
+  "dependencies": ["plugin-storage", "i18n"],
+  "permissions": ["plugin-storage", "lifecycle"]
 }
