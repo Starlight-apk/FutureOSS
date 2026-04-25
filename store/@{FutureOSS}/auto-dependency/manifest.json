@@ -12,7 +12,7 @@
       "scan_dirs": ["store"],
       "package_manager": "auto",
       "auto_install": true,
-      "pl_injection": true
+      "pl_injection": false
     }
   },
   "dependencies": ["plugin-loader"],

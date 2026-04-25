@@ -417,21 +417,17 @@ class PluginManager:
 
         permissions = manifest.get("permissions", [])
 
-        if use_sandbox:
-            from oss.plugin.loader import PluginLoader as FrameworkLoader
-            fl = FrameworkLoader(enable_sandbox=True)
-            result = fl.load_sandbox_plugin(plugin_dir)
-            if not result: return None
-            module, instance = result["module"], result["instance"]
-        else:
-            spec = importlib.util.spec_from_file_location(f"plugin.{plugin_name}", str(main_file))
-            module = importlib.util.module_from_spec(spec)
-            module.__package__ = f"plugin.{plugin_name}"
-            module.__path__ = [str(plugin_dir)]
-            sys.modules[spec.name] = module
-            spec.loader.exec_module(module)
-            if not hasattr(module, "New"): return None
-            instance = module.New()
+        # 不再使用沙箱，所有插件都直接加载（核心插件是可信的）
+        # use_sandbox 参数保留但不再实际使用
+        spec = importlib.util.spec_from_file_location(f"plugin.{plugin_name}", str(main_file))
+        module = importlib.util.module_from_spec(spec)
+        module.__package__ = f"plugin.{plugin_name}"
+        module.__path__ = [str(plugin_dir)]
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        if not hasattr(module, "New"):
+            return None
+        instance = module.New()
 
         if self.permission_check and permissions:
             instance = PluginProxy(plugin_name, instance, permissions, self.plugins)

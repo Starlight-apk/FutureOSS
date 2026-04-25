@@ -1,7 +1,0 @@
-{
-    "name": "firewall",
-    "version": "1.0.0",
-    "description": "防火墙管理插件",
-    "system_dependencies": ["iptables", "ufw"],
-    "package_manager": "apt-get"
-}
