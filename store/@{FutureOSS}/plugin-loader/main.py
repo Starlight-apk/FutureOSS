@@ -371,15 +371,47 @@ class PluginManager:
         with open(rf, "r", encoding="utf-8") as f: return f.read()
 
     def _load_config(self, plugin_dir: Path) -> dict:
+        """加载插件配置文件"""
         cf = plugin_dir / "config.py"
-        if not cf.exists(): return {}
-        with open(cf, "r", encoding="utf-8") as f: content = f.read()
+        if not cf.exists():
+            return {}
+        try:
+            with open(cf, "r", encoding="utf-8") as f:
+                content = f.read()
+        except FileNotFoundError:
+            Log.warn("plugin-loader", f"配置文件不存在：{cf}")
+            return {}
+        except PermissionError as e:
+            Log.error("plugin-loader", f"配置文件无权限读取：{cf} - {e}")
+            return {}
+        except UnicodeDecodeError as e:
+            Log.error("plugin-loader", f"配置文件编码错误：{cf} - {e}")
+            return {}
+        
+        # 安全检查
         for p in ['import ', 'open(', 'exec(', 'eval(', 'os.', 'sys.', 'subprocess']:
-            if p in content: Log.warn("plugin-loader", f"{cf} 包含危险代码: {p}"); return {}
+            if p in content:
+                Log.warn("plugin-loader", f"{cf} 包含危险代码：{p}")
+                return {}
+        
         sg = {"__builtins__": {"True": True, "False": False, "None": None, "dict": dict, "list": list, "str": str, "int": int, "float": float, "bool": bool}}
         lv = {}
-        try: code = compile(content, str(cf), "exec"); exec(code, sg, lv)
-        except Exception as e: Log.error("plugin-loader", f"配置文件解析失败: {e}"); return {}
+        try:
+            code = compile(content, str(cf), "exec")
+            exec(code, sg, lv)
+        except SyntaxError as e:
+            Log.error("plugin-loader", f"配置文件语法错误：{cf} - {e}")
+            return {}
+        except NameError as e:
+            Log.error("plugin-loader", f"配置文件名称错误：{cf} - {e}")
+            return {}
+        except TypeError as e:
+            Log.error("plugin-loader", f"配置文件类型错误：{cf} - {e}")
+            return {}
+        except Exception as e:
+            Log.error("plugin-loader", f"配置文件解析失败：{cf} - {type(e).__name__}: {e}")
+            return {}
+        
         return {k: v for k, v in lv.items() if not k.startswith("_") and not callable(v)}
 
     def _load_extensions(self, plugin_dir: Path) -> dict:
