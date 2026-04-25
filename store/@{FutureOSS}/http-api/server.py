@@ -2,6 +2,7 @@
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Any
+from oss.config import get_config
 
 
 class Request:
@@ -24,9 +25,10 @@ class Response:
 class HttpServer:
     """HTTP 服务器"""
 
-    def __init__(self, router, middleware, host="0.0.0.0", port=8080):
-        self.host = host
-        self.port = port
+    def __init__(self, router, middleware, host=None, port=None):
+        config = get_config()
+        self.host = host or config.get("HOST", "0.0.0.0")
+        self.port = port or config.get("HTTP_API_PORT", 8080)
         self.router = router
         self.middleware = middleware
         self._server = None

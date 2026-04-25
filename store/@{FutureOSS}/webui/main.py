@@ -2,6 +2,7 @@
 from pathlib import Path
 from oss.logger.logger import Log
 from oss.plugin.types import Plugin, Response, register_plugin_type
+from oss.config import get_config
 from .core.server import WebUIServer
 
 
@@ -15,6 +16,7 @@ class WebUIPlugin(Plugin):
 
     def meta(self):
         from oss.plugin.types import Metadata, PluginConfig, Manifest
+        config = get_config()
         return Manifest(
             metadata=Metadata(
                 name="webui",
@@ -25,7 +27,7 @@ class WebUIPlugin(Plugin):
             config=PluginConfig(
                 enabled=True,
                 args={
-                    "port": 8080,
+                    "port": config.get("HTTP_API_PORT", 8080),
                     "theme": "dark",
                     "title": "FutureOSS"
                 }
@@ -48,7 +50,7 @@ class WebUIPlugin(Plugin):
             config = deps.get("config", {})
 
         self.config = {
-            "port": config.get("port", 8080),
+            "port": config.get("port", get_config().get("HTTP_API_PORT", 8080)),
             "theme": config.get("theme", "dark"),
             "title": config.get("title", "FutureOSS")
         }

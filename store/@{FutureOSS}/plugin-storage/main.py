@@ -9,14 +9,16 @@ from datetime import datetime
 
 from oss.logger.logger import Log
 from oss.plugin.types import Plugin, register_plugin_type, Response
+from oss.config import get_config
 
 
 class PluginStorage:
     """插件隔离存储 - 每个插件拥有独立的 data/<plugin_name>/ 目录"""
 
-    def __init__(self, plugin_name: str, data_dir: str = "./data"):
+    def __init__(self, plugin_name: str, data_dir: str = None):
+        config = get_config()
         self.plugin_name = plugin_name
-        self.data_dir = Path(data_dir) / plugin_name
+        self.data_dir = Path(data_dir or str(config.data_dir)) / plugin_name
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self._data: dict[str, Any] = {}
         self._lock = threading.Lock()

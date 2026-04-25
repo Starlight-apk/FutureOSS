@@ -3,6 +3,7 @@ import socket
 import threading
 import re
 from typing import Any, Callable, Optional
+from oss.config import get_config
 from .events import TcpEvent, EVENT_CONNECT, EVENT_DISCONNECT, EVENT_DATA, EVENT_REQUEST, EVENT_RESPONSE
 
 
@@ -26,9 +27,10 @@ class TcpClient:
 class TcpHttpServer:
     """TCP HTTP 服务器"""
 
-    def __init__(self, router, middleware, event_bus=None, host="0.0.0.0", port=8082):
-        self.host = host
-        self.port = port
+    def __init__(self, router, middleware, event_bus=None, host=None, port=None):
+        config = get_config()
+        self.host = host or config.get("HOST", "0.0.0.0")
+        self.port = port or config.get("HTTP_TCP_PORT", 8082)
         self.router = router
         self.middleware = middleware
         self.event_bus = event_bus
