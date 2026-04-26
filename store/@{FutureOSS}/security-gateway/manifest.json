@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "name": "security-gateway",
+    "version": "1.0.0",
+    "author": "FutureOSS",
+    "description": "统一安全网关 - 提供多因子认证/防注入攻击/防越权访问/防重放攻击",
+    "type": "security"
+  },
+  "config": {
+    "enabled": true,
+    "args": {
+      "token_expiry": 3600,
+      "rate_limit_window": 60,
+      "rate_limit_max": 100,
+      "block_duration": 300,
+      "rbac_config": "config/rbac.json",
+      "secret_key": ""
+    }
+  },
+  "dependencies": ["http-api", "i18n"],
+  "permissions": ["lifecycle", "plugin-storage"],
+  "system_dependencies": []
+}

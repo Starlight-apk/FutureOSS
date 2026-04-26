@@ -19,9 +19,12 @@
       "allowed_ips_file": "config/allowed_ips.txt",
       "rules_file": "config/firewall_rules.json",
       "log_blocked": true,
-      "notify_on_block": false
+      "notify_on_block": false,
+      "auto_block_enabled": true,
+      "threat_threshold": 100
     }
   },
   "dependencies": ["http-api", "i18n"],
-  "permissions": ["lifecycle", "plugin-storage"]
+  "permissions": ["lifecycle", "plugin-storage"],
+  "system_dependencies": ["iptables"]
 }
