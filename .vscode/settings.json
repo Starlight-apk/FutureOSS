@@ -108,7 +108,7 @@
   "workbench.editor.enablePreview": false,
   "workbench.editor.enablePreviewFromQuickOpen": false,
   "workbench.startupEditor": "none",
-  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.colorTheme": "GitHub Dark",
   "workbench.iconTheme": "vs-seti",
   "breadcrumbs.enabled": true,
   "editor.minimap.enabled": true,
