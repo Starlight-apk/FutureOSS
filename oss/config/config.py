@@ -11,6 +11,9 @@ class Config:
     优先级：环境变量 > 配置文件 > 默认值
     """
     
+    # 隐藏成就系统标志（在类级别定义，避免循环导入）
+    _ACHIEVEMENTS_ENABLED = False
+    
     DEFAULTS = {
         # 服务器配置
         "HTTP_API_PORT": 8080,
@@ -63,6 +66,15 @@ class Config:
                 for key, value in file_config.items():
                     if key in self.DEFAULTS:
                         self._config[key] = value
+                
+                # 隐藏成就：配置黑客 - 记录配置修改
+                if _ACHIEVEMENTS_ENABLED:
+                    try:
+                        from oss.core.achievements import get_validator
+                        validator = get_validator()
+                        validator.record_config_modify()
+                    except Exception:
+                        pass
             except Exception as e:
                 print(f"[Config] 加载配置文件失败：{type(e).__name__}: {e}")
     

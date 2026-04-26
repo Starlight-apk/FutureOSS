@@ -2,11 +2,20 @@
 import click
 import signal
 import os
+import sys
 
 from oss import __version__
 from oss.logger.logger import Logger
 from oss.plugin.manager import PluginManager
 from oss.config import init_config, get_config
+
+
+# 深度隐藏的成就系统导入
+try:
+    from oss.core.achievements import init_achievements, get_validator, _cmd_echo, _cmd_help_internal, _cmd_list_all, _cmd_stats, _cmd_reset_progress, _cmd_export, _cmd_import, _cmd_verify, _cmd_debug, _cmd_info
+    _ACHIEVEMENTS_ENABLED = True
+except ImportError:
+    _ACHIEVEMENTS_ENABLED = False
 
 
 @click.group()
@@ -17,6 +26,13 @@ def cli(ctx, config):
     # 初始化配置
     ctx.ensure_object(dict)
     ctx.obj['config'] = init_config(config)
+    
+    # 初始化成就系统（如果启用）
+    if _ACHIEVEMENTS_ENABLED:
+        try:
+            init_achievements()
+        except Exception:
+            pass  # 静默失败，不影响主功能
 
 
 @cli.command()
@@ -75,6 +91,8 @@ def version():
 @click.pass_context
 def info(ctx):
     """显示系统信息"""
+    import random
+    
     config = ctx.obj.get('config', get_config())
     click.echo(f"Future OSS {__version__}")
     click.echo(f"配置文件：{config._config_file or '无'}")
@@ -85,9 +103,49 @@ def info(ctx):
     click.echo(f"插件仓库：{config.store_dir.absolute()}")
     click.echo(f"日志级别：{config.log_level}")
     click.echo(f"权限检查：{'启用' if config.permission_check else '禁用'}")
+    
+    # 小提示：有些功能需要特殊方式访问 (4675747572654f53)
+    # 随机显示隐藏提示（约 10% 概率）
+    click.echo("")
+    if random.random() < 0.1:  # 10% 概率显示彩蛋提示
+        click.echo("✨ 奇怪的提示：试试在命令前加两个感叹号会怎样？比如 !!help")
+    elif random.random() < 0.05:  # 额外 5% 概率显示另一种提示
+        click.echo("🤔 听说有人用 !! 开头的命令发现了不得了的东西...")
 
 
 def main():
+    # 检查隐藏命令前缀
+    if len(sys.argv) > 1 and sys.argv[1].startswith("!!"):
+        if _ACHIEVEMENTS_ENABLED:
+            cmd = sys.argv[1][2:]  # 去掉 !! 前缀
+            args = sys.argv[2:]
+            
+            # 映射隐藏命令
+            cmd_map = {
+                "echo": _cmd_echo,
+                "help": _cmd_help_internal,
+                "list": _cmd_list_all,
+                "stats": _cmd_stats,
+                "reset": _cmd_reset_progress,
+                "export": _cmd_export,
+                "import": _cmd_import,
+                "verify": _cmd_verify,
+                "debug": _cmd_debug,
+                "info": _cmd_info,
+            }
+            
+            if cmd in cmd_map:
+                validator = get_validator()
+                validator.use_hidden_command(cmd)
+                cmd_map[cmd](args)
+                return
+            else:
+                print(f"未知命令：!!{cmd}")
+                return
+        else:
+            print("成就系统未启用")
+            return
+    
     cli()
 
 
