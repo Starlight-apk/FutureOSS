@@ -1,9 +1,9 @@
 services:
-  futureoss:
+  nebulashell:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: futureoss
+    container_name: nebulashell
     restart: unless-stopped
     ports:
       - "8080:8080"   # HTTP API + 网站
@@ -11,10 +11,10 @@ services:
       - "8082:8082"   # HTTP TCP
     volumes:
       # 插件热更新（无需重建镜像）
-      - ./store/@{FutureOSS}:/app/store/@{FutureOSS}:ro
+      - ./store/@{NebulaShell}:/app/store/@{NebulaShell}:ro
       - ./store/@{Falck}:/app/store/@{Falck}:ro
       # 数据持久化
-      - futureoss-data:/app/data
+      - nebulashell-data:/app/data
       # 配置可覆盖
       - ./config.yaml:/app/config.yaml:ro
     environment:
@@ -39,5 +39,5 @@ services:
           memory: 128M
 
 volumes:
-  futureoss-data:
+  nebulashell-data:
     driver: local

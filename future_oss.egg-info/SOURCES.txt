@@ -9,6 +9,10 @@ future_oss.egg-info/requires.txt
 future_oss.egg-info/top_level.txt
 oss/__init__.py
 oss/cli.py
+oss/config/__init__.py
+oss/config/config.py
+oss/core/__init__.py
+oss/core/achievements.py
 oss/core/context.py
 oss/logger/logger.py
 oss/plugin/base.py
@@ -16,12 +20,9 @@ oss/plugin/capabilities.py
 oss/plugin/loader.py
 oss/plugin/manager.py
 oss/plugin/types.py
-oss/plugins/auto_dependency.py
-oss/plugins/firewall.py
-oss/plugins/frp_proxy.py
-oss/plugins/ftp_server.py
-oss/plugins/multi_lang_deploy.py
-oss/plugins/ops_toolbox.py
-oss/plugins/security_gateway.py
 oss/shared/__init__.py
 oss/shared/router.py
+oss/store/@{FutureOSS}/nodejs-adapter/main.py
+oss/tests/__init__.py
+oss/tests/test_core.py
+oss/tests/test_nodejs_adapter.py
