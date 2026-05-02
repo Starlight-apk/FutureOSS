@@ -1,11 +1,3 @@
-"""能力扫描器 - 自动扫描插件支持的能力"""
-import ast
-from pathlib import Path
-from typing import Any
-
-
-def scan_capabilities(plugin_dir: Path) -> Any:
-    """扫描插件目录，自动发现支持的能力"""
     capabilities: set[str] = set()
     main_file = plugin_dir / "main.py"
 
@@ -17,16 +9,10 @@ def scan_capabilities(plugin_dir: Path) -> Any:
 
     tree = ast.parse(source)
 
-    # 扫描规则：
-    # 1. 检查是否导出了特定的类或函数
-    # 2. 检查是否有特定的装饰器或标记
-    # 3. 检查 import 语句（表示依赖了某个能力）
 
     for node in ast.walk(tree):
-        # 检查类定义
         if isinstance(node, ast.ClassDef):
             class_name = node.name
-            # 如果类名包含特定后缀，认为是能力提供者
             if class_name.endswith("Provider"):
                 cap_name = class_name.replace("Provider", "").lower()
                 capabilities.add(cap_name)
@@ -37,10 +23,8 @@ def scan_capabilities(plugin_dir: Path) -> Any:
                 cap_name = class_name.replace("Support", "").lower()
                 capabilities.add(cap_name)
 
-        # 检查函数定义
         elif isinstance(node, ast.FunctionDef):
             func_name = node.name
-            # 检查是否有能力相关的装饰器
             for decorator in node.decorator_list:
                 if isinstance(decorator, ast.Name):
                     if decorator.id.startswith("provides_"):
@@ -51,7 +35,6 @@ def scan_capabilities(plugin_dir: Path) -> Any:
                         cap_name = decorator.attr.replace("provides_", "")
                         capabilities.add(cap_name)
 
-        # 检查 import 语句（表示使用了某个能力）
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 if "circuit" in alias.name.lower() or "breaker" in alias.name.lower():

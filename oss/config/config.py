@@ -18,7 +18,7 @@ class Config:
         # 服务器配置
         "HTTP_API_PORT": 8080,
         "HTTP_TCP_PORT": 8082,
-        "HOST": "0.0.0.0",
+        "HOST": "127.0.0.1",
         
         # 数据目录
         "DATA_DIR": "./data",
@@ -39,6 +39,12 @@ class Config:
         # 安全配置
         "PERMISSION_CHECK": True,
         "ENFORCE_SIGNATURE": True,
+        "CORS_ALLOWED_ORIGINS": ["http://localhost:3000", "http://127.0.0.1:3000"],  # 允许的CORS来源
+        "CSRF_ENABLED": True,  # 启用CSRF防护
+        "INPUT_VALIDATION_ENABLED": True,  # 启用输入验证
+        "RATE_LIMIT_ENABLED": True,  # 启用限流
+        "RATE_LIMIT_MAX_REQUESTS": 100,  # 最大请求数
+        "RATE_LIMIT_TIME_WINDOW": 60,  # 时间窗口（秒）
         
         # 性能配置
         "MAX_WORKERS": 4,
