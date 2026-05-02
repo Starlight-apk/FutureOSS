@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "name": "tui",
+    "version": "1.0.0",
+    "author": "NebulaShell",
+    "description": "终端用户界面 - 与 WebUI 双启动，通过访问 /tui 接口获取 HTML 并转换为终端显示",
+    "type": "tui"
+  },
+  "config": {
+    "enabled": true,
+    "args": {
+      "width": 80,
+      "height": 24,
+      "theme": "dark",
+      "enable_mouse": false,
+      "keyboard_shortcuts": {
+        "1": "/",
+        "2": "/dashboard",
+        "3": "/logs",
+        "4": "/terminal",
+        "q": "quit",
+        "r": "refresh"
+      }
+    }
+  },
+  "dependencies": ["http-api", "webui"],
+  "permissions": ["read:pages", "execute:commands"]
+}

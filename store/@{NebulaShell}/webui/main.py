@@ -1,4 +1,4 @@
-"""WebUI - Web 控制台 (容器模式)"""
+"""WebUI - Web 控制台 (容器模式) + TUI 双启动"""
 from pathlib import Path
 from oss.logger.logger import Log
 from oss.plugin.types import Plugin, Response, register_plugin_type
@@ -7,11 +7,12 @@ from .core.server import WebUIServer
 
 
 class WebUIPlugin(Plugin):
-    """WebUI 插件 - 提供页面容器"""
+    """WebUI 插件 - 提供页面容器，同时启动 TUI"""
 
     def __init__(self):
         self.http_api = None
         self.server = None
+        self.tui = None
         self.config = {}
 
     def meta(self):
@@ -22,14 +23,15 @@ class WebUIPlugin(Plugin):
                 name="webui",
                 version="2.1.0",
                 author="NebulaShell",
-                description="Web 控制台容器 - 供其他插件注册页面"
+                description="Web 控制台容器 + TUI 双启动 - 供其他插件注册页面"
             ),
             config=PluginConfig(
                 enabled=True,
                 args={
                     "port": config.get("HTTP_API_PORT", 8080),
                     "theme": "dark",
-                    "title": "NebulaShell"
+                    "title": "NebulaShell",
+                    "tui_enabled": True  # 默认启用 TUI
                 }
             ),
             dependencies=["http-api"]
@@ -39,10 +41,14 @@ class WebUIPlugin(Plugin):
         """注入 http-api"""
         self.http_api = http_api
 
+    def set_tui(self, tui):
+        """注入 tui 引用"""
+        self.tui = tui
+
     def init(self, deps: dict = None):
-        """初始化 WebUI 服务器"""
+        """初始化 WebUI 服务器和 TUI"""
         if not self.http_api:
-            Log.error("webui", "错误: 未找到 http-api 依赖")
+            Log.error("webui", "错误：未找到 http-api 依赖")
             return
 
         config = {}
@@ -52,7 +58,8 @@ class WebUIPlugin(Plugin):
         self.config = {
             "port": config.get("port", get_config().get("HTTP_API_PORT", 8080)),
             "theme": config.get("theme", "dark"),
-            "title": config.get("title", "NebulaShell")
+            "title": config.get("title", "NebulaShell"),
+            "tui_enabled": config.get("tui_enabled", True)
         }
 
         # 使用 http-api 的路由器
@@ -61,6 +68,10 @@ class WebUIPlugin(Plugin):
             self.config
         )
         Log.info("webui", "容器初始化完成")
+        
+        # 如果启用了 TUI，通知 TUI 插件
+        if self.config.get("tui_enabled") and self.tui:
+            Log.info("webui", "TUI 已启用，将双启动")
 
     def start(self):
         """启动服务器（注册默认路由）"""
@@ -69,7 +80,11 @@ class WebUIPlugin(Plugin):
             self._setup_home_page()
             
             self.server.start()
-            Log.info("webui", f"WebUI 容器已启动: http://localhost:{self.config['port']}")
+            Log.info("webui", f"WebUI 容器已启动：http://localhost:{self.config['port']}")
+            
+            # 如果启用了 TUI，在后台启动
+            if self.config.get("tui_enabled"):
+                Log.info("webui", "TUI 双启动中...")
 
     def _setup_home_page(self):
         """设置首页：如果仪表盘已安装则跳转到仪表盘，否则显示默认首页"""
@@ -118,7 +133,7 @@ class WebUIPlugin(Plugin):
         if self.server:
             self.server.register_page(path, content_provider, nav_item)
         else:
-            Log.warn("webui", f"警告: 试图注册页面 {path}，但服务器未初始化")
+            Log.warn("webui", f"警告：试图注册页面 {path}，但服务器未初始化")
 
     def add_nav_item(self, item: dict):
         """仅添加导航项（如果页面由其他方式处理）"""

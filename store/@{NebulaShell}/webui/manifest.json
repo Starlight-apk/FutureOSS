@@ -3,7 +3,7 @@
     "name": "webui",
     "version": "2.1.0",
     "author": "NebulaShell",
-    "description": "Web 控制台 - 多语言支持/插件管理/安全配置/系统监控",
+    "description": "Web 控制台 + TUI 双启动 - 多语言支持/插件管理/安全配置/系统监控",
     "type": "webui"
   },
   "config": {
@@ -18,7 +18,8 @@
       "enable_2fa": false,
       "show_plugins": true,
       "show_security": true,
-      "show_deployments": true
+      "show_deployments": true,
+      "tui_enabled": true
     }
   },
   "dependencies": ["http-api", "i18n"],

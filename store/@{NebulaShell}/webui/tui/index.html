@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html class="tui-page" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NebulaShell TUI</title>
+    <!-- TUI 标记：此页面专为终端渲染设计 -->
+    <!-- 不包含任何给用户直接查看的内容，仅用于 TUI 转换层解析 -->
+</head>
+<body class="tui-body">
+    <!-- TUI 容器标记 -->
+    <div class="tui-container" data-tui-layout="vertical">
+        <!-- 标题区域 -->
+        <header class="tui-header" data-tui-style="bold">
+            NebulaShell TUI - 终端用户界面
+        </header>
+        
+        <!-- 状态栏 -->
+        <div class="tui-status" data-tui-style="dim">
+            WebUI: http://localhost:8080 | TUI: 双启动模式
+        </div>
+        
+        <!-- 导航菜单 - TUI 会转换为键盘快捷键 -->
+        <nav class="tui-nav" data-tui-type="keyboard">
+            <a href="/" data-tui-key="1" data-tui-action="navigate">[1] 首页</a>
+            <a href="/dashboard" data-tui-key="2" data-tui-action="navigate">[2] 仪表盘</a>
+            <a href="/logs" data-tui-key="3" data-tui-action="navigate">[3] 日志</a>
+            <a href="/terminal" data-tui-key="4" data-tui-action="navigate">[4] 终端</a>
+            <a href="/plugins" data-tui-key="5" data-tui-action="navigate">[5] 插件</a>
+            <a href="/settings" data-tui-key="6" data-tui-action="navigate">[6] 设置</a>
+        </nav>
+        
+        <!-- 分隔线 -->
+        <hr class="tui-separator" data-tui-char="─">
+        
+        <!-- 操作提示 -->
+        <footer class="tui-footer" data-tui-style="dim">
+            <p>快捷键说明:</p>
+            <ul>
+                <li data-tui-key="q">q - 退出 TUI</li>
+                <li data-tui-key="r">r - 刷新当前页</li>
+                <li data-tui-key="h">h - 显示帮助</li>
+                <li data-tui-key="↑/↓">↑/↓ - 上下导航</li>
+                <li data-tui-key="Enter">Enter - 确认选择</li>
+            </ul>
+        </footer>
+    </div>
+    
+    <!-- TUI 配置脚本 - 定义键盘映射和交互行为 -->
+    <script type="application/x-tui-config">
+    {
+        "keyboard": {
+            "1": {"action": "navigate", "target": "/"},
+            "2": {"action": "navigate", "target": "/dashboard"},
+            "3": {"action": "navigate", "target": "/logs"},
+            "4": {"action": "navigate", "target": "/terminal"},
+            "5": {"action": "navigate", "target": "/plugins"},
+            "6": {"action": "navigate", "target": "/settings"},
+            "q": {"action": "quit"},
+            "r": {"action": "refresh"},
+            "h": {"action": "help"},
+            "ArrowUp": {"action": "navigate_up"},
+            "ArrowDown": {"action": "navigate_down"},
+            "Enter": {"action": "select"}
+        },
+        "mouse": {
+            "enabled": false,
+            "click_action": "select"
+        },
+        "display": {
+            "width": 80,
+            "height": 24,
+            "theme": "dark",
+            "border_style": "single",
+            "colors": {
+                "header": "bold",
+                "normal": "default",
+                "dim": "dim",
+                "selected": "reverse"
+            }
+        }
+    }
+    </script>
+    
+    <!-- TUI CSS 标记 - 仅包含终端支持的样式 -->
+    <style type="text/x-tui-css">
+    .tui-page {
+        background-color: #000000;
+        color: #ffffff;
+    }
+    .tui-header {
+        font-weight: bold;
+        text-align: center;
+    }
+    .tui-status {
+        font-style: dim;
+        border-bottom: single;
+    }
+    .tui-nav a {
+        display: block;
+        padding: 1;
+        cursor: pointer;
+    }
+    .tui-separator {
+        border-char: ─;
+    }
+    .tui-footer {
+        font-style: dim;
+        margin-top: 2;
+    }
+    </style>
+</body>
+</html>
