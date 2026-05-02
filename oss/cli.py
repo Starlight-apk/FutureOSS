@@ -22,7 +22,7 @@ except ImportError:
 @click.option('--config', '-c', type=str, help='配置文件路径')
 @click.pass_context
 def cli(ctx, config):
-    """Future OSS - 一切皆为插件"""
+    """NebulaShell - 一切皆为插件"""
     # 初始化配置
     ctx.ensure_object(dict)
     ctx.obj['config'] = init_config(config)
@@ -41,7 +41,7 @@ def cli(ctx, config):
 @click.option('--tcp-port', type=int, default=None, help='HTTP TCP 端口')
 @click.pass_context
 def serve(ctx, host, port, tcp_port):
-    """启动 Future OSS"""
+    """启动 NebulaShell"""
     config = ctx.obj.get('config', get_config())
     
     # 命令行参数覆盖配置
@@ -53,7 +53,7 @@ def serve(ctx, host, port, tcp_port):
         config.set('HTTP_TCP_PORT', tcp_port)
     
     log = Logger()
-    log.info(f"Future OSS {__version__} 启动")
+    log.info(f"NebulaShell {__version__} 启动")
     log.info(f"监听地址：{config.host}:{config.http_api_port}")
     log.info(f"数据目录：{config.data_dir.absolute()}")
     log.info(f"插件仓库：{config.store_dir.absolute()}")
@@ -84,7 +84,7 @@ def serve(ctx, host, port, tcp_port):
 @cli.command()
 def version():
     """显示版本"""
-    click.echo(f"Future OSS {__version__}")
+    click.echo(f"NebulaShell {__version__}")
 
 
 @cli.command()
@@ -94,7 +94,7 @@ def info(ctx):
     import random
     
     config = ctx.obj.get('config', get_config())
-    click.echo(f"Future OSS {__version__}")
+    click.echo(f"NebulaShell {__version__}")
     click.echo(f"配置文件：{config._config_file or '无'}")
     click.echo(f"HTTP API 端口：{config.http_api_port}")
     click.echo(f"HTTP TCP 端口：{config.http_tcp_port}")

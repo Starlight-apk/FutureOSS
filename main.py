@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FutureOSS 主入口 - 兼容旧版启动方式
+"""NebulaShell 主入口 - 兼容旧版启动方式
 
 此文件用于兼容 README 中描述的 `python main.py` 启动方式。
 推荐使用 `oss serve` 命令启动。

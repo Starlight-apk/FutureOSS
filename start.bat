@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: FutureOSS Smart Startup Script - Windows
+:: NebulaShell Smart Startup Script - Windows
 cd /d "%~dp0"
 
 :: Handle command line parameters
@@ -12,7 +12,7 @@ if "%1"=="-v" goto :show_version
 
 echo.
 echo  ========================================
-echo    FutureOSS Startup Script - Windows
+echo    NebulaShell Startup Script - Windows
 echo  ========================================
 echo.
 
@@ -137,7 +137,7 @@ echo [SUCCESS] Data directories ready
 :: 6. Start Service
 echo.
 echo ========================================
-echo   Starting FutureOSS
+echo   Starting NebulaShell
 echo ========================================
 echo.
 
@@ -195,7 +195,7 @@ call :cleanup
 call .venv\Scripts\deactivate.bat >nul 2>&1
 echo.
 echo ========================================
-echo   FutureOSS Stopped
+echo   NebulaShell Stopped
 echo ========================================
 pause
 exit /b 0
@@ -276,7 +276,7 @@ exit /b 0
 :: Show help information
 :show_help
 echo.
-echo FutureOSS Startup Script - Windows Version
+echo NebulaShell Startup Script - Windows Version
 echo.
 echo Usage: start.bat [options]
 echo.
@@ -293,7 +293,7 @@ exit /b 0
 
 :: Show version information
 :show_version
-echo FutureOSS v1.0.0
+echo NebulaShell v1.0.0
 echo Developer toolkit based on Python
 echo.
 exit /b 0

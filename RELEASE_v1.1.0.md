@@ -1,4 +1,4 @@
-# 🚀 FutureOSS v1.1.0 安全全能发行版 - 发布说明
+# 🚀 NebulaShell v1.1.0 安全全能发行版 - 发布说明
 
 ## 📅 发布时间
 2024 年 4 月 24 日
@@ -137,9 +137,9 @@ firewall.ip.block <ip> reason=<reason>
 
 ## 📞 技术支持
 
-- 文档：https://futureoss.org/docs/v1.1.0
+- 文档：https://nebulashell.org/docs/v1.1.0
 - 问题反馈：GitHub Issues
 - 社区讨论：Discord / Slack
 
 ---
-**FutureOSS Team** © 2024 | 安全 · 灵活 · 高效
+**NebulaShell Team** © 2024 | 安全 · 灵活 · 高效

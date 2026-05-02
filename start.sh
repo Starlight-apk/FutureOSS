@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════
-#  FutureOSS 智能启动脚本 - Linux
+#  NebulaShell 智能启动脚本 - Linux
 #  自动检测环境 / 安装依赖 / 进度显示 / 守护重启
 # ═══════════════════════════════════════════════════════════
 
@@ -325,8 +325,8 @@ if command -v mysql &>/dev/null; then
     ok "MySQL: $(mysql --version 2>&1)"
     if pgrep mysqld > /dev/null 2>&1 || pgrep mariadbd > /dev/null 2>&1; then
         ok "MySQL 服务运行中"
-        mysql -u root -e "CREATE DATABASE IF NOT EXISTS futureoss CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null && \
-            ok "数据库 futureoss 已就绪" || \
+        mysql -u root -e "CREATE DATABASE IF NOT EXISTS nebulashell CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null && \
+            ok "数据库 nebulashell 已就绪" || \
             warn "无法创建数据库，请检查权限"
     else
         warn "MySQL 服务未运行"
@@ -341,11 +341,11 @@ fi
 # ═══════════════════════════════════════════════════════════
 #  7. 启动服务
 # ═══════════════════════════════════════════════════════════
-step "启动 FutureOSS"
+step "启动 NebulaShell"
 
 if $DAEMON; then
-    LOG_FILE="logs/futureoss.log"
-    PID_FILE="logs/futureoss.pid"
+    LOG_FILE="logs/nebulashell.log"
+    PID_FILE="logs/nebulashell.pid"
 
     if [[ -f "$PID_FILE" ]]; then
         OLD_PID=$(cat "$PID_FILE")

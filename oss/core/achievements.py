@@ -17,8 +17,8 @@ from typing import Dict, List, Optional, Set, Any
 
 # 配置验证常量
 _VALIDATOR_CACHE_FILE = ".validator_cache"
-# 验证密钥 (hex encoded): FutureOSSAchievement
-_VALIDATOR_KEY = "4675747572654f5353416368696576656d656e74"  # 验证密钥
+# 验证密钥 (hex encoded): NebulaShellAchievement
+_VALIDATOR_KEY = "4e6562756c615368656c6c416368696576656d656e74"  # 验证密钥
 
 
 class _ConfigValidator:

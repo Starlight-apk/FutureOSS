@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "FutureOSS: 启动服务",
+      "name": "NebulaShell: 启动服务",
       "type": "python",
       "request": "launch",
       "module": "oss.cli",
@@ -17,7 +17,7 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 调试模式启动",
+      "name": "NebulaShell: 调试模式启动",
       "type": "python",
       "request": "launch",
       "module": "oss.cli",
@@ -33,7 +33,7 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 运行测试",
+      "name": "NebulaShell: 运行测试",
       "type": "python",
       "request": "launch",
       "module": "pytest",
@@ -53,7 +53,7 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 调试插件加载器",
+      "name": "NebulaShell: 调试插件加载器",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/oss/plugin/loader.py",
@@ -67,10 +67,10 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 调试日志终端插件",
+      "name": "NebulaShell: 调试日志终端插件",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{FutureOSS}/log-terminal/main.py",
+      "program": "${workspaceFolder}/store/@{NebulaShell}/log-terminal/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -81,10 +81,10 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 调试WebUI",
+      "name": "NebulaShell: 调试WebUI",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{FutureOSS}/webui/main.py",
+      "program": "${workspaceFolder}/store/@{NebulaShell}/webui/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -95,10 +95,10 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 调试HTTP API",
+      "name": "NebulaShell: 调试HTTP API",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{FutureOSS}/http-api/main.py",
+      "program": "${workspaceFolder}/store/@{NebulaShell}/http-api/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -109,10 +109,10 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 调试WS API",
+      "name": "NebulaShell: 调试WS API",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{FutureOSS}/ws-api/main.py",
+      "program": "${workspaceFolder}/store/@{NebulaShell}/ws-api/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -123,7 +123,7 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 调试特定文件",
+      "name": "NebulaShell: 调试特定文件",
       "type": "python",
       "request": "launch",
       "program": "${file}",
@@ -137,7 +137,7 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS: 附加到进程",
+      "name": "NebulaShell: 附加到进程",
       "type": "python",
       "request": "attach",
       "processId": "${command:pickProcess}",
@@ -152,7 +152,7 @@
       "justMyCode": false
     },
     {
-      "name": "FutureOSS: 运行CLI命令",
+      "name": "NebulaShell: 运行CLI命令",
       "type": "python",
       "request": "launch",
       "module": "oss.cli",
@@ -167,7 +167,7 @@
       "python": "${command:python.interpreterPath}"
     },
     {
-      "name": "FutureOSS 网站: 启动Node.js服务器",
+      "name": "NebulaShell 网站: 启动Node.js服务器",
       "type": "node",
       "request": "launch",
       "skipFiles": [
@@ -190,7 +190,7 @@
       "cwd": "${workspaceFolder}/website"
     },
     {
-      "name": "FutureOSS 网站: 开发模式启动",
+      "name": "NebulaShell 网站: 开发模式启动",
       "type": "node",
       "request": "launch",
       "skipFiles": [
@@ -208,7 +208,7 @@
       "cwd": "${workspaceFolder}/website"
     },
     {
-      "name": "FutureOSS 网站: 附加到Node.js进程",
+      "name": "NebulaShell 网站: 附加到Node.js进程",
       "type": "node",
       "request": "attach",
       "port": 9229,
@@ -230,10 +230,10 @@
   ],
   "compounds": [
     {
-      "name": "FutureOSS: 完整调试环境",
+      "name": "NebulaShell: 完整调试环境",
       "configurations": [
-        "FutureOSS: 启动服务",
-        "FutureOSS: 调试日志终端插件"
+        "NebulaShell: 启动服务",
+        "NebulaShell: 调试日志终端插件"
       ],
       "stopAll": true
     }

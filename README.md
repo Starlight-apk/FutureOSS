@@ -1,4 +1,4 @@
-# 🚀 FutureOSS <span style="font-size:1.5em;color:#667eea">v1.2.0</span> 企业级插件化运行时框架
+# 🚀 NebulaShell <span style="font-size:1.5em;color:#667eea">v1.2.0</span> 企业级插件化运行时框架
 
 <div align="center">
 
@@ -25,7 +25,7 @@
 
 > ### 🌟 **革命性突破 - 彻底告别依赖安装烦恼！**
 > 
-> 想象一下：只需声明你的插件需要什么，剩下的交给 FutureOSS！
+> 想象一下：只需声明你的插件需要什么，剩下的交给 NebulaShell！
 > 
 > | 🚀 核心能力 | 💡 技术亮点 |
 > |:----------:|:-----------|
@@ -38,7 +38,7 @@
 
 ---
 
-## 🚀 为什么选择 FutureOSS？
+## 🚀 为什么选择 NebulaShell？
 
 <details open>
 <summary><b>🛡️ 极致安全架构 - 重新定义插件安全边界 (点击展开)</b></summary>
@@ -215,7 +215,7 @@
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#667eea', 'edgeLabelBackground':'#fff', 'tertiaryColor': '#e3f2fd'}}}%%
 graph TB
     User[👤 用户/客户端] --> Gateway[🛡️ 统一安全网关]
-    Gateway --> Core[⚙️ FutureOSS 微内核]
+    Gateway --> Core[⚙️ NebulaShell 微内核]
     
     subgraph CoreLayer["🔐 核心插件层 (可信域)"]
         direction TB
@@ -289,7 +289,7 @@ graph TB
   "author": "Your Name <your@email.com>",
   "license": "MIT",
   
-  // 🔥 系统依赖声明（FutureOSS 自动安装）
+  // 🔥 系统依赖声明（NebulaShell 自动安装）
   "system_dependencies": [
     "nginx",
     "redis-server",
@@ -301,7 +301,7 @@ graph TB
   // 📦 包管理器选择
   "package_manager": "apt-get",
   
-  // 🔌 插件依赖（其他 FutureOSS 插件）
+  // 🔌 插件依赖（其他 NebulaShell 插件）
   "plugin_dependencies": [
     "security_gateway@>=1.0.0",
     "firewall@>=1.0.0"
@@ -387,13 +387,13 @@ xcode-select --install  # 安装 Xcode 命令行工具
 
 ```bash
 # 📥 克隆仓库
-git clone https://github.com/Starlight-apk/FutureOSS.git
-cd futureoss
+git clone https://github.com/Starlight-apk/NebulaShell.git
+cd nebulashell
 
 # 📦 安装 Python 依赖
 pip install -r requirements.txt
 
-# 🚀 启动 FutureOSS 核心
+# 🚀 启动 NebulaShell 核心
 python main.py
 
 # 🎉 完成！观察控制台输出
@@ -533,8 +533,8 @@ graph LR
 
 ```bash
 # 1️⃣ Fork 你的专属仓库
-git clone https://github.com/Starlight-apk/FutureOSS.git
-cd futureoss
+git clone https://github.com/Starlight-apk/NebulaShell.git
+cd nebulashell
 
 # 2️⃣ 创建虚拟环境
 python -m venv venv
@@ -776,21 +776,21 @@ git push origin feature/your-amazing-feature
 
 ### 如果这个项目帮助到了你，请给我们一个 ⭐ Star！
 
-[![Star on GitHub](https://img.shields.io/github/stars/Starlight-apk/FutureOSS?style=social&logo=github)](https://github.com/Starlight-apk/FutureOSS)
-[![Fork on GitHub](https://img.shields.io/github/forks/Starlight-apk/FutureOSS?style=social&logo=github)](https://github.com/Starlight-apk/FutureOSS/fork)
-[![Watch on GitHub](https://img.shields.io/github/watchers/Starlight-apk/FutureOSS?style=social&logo=github)](https://github.com/Starlight-apk/FutureOSS/watchers)
+[![Star on GitHub](https://img.shields.io/github/stars/Starlight-apk/NebulaShell?style=social&logo=github)](https://github.com/Starlight-apk/NebulaShell)
+[![Fork on GitHub](https://img.shields.io/github/forks/Starlight-apk/NebulaShell?style=social&logo=github)](https://github.com/Starlight-apk/NebulaShell/fork)
+[![Watch on GitHub](https://img.shields.io/github/watchers/Starlight-apk/NebulaShell?style=social&logo=github)](https://github.com/Starlight-apk/NebulaShell/watchers)
 
 ---
 
 ### 👥 致谢所有贡献者
 
-<a href="https://github.com/Starlight-apk/FutureOSS/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Starlight-apk/FutureOSS&max=100&columns=10" alt="Contributors"/>
+<a href="https://github.com/Starlight-apk/NebulaShell/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Starlight-apk/NebulaShell&max=100&columns=10" alt="Contributors"/>
 </a>
 
 ---
 
-*🚀 **Built with ❤️ by [FutureOSS Team](https://github.com/Starlight-apk)** *  
+*🚀 **Built with ❤️ by [NebulaShell Team](https://github.com/Starlight-apk)** *  
 *✨ **面向未来，安全随行 - 让插件开发从未如此简单** *  
 *🌍 **Made possible by our amazing community** *
 
@@ -798,7 +798,7 @@ git push origin feature/your-amazing-feature
 
 <div align="center">
 
-[🏠 官网首页](https://futureoss.date)
+[🏠 官网首页](https://nebulashell.date)
 
 </div>
 

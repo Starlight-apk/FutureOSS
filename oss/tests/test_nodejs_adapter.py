@@ -10,7 +10,7 @@ import shutil
 import pytest
 
 # Add the plugin directory to path
-PLUGIN_DIR = os.path.join(os.path.dirname(__file__), '..', 'store', '@{FutureOSS}', 'nodejs-adapter')
+PLUGIN_DIR = os.path.join(os.path.dirname(__file__), '..', 'store', '@{NebulaShell}', 'nodejs-adapter')
 sys.path.insert(0, PLUGIN_DIR)
 
 # Import after path update

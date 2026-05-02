@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir --prefix=/install click pyyaml websockets 2>/dev/
 FROM python:3.12-slim
 
 LABEL maintainer="Falck <https://gitee.com/starlight-apk>"
-LABEL description="FutureOSS — 一切皆为插件的开发者工具运行时框架"
+LABEL description="NebulaShell — 一切皆为插件的开发者工具运行时框架"
 
 WORKDIR /app
 
