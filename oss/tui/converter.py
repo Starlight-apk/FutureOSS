@@ -1344,6 +1344,14 @@ class TUIManager:
         else:
             self.show_error(f"Page not found: {path}")
     
+    def render_page(self, path: str = None) -> str:
+        """渲染指定页面，返回终端文本（不写入画布）"""
+        path = path or self.current_page
+        if not path or path not in self.pages:
+            return ""
+        html = self.pages[path]
+        return self.renderer.render_with_frame(html, title=f"NebulaShell - {path}")
+
     def render_current(self):
         """渲染当前页面"""
         if not self.current_page or self.current_page not in self.pages:

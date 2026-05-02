@@ -4,9 +4,14 @@
 
 ```bash
 pip install -r requirements.txt
-python -m oss.cli serve              # start server on :8080
+pip install -e .                     # register nebula CLI
+nebula serve                         # start server on :8080
 # or: python main.py
-# or: oss serve (after pip install -e .)
+
+## CLI modes (前后端分离)
+
+- `nebula serve` — 启动后端服务（HTTP API + WebUI）
+- `nebula cli` — 启动 TUI 前端，连接现有后端（默认 localhost:8080）
 ```
 
 ## Architecture (minimal core philosophy)
@@ -22,8 +27,9 @@ python -m oss.cli serve              # start server on :8080
 
 | Action | Command |
 |--------|---------|
-| Start server | `python -m oss.cli serve` |
-| Show info | `python -m oss.cli info` |
+| Start server | `nebula serve` |
+| CLI / TUI mode | `nebula cli` (TBD) |
+| Show info | `nebula info` |
 | Hidden achievements | Prefix with `!!` (e.g., `!!help`, `!!list`, `!!stats`, `!!debug`) |
 | Docker | `docker-compose up` (ports 8080-8082) |
 

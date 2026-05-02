@@ -14,6 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
+nebula = "oss.cli:main"
 oss = "oss.cli:main"
 
 [tool.setuptools.packages.find]

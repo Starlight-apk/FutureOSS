@@ -1,5 +1,5 @@
 {
-  "root_dir": "/workspace/data/website",
+  "root_dir": "/root/NebulaShell/data/website",
   "index_file": "index.html",
   "static_prefix": "/static"
 }

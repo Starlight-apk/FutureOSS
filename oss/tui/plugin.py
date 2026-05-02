@@ -620,6 +620,11 @@ export default TUI;
             })
         )
 
+    def wait_for_exit(self):
+        """前台阻塞等待 TUI 退出（用于 CLI 模式）"""
+        if self.tui_thread and self.tui_thread.is_alive():
+            self.tui_thread.join()
+
     def stop(self):
         """停止 TUI"""
         Log.info("tui", "TUI 停止中...")

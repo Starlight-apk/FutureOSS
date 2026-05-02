@@ -41,7 +41,7 @@ def cli(ctx, config):
 @click.option('--tcp-port', type=int, default=None, help='HTTP TCP 端口')
 @click.pass_context
 def serve(ctx, host, port, tcp_port):
-    """启动 NebulaShell"""
+    """启动 NebulaShell 服务端"""
     config = ctx.obj.get('config', get_config())
     
     # 命令行参数覆盖配置
@@ -113,7 +113,27 @@ def info(ctx):
         click.echo("🤔 听说有人用 !! 开头的命令发现了不得了的东西...")
 
 
+@cli.command(name="cli")
+@click.option('--connect-host', default='127.0.0.1', help='后端地址（默认 127.0.0.1）')
+@click.option('--connect-port', default=8080, help='后端端口（默认 8080）')
+def cli_command(connect_host, connect_port):
+    """启动 TUI 前端（前后端分离，连接已有后端）"""
+    click.echo("NebulaShell TUI 客户端（待实现）")
+    click.echo(f"目标后端：{connect_host}:{connect_port}")
+
+
 def main():
+    # 检测是否通过已弃用的 oss 命令调用
+    cmd_name = os.path.basename(sys.argv[0])
+    if cmd_name in ("oss", "oss.exe"):
+        print("╔══════════════════════════════════════════╗")
+        print("║  ⚠ oss 命令已弃用，请使用 nebula 替代   ║")
+        print("║  例如: nebula serve                      ║")
+        print("║        nebula info                       ║")
+        print("║        nebula version                    ║")
+        print("╚══════════════════════════════════════════╝")
+        sys.exit(1)
+
     # 检查隐藏命令前缀
     if len(sys.argv) > 1 and sys.argv[1].startswith("!!"):
         if _ACHIEVEMENTS_ENABLED:
