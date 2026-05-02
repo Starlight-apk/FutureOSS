@@ -24,6 +24,12 @@ class WebUIServer:
         self.router.get("/static/css/main.css", self._handle_css)
         self.router.get("/static/js/main.js", self._handle_js)
         self.router.get("/health", self._handle_health)
+        
+        # TUI 接口 - 供 TUI 转换层访问
+        self.router.get("/tui/index.html", self._handle_tui_index)
+        self.router.get("/tui/page", self._handle_tui_page)
+        self.router.get("/tui/css", self._handle_tui_css)
+        self.router.get("/tui/pages", self._handle_tui_pages)
 
     def register_page(self, path: str, content_provider, nav_item: dict = None):
         """供其他插件注册页面"""
@@ -179,3 +185,85 @@ class WebUIServer:
     def _handle_health(self, request):
         import json
         return Response(status=200, headers={"Content-Type": "application/json"}, body=json.dumps({"status": "ok"}))
+
+    # ========== TUI 接口实现 ==========
+    
+    def _handle_tui_index(self, request):
+        """处理 /tui/index.html 请求 - TUI 入口点
+        
+        返回特殊标记的 HTML，TUI 转换层会识别并转换。
+        此 HTML 不含用户可见内容，仅包含 data-tui-* 标记和配置脚本。
+        """
+        html = """<!DOCTYPE html>
+<html class="tui-page" data-tui-version="2.0">
+<head>
+    <meta charset="UTF-8">
+    <title>NebulaShell TUI</title>
+    <!-- TUI 标记：此页面专为终端渲染 -->
+    <style type="text/x-tui-css">
+.tui-page { background-color: #000000; color: #ffffff; }
+.tui-body { font-family: monospace; }
+.bold { font-weight: bold; }
+.underline { text-decoration: underline; }
+    </style>
+</head>
+<body class="tui-body">
+    <div class="tui-container" data-tui-layout="vertical">
+        <header data-tui-type="header">
+            <h1>NebulaShell TUI</h1>
+            <p>终端界面就绪</p>
+        </header>
+        <separator data-tui-char="─"/>
+        <nav data-tui-type="nav" data-tui-layout="horizontal">
+            <a href="/" data-tui-action="navigate" data-tui-key="1">首页</a>
+            <a href="/dashboard" data-tui-action="navigate" data-tui-key="2">仪表盘</a>
+            <a href="/logs" data-tui-action="navigate" data-tui-key="3">日志</a>
+        </nav>
+    </div>
+    <script type="application/x-tui-keys">
+{"1": {"action": "navigate", "target": "/"}, "2": {"action": "navigate", "target": "/dashboard"}, "3": {"action": "navigate", "target": "/logs"}}
+    </script>
+</body>
+</html>"""
+        return Response(status=200, headers={"Content-Type": "text/html; charset=utf-8"}, body=html)
+
+    def _handle_tui_page(self, request):
+        """处理 /tui/page 请求 - 获取任意页面的 TUI 版本"""
+        from urllib.parse import parse_qs, urlparse
+        
+        parsed = urlparse(request.path)
+        params = parse_qs(parsed.query)
+        page_path = params.get('path', ['/'])[0]
+        
+        # 查找已注册的页面
+        provider = self.pages.get(page_path)
+        if provider:
+            content = provider()
+            html = f"""<!DOCTYPE html>
+<html class="tui-page" data-tui-source="webui">
+<body class="tui-body">{content}</body>
+</html>"""
+            return Response(status=200, headers={"Content-Type": "text/html; charset=utf-8"}, body=html)
+        
+        return Response(status=404, headers={"Content-Type": "text/html"}, body="<html><body>Page not found</body></html>")
+
+    def _handle_tui_css(self, request):
+        """处理 /tui/css 请求 - 返回终端兼容的 CSS"""
+        css = """/* TUI 兼容 CSS */
+.tui-page { background-color: #000000; color: #ffffff; }
+.tui-body { font-family: monospace; }
+.bold { font-weight: bold; }
+.underline { text-decoration: underline; }
+[data-tui-action] { cursor: pointer; }
+"""
+        return Response(status=200, headers={"Content-Type": "text/css"}, body=css)
+
+    def _handle_tui_pages(self, request):
+        """处理 /tui/pages 请求 - 列出所有可用页面"""
+        import json
+        pages = list(self.pages.keys())
+        return Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            body=json.dumps({'success': True, 'pages': pages})
+        )
