@@ -1,11 +1,12 @@
-
+class SecurityCheck:
     def check(self, filepath: str, content: str) -> list:
         issues = []
         patterns = ['password', 'secret', 'token', 'api_key', 'access_token']
 
         for i, line in enumerate(content.split('\n'), 1):
             stripped = line.strip()
-            if stripped.startswith('                continue
+            if stripped.startswith('#'):
+                continue
 
             for pattern in patterns:
                 if pattern + ' = "' in line.lower() or pattern + " = '" in line.lower():

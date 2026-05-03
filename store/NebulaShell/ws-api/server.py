@@ -1,4 +1,4 @@
-
+class WsClient:
     def __init__(self, websocket, path: str):
         self.websocket = websocket
         self.path = path
@@ -11,11 +11,12 @@
 
 
 class WsServer:
+    def __init__(self):
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._run_loop, daemon=True)
         self._thread.start()
 
-    def _run_loop(self):
+    async def _run_loop(self):
         if path is None:
             try:
                 path = websocket.request.path
@@ -63,3 +64,4 @@ class WsServer:
             asyncio.run_coroutine_threadsafe(_broadcast(), self._loop)
 
     def get_clients(self) -> list[WsClient]:
+        pass

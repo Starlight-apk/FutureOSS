@@ -1,4 +1,4 @@
-
+class PluginStorage:
     def __init__(self, plugin_name: str, data_dir: str = None):
         config = get_config()
         self.plugin_name = plugin_name
@@ -65,12 +65,17 @@
             Log.error("plugin-storage", f"写入文件失败 {self.plugin_name}/{path}: {type(e).__name__}: {e}")
 
     def delete_file(self, path: str) -> bool:
-        
-        Args:
-            prefix: 子目录前缀，如 "templates/" 或 ""（全部）
-        
-        Returns:
-            相对路径列表
+        try:
+            file_path = self._resolve_path(path)
+            if file_path.exists() and file_path.is_file():
+                file_path.unlink()
+                return True
+            return False
+        except Exception as e:
+            Log.error("plugin-storage", f"删除文件失败 {self.plugin_name}/{path}: {type(e).__name__}: {e}")
+            return False
+
+    def list_files(self, prefix: str = "") -> list[str]:
         try:
             search_dir = self._resolve_path(prefix) if prefix else self.data_dir
             if not search_dir.exists():
@@ -85,18 +90,13 @@
             return []
 
     def file_exists(self, path: str) -> bool:
-        
-        用于插件向外部提供静态文件。
-        自动检测 MIME 类型，支持文本和二进制文件。
-        
-        Args:
-            path: 相对于插件数据目录的路径
-        
-        Returns:
-            Response 对象（200 成功 / 404 不存在 / 403 安全拦截）
+        file_path = self._resolve_path(path)
+        return file_path.exists() and file_path.is_file()
+
+    def serve_file(self, path: str):
         try:
             file_path = self._resolve_path(path)
-            
+
             try:
                 file_path.resolve().relative_to(self.data_dir.resolve())
             except ValueError:
@@ -133,22 +133,35 @@
 
 
 class SharedStorage:
-        return self._manager.get_storage(plugin_name)
+    def __init__(self, manager, shared_dir: Path):
+        self._manager = manager
+        self._shared_dir = shared_dir
+        self._shared_dir.mkdir(parents=True, exist_ok=True)
 
     def get_shared(self, key: str, default: Any = None) -> Any:
+        shared_file = self._shared_dir / f"{key}.json"
+        if not shared_file.exists():
+            return default
+        with open(shared_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def set_shared(self, key: str, value: Any):
         shared_file = self._shared_dir / f"{key}.json"
         with open(shared_file, "w", encoding="utf-8") as f:
             json.dump(value, f, ensure_ascii=False, indent=2)
 
     def list_storages(self) -> list[str]:
+        return [p.stem for p in self._shared_dir.glob("*.json")]
 
+
+class PluginStoragePlugin(Plugin):
     def __init__(self):
         self.storages: dict[str, PluginStorage] = {}
         self.shared = None
         self.config = {}
         self.data_root = Path("./data")
 
-    def init(self, deps: dict = None):
+    def start(self):
         Log.info("plugin-storage", f"插件存储服务已启动 (root={self.data_root})")
 
     def stop(self):
@@ -168,6 +181,11 @@ class SharedStorage:
         self.shared = SharedStorage(self, shared_dir=shared_dir)
 
     def get_storage(self, plugin_name: str) -> PluginStorage:
+        if plugin_name not in self.storages:
+            self.storages[plugin_name] = PluginStorage(plugin_name)
+        return self.storages[plugin_name]
+
+    def remove_storage(self, plugin_name: str) -> bool:
         if plugin_name in self.storages:
             del self.storages[plugin_name]
             data_dir = PluginStorage(plugin_name).data_dir
@@ -177,7 +195,7 @@ class SharedStorage:
         return False
 
     def list_storages(self) -> list[str]:
-        return self.shared
+        return list(self.storages.keys())
 
 
 register_plugin_type("PluginStorage", PluginStorage)

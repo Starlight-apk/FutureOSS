@@ -1,7 +1,9 @@
-插件签名验证服务
-- 验证官方插件的完整性与来源真实性
-- 支持多签名者（Falck 独特性签名）
-- RSA-SHA256 非对称加密方案
+"""
+Plugin Signature Verification Service
+- Verify integrity and origin authenticity of official plugins
+- Support multiple signers (Falck unique signature)
+- RSA-SHA256 asymmetric encryption scheme
+"""
 
 import os
 import json
@@ -19,13 +21,16 @@ from oss.plugin.types import Plugin
 from oss.config import get_config
 
 
-FALCK_PUBLIC_KEY_PEM = 
+FALCK_PUBLIC_KEY_PEM = ""
 
-NEBULASHELL_PUBLIC_KEY_PEM = 
+NEBULASHELL_PUBLIC_KEY_PEM = ""
 
 
 class SignatureError(Exception):
+    pass
 
+
+class SignatureVerifier:
     def __init__(self, key_dir: str = None):
         config = get_config()
         self.key_dir = Path(key_dir or str(config.get("SIGNATURE_KEYS_DIR", "./data/signature-verifier/keys")))
@@ -42,8 +47,9 @@ class SignatureError(Exception):
             self.public_keys[author_name] = key_file.read_bytes()
 
     def _compute_plugin_hash(self, plugin_dir: Path) -> str:
-        计算插件目录的内容哈希
-        包含所有文件的路径相对路径 + 内容
+        """Compute content hash of the plugin directory.
+        Includes relative path + content of all files.
+        """
         hasher = hashlib.sha256()
         
         files_to_hash = []
@@ -59,28 +65,29 @@ class SignatureError(Exception):
         return hasher.hexdigest()
 
     def verify_plugin(self, plugin_dir: Path, author: str = "Falck") -> Tuple[bool, str]:
-        验证插件签名
-        返回: (是否有效, 详细信息)
+        """Verify plugin signature.
+        Returns: (is_valid, details)
+        """
         signature_file = plugin_dir / "SIGNATURE"
         
         if not signature_file.exists():
-            return False, f"插件缺少签名文件: {plugin_dir}"
+            return False, f"Plugin missing signature file: {plugin_dir}"
         
         try:
             sig_data = json.loads(signature_file.read_text())
         except json.JSONDecodeError as e:
-            return False, f"签名文件格式错误: {e}"
+            return False, f"Signature file format error: {e}"
         
         required_fields = ["signature", "signer", "algorithm", "timestamp"]
         for field in required_fields:
             if field not in sig_data:
-                return False, f"签名文件缺少必需字段: {field}"
+                return False, f"Signature missing required field: {field}"
         
         signer = sig_data["signer"]
         signature = base64.b64decode(sig_data["signature"])
         
         if signer not in self.public_keys:
-            return False, f"未知签名者: {signer}"
+            return False, f"Unknown signer: {signer}"
         
         try:
             public_key = serialization.load_pem_public_key(
@@ -88,7 +95,7 @@ class SignatureError(Exception):
                 backend=default_backend()
             )
         except Exception as e:
-            return False, f"公钥加载失败: {e}"
+            return False, f"Public key load failed: {e}"
         
         current_hash = self._compute_plugin_hash(plugin_dir)
         
@@ -103,31 +110,37 @@ class SignatureError(Exception):
                 ),
                 hashes.SHA256()
             )
-            return True, f"签名验证通过 (签名者: {signer})"
+            return True, f"Signature verified (signer: {signer})"
         except InvalidSignature:
-            return False, f"签名不匹配！插件可能已被篡改 (签名者: {signer})"
+            return False, f"Signature mismatch! Plugin may have been tampered with (signer: {signer})"
         except Exception as e:
-            return False, f"签名验证异常: {e}"
+            return False, f"Signature verification error: {e}"
 
     def is_official_plugin(self, plugin_dir: Path) -> bool:
+        pass
 
+
+class PluginSigner:
     def __init__(self, private_key_path: Optional[str] = None):
         self.private_key = None
         if private_key_path:
             self.load_private_key(private_key_path)
 
     def load_private_key(self, key_path: str):
+        with open(key_path, "rb") as f:
+            pem_data = f.read()
         self.private_key = serialization.load_pem_private_key(
-            pem_data.encode(),
+            pem_data,
             password=None,
             backend=default_backend()
         )
 
     def sign_plugin(self, plugin_dir: Path, signer_name: str, author: str = "Falck") -> str:
-        为插件生成签名
-        返回: 签名的文件路径
+        """Generate signature for a plugin.
+        Returns: path to the signature file
+        """
         if not self.private_key:
-            raise ValueError("未加载私钥")
+            raise ValueError("Private key not loaded")
         
         hasher = hashlib.sha256()
         files_to_hash = []
@@ -169,11 +182,20 @@ class SignatureError(Exception):
 
 
 class SignatureVerifierPlugin(Plugin):
+    def __init__(self):
+        self.verifier = SignatureVerifier()
+        self.signer = None
+
+    def verify(self, plugin_dir: Path, author: str = "Falck") -> Tuple[bool, str]:
         return self.verifier.verify_plugin(plugin_dir, author)
 
     def is_official(self, plugin_dir: Path) -> bool:
+        return self.verifier.is_official_plugin(plugin_dir)
+
+    def sign(self, plugin_dir: Path, signer_name: str, author: str = "Falck") -> str:
         if not self.signer:
-            raise SignatureError("未加载私钥，无法签名")
+            raise SignatureError("Private key not loaded, cannot sign")
         return self.signer.sign_plugin(plugin_dir, signer_name, author)
 
     def generate_keypair(self, author: str, key_dir: str = None):
+        pass

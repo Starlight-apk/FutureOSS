@@ -1,4 +1,4 @@
-
+class WsApiPlugin:
     def __init__(self):
         self._running = False
 
@@ -7,3 +7,4 @@
         Log.info("ws-api", "已启动")
 
     def stop(self):
+        pass

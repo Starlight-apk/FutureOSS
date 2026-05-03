@@ -1,5 +1,5 @@
-    
-    Provides access to configuration, state, and utilities during plugin execution.
+class Context:
+    """Provides access to configuration, state, and utilities during plugin execution."""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}

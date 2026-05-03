@@ -5,6 +5,7 @@
 
 import sys
 import json
+import importlib.util
 from pathlib import Path
 
 # 添加项目根目录到路径
@@ -54,12 +55,20 @@ def test_security_configurations():
     return True
 
 
+def dynamic_import(module_path, class_name):
+    spec = importlib.util.spec_from_file_location("module", module_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["module"] = module
+    spec.loader.exec_module(module)
+    return getattr(module, class_name)
+
 def test_rate_limiting():
     """测试限流功能"""
     print("\n=== 测试限流功能 ===")
     
     try:
-        from @{NebulaShell}.http_api.rate_limiter import RateLimitMiddleware
+        rate_limiter_path = str(project_root / "store" / "NebulaShell" / "http-api" / "rate_limiter.py")
+        RateLimitMiddleware = dynamic_import(rate_limiter_path, "RateLimitMiddleware")
         
         middleware = RateLimitMiddleware()
         
@@ -86,7 +95,8 @@ def test_csrf_protection():
     print("\n=== 测试CSRF防护功能 ===")
     
     try:
-        from @{NebulaShell}.http_api.csrf_middleware import CsrfMiddleware
+        csrf_path = str(project_root / "store" / "NebulaShell" / "http-api" / "csrf_middleware.py")
+        CsrfMiddleware = dynamic_import(csrf_path, "CsrfMiddleware")
         
         middleware = CsrfMiddleware()
         
@@ -114,7 +124,8 @@ def test_input_validation():
     print("\n=== 测试输入验证功能 ===")
     
     try:
-        from @{NebulaShell}.http_api.input_validation import InputValidationMiddleware
+        input_validation_path = str(project_root / "store" / "NebulaShell" / "http-api" / "input_validation.py")
+        InputValidationMiddleware = dynamic_import(input_validation_path, "InputValidationMiddleware")
         
         middleware = InputValidationMiddleware()
         
@@ -143,7 +154,8 @@ def test_middleware_chain():
     print("\n=== 测试中间件链 ===")
     
     try:
-        from @{NebulaShell}.http_api.middleware import MiddlewareChain
+        middleware_path = str(project_root / "store" / "NebulaShell" / "http-api" / "middleware.py")
+        MiddlewareChain = dynamic_import(middleware_path, "MiddlewareChain")
         
         chain = MiddlewareChain()
         print("✅ 中间件链创建成功")
@@ -166,7 +178,7 @@ def test_security_headers():
     print("\n=== 测试安全头设置 ===")
     
     try:
-        from @{NebulaShell}.http_api.middleware import CorsMiddleware
+        CorsMiddleware = dynamic_import(middleware_path, "CorsMiddleware")
         
         middleware = CorsMiddleware()
         

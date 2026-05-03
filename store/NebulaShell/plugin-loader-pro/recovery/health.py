@@ -1,4 +1,5 @@
 
+class HealthChecker:
     def __init__(self, interval: int = 30, timeout: int = 5, max_failures: int = 5):
         self.interval = interval
         self.timeout = timeout

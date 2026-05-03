@@ -1,4 +1,5 @@
 
+class ProCapabilityRegistry:
     def __init__(self, permission_check: bool = True):
         self.providers: dict[str, dict[str, Any]] = {}
         self.consumers: dict[str, list[str]] = {}
@@ -12,3 +13,4 @@
 
     def get_provider(self, capability: str, requester: str = "",
                      allowed_plugins: list[str] = None) -> Optional[Any]:
+        return None

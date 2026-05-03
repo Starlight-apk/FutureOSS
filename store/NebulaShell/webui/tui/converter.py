@@ -58,6 +58,11 @@ class BorderStyle:
     reverse: bool = False
     
     def apply(self, text: str) -> str:
+        return text
+
+
+@dataclass
+class TUIElement:
     id: str = ""
     element_type: TUIElementType = TUIElementType.CONTAINER
     classes: List[str] = field(default_factory=list)
@@ -97,7 +102,8 @@ class TUIButton(TUIElement):
 
 @dataclass
 class TUIPanel(TUIElement):
-    layout_type: str = "vertical"    gap: int = 1
+    layout_type: str = "vertical"
+    gap: int = 1
     
     def render(self, width: int = 80, height: int = 24) -> str:
         if self.layout_type == "vertical":
@@ -187,7 +193,8 @@ class HTMLToTUIConverter:
     def _parse_tui_config(self, html: str):
         for match in re.finditer(r'<style[^>]*type=["\']text/x-tui-css["\'][^>]*>(.*?)</style>', html, re.DOTALL):
             css = match.group(1)
-            for rule_match in re.finditer(r'([.                selector = rule_match.group(1)
+            for rule_match in re.finditer(r'([.\w#\s>:\[\]()=~|$^*]+)\s*\{([^}]*)\}', css):
+                selector = rule_match.group(1)
                 properties = rule_match.group(2)
                 style = self._parse_css_properties(properties)
                 self.css_styles[selector] = style
@@ -274,10 +281,14 @@ class HTMLToTUIConverter:
         return elements
     
     def get_keyboard_bindings(self) -> Dict[str, Dict]:
-    
+        return self.keyboard_bindings
+
     def __init__(self, width: int = 80, height: int = 24):
-        self.width = width
-        self.height = height
+        raise NotImplementedError("Use HTMLToTUIConverter instead")
+
+
+class TUIRenderer:
+    def __init__(self, width: int = 80, height: int = 24):
         self.converter = HTMLToTUIConverter(width, height)
         self.screen_buffer: List[List[str]] = []
         
@@ -352,7 +363,9 @@ class TUIInputHandler:
         return False
     
     def read_key(self) -> str:
-    
+        return ""
+
+class TUICanvas:
     def __init__(self, width: int = 80, height: int = 24):
         self.width = width
         self.height = height
@@ -376,7 +389,10 @@ class TUIInputHandler:
         return '\n'.join(''.join(row) for row in self.buffer)
     
     def display(self):
-    
+        pass
+
+
+class TUIEventManager:
     def __init__(self):
         self.events: Dict[str, List[Callable]] = {}
         
@@ -399,7 +415,8 @@ class TUIManager:
         self.input_handler = TUIInputHandler()
         self.event_manager = TUIEventManager()
         
-        self.pages: Dict[str, str] = {}        self.current_page = ""
+        self.pages: Dict[str, str] = {}
+        self.current_page = ""
         self.running = False
         self.selected_index = 0
         self.nav_items: List[Dict] = []
@@ -421,13 +438,13 @@ class TUIManager:
         self.canvas.display()
     
     def show_error(self, message: str):
-        <html>
+        error_html = f"""<html>
         <body>
-            <h1>❌ 错误</h1>
+            <h1>错误</h1>
             <p>{message}</p>
             <p>按任意键返回</p>
         </body>
-        </html>
+        </html>"""
         self.load_page("/error", error_html)
         self.render_current()
     
@@ -454,6 +471,10 @@ class TUIManager:
         self.running = False
     
     def start(self):
+        pass
+
+
+def create_tui_manager(width: int = 80, height: int = 24):
     global _tui_manager_instance
     if _tui_manager_instance is None:
         _tui_manager_instance = TUIManager(width, height)

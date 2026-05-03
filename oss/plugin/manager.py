@@ -17,7 +17,7 @@ class PluginManager:
     遵循「最小化核心框架」设计哲学：
     - 核心框架只负责加载 plugin-loader 插件
     - 所有其他插件（HTTP、WebSocket、Dashboard 等）都由 plugin-loader 插件扫描和加载
-    - store/@{NebulaShell}/ 是唯一的插件来源
+    - store/NebulaShell/ 是唯一的插件来源
     """
 
     def __init__(self):
@@ -28,7 +28,7 @@ class PluginManager:
         """仅加载 plugin-loader 核心插件
         
         plugin-loader 插件会负责：
-        1. 扫描 store/@{NebulaShell}/ 目录
+        1. 扫描 store/NebulaShell/ 目录
         2. 加载所有启用的插件
         3. 处理依赖关系
         4. 执行 PL 注入机制

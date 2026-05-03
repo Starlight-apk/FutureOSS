@@ -1,3 +1,4 @@
+class ProPluginInfo:
     def __init__(self):
         self.name: str = ""
         self.version: str = ""
@@ -9,7 +10,8 @@
         self.lifecycle: Any = None
         self.capabilities: set[str] = set()
         self.dependencies: list[str] = []
-        self.status: str = "idle"        self.error_count: int = 0
+        self.status: str = "idle"
+        self.error_count: int = 0
         self.last_error: str = ""
 
     def to_dict(self) -> dict:

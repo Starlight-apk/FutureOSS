@@ -1,4 +1,4 @@
-
+class Formatter:
     def __init__(self, format_type: str = "console"):
         self.format_type = format_type
 
@@ -38,3 +38,4 @@
         return '\n'.join(lines)
 
     def _format_json(self, result: dict) -> str:
+        pass

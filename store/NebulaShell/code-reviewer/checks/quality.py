@@ -1,4 +1,4 @@
-
+class QualityCheck:
     def check(self, filepath: str, content: str) -> list:
         issues = []
 
@@ -42,3 +42,4 @@
         return issues
 
     def _calculate_complexity(self, node: ast.AST) -> int:
+        pass

@@ -1,7 +1,7 @@
 """插件加载器 - 专门用于加载核心插件
 
 遵循「最小化核心框架」设计哲学：
-- 只负责加载可信的核心插件（来自 store/@{NebulaShell}/）
+- 只负责加载可信的核心插件（来自 store/NebulaShell/）
 - 所有插件都使用统一的加载机制
 - 不再区分沙箱模式和非沙箱模式
 """
@@ -17,7 +17,7 @@ class PluginLoader:
     """插件加载器 - 专门用于加载核心插件
     
     遵循「最小化核心框架」设计哲学：
-    - 只负责加载可信的核心插件（来自 store/@{NebulaShell}/）
+    - 只负责加载可信的核心插件（来自 store/NebulaShell/）
     - 所有插件都使用统一的加载机制
     - 不再区分沙箱模式和非沙箱模式
     """
@@ -27,7 +27,7 @@ class PluginLoader:
         self._config = get_config()
 
     def load_core_plugin(self, plugin_name: str, store_dir: Optional[str] = None) -> Optional[dict[str, Any]]:
-        """加载核心插件（来自 store/@{NebulaShell}/）
+        """加载核心插件（来自 store/NebulaShell/）
         
         Args:
             plugin_name: 插件名称（如 "plugin-loader"）
@@ -38,7 +38,7 @@ class PluginLoader:
         """
         if store_dir is None:
             store_dir = str(self._config.store_dir)
-        plugin_dir = Path(store_dir) / "@{NebulaShell}" / plugin_name
+        plugin_dir = Path(store_dir) / "NebulaShell" / plugin_name
         return self._load_plugin(plugin_name, plugin_dir)
 
     def _load_plugin(self, plugin_name: str, plugin_dir: Path) -> Optional[dict[str, Any]]:

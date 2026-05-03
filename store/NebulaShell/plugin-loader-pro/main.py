@@ -1,4 +1,4 @@
-
+class PluginLoaderProPlugin:
     def __init__(self):
         self.plugin_loader = None
         self.enhancer = None
@@ -26,6 +26,12 @@
         ProLogger.info("main", "已注入 plugin-loader")
 
     def init(self, deps: dict = None):
+        if not self.plugin_loader:
+            try:
+                from store.NebulaShell.plugin_bridge.main import use
+                self.plugin_loader = use("plugin-loader")
+            except Exception:
+                pass
         if not self.plugin_loader:
             ProLogger.warn("main", "未找到 plugin-loader 依赖")
             return

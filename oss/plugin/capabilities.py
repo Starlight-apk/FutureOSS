@@ -1,3 +1,4 @@
+def scan_capabilities(plugin_dir):
     capabilities: set[str] = set()
     main_file = plugin_dir / "main.py"
 

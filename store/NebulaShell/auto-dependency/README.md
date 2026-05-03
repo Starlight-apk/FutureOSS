@@ -108,7 +108,7 @@ print(f"成功安装：{install_result['success_count']}, 失败：{install_resu
 ## 文件结构
 
 ```
-store/@{NebulaShell}/auto-dependency/
+store/NebulaShell/auto-dependency/
 ├── manifest.json      # 插件清单
 ├── main.py            # 主逻辑实现
 ├── PL/

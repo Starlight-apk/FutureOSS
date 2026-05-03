@@ -70,7 +70,7 @@
       "name": "NebulaShell: 调试日志终端插件",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{NebulaShell}/log-terminal/main.py",
+      "program": "${workspaceFolder}/store/NebulaShell/log-terminal/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -84,7 +84,7 @@
       "name": "NebulaShell: 调试WebUI",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{NebulaShell}/webui/main.py",
+      "program": "${workspaceFolder}/store/NebulaShell/webui/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -98,7 +98,7 @@
       "name": "NebulaShell: 调试HTTP API",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{NebulaShell}/http-api/main.py",
+      "program": "${workspaceFolder}/store/NebulaShell/http-api/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -112,7 +112,7 @@
       "name": "NebulaShell: 调试WS API",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/store/@{NebulaShell}/ws-api/main.py",
+      "program": "${workspaceFolder}/store/NebulaShell/ws-api/main.py",
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {

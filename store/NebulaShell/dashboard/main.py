@@ -1,8 +1,9 @@
-
+class DashboardPlugin:
     def __init__(self):
         self.webui = None
         self.views_dir = os.path.join(os.path.dirname(__file__), 'views')
-        self._start_time = time.time()        self._history_len = 60
+        self._start_time = time.time()
+        self._history_len = 60
         self._cpu_history = deque(maxlen=self._history_len)
         self._ram_history = deque(maxlen=self._history_len)
         self._net_recv_history = deque(maxlen=self._history_len)
@@ -30,6 +31,12 @@
         self.webui = webui
 
     def init(self, deps: dict = None):
+        if not self.webui:
+            try:
+                from store.NebulaShell.plugin_bridge.main import use
+                self.webui = use("webui")
+            except Exception:
+                pass
         if self.webui:
             Log.info("dashboard", "已获取 WebUI 引用")
             self.webui.register_page(
@@ -50,7 +57,8 @@
             s.settimeout(2)
             start = time.time()
             s.connect(('8.8.8.8', 53))
-            elapsed = (time.time() - start) * 1000            s.close()
+            elapsed = (time.time() - start) * 1000
+            s.close()
             return round(elapsed, 1)
         except Exception as e:
             import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
@@ -143,60 +151,51 @@
         Log.error("dashboard", "仪表盘已停止")
 
     def _render_content(self) -> str:
-<html lang="zh-CN">
+        html = """<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统仪表盘</title>
     <link rel="stylesheet" href="/assets/remixicon.css">
     <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:        .container {{ max-width: 1400px; margin: 0 auto; }}
-        .card {{ background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }}
-        .card-title {{ font-size: 18px; font-weight: 600; color:        .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }}
-        .stat-card {{ background:        .stat-icon {{ width: 60px; height: 60px; margin: 0 auto 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; }}
-        .stat-icon.cpu {{ background: linear-gradient(135deg,        .stat-icon.ram {{ background: linear-gradient(135deg,        .stat-icon.disk {{ background: linear-gradient(135deg,        .stat-value {{ font-size: 24px; font-weight: 700; color:        .stat-label {{ font-size: 14px; color:        .gauge-container {{ position: relative; width: 120px; height: 120px; margin: 0 auto; }}
-        .gauge-svg {{ transform: rotate(-90deg); }}
-        .gauge-bg {{ fill: none; stroke:        .gauge-fill {{ fill: none; stroke:        .gauge-green .gauge-fill {{ stroke:        .gauge-orange .gauge-fill {{ stroke:        .gauge-blue .gauge-fill {{ stroke:        .gauge-text {{ position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: 600; color:        .info-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }}
-        .info-item {{ background:        .info-label {{ font-size: 12px; color:        .info-value {{ font-size: 14px; color:    </style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 600; color: #333; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .stat-card { background: #fff; }
+        .stat-icon { width: 60px; height: 60px; margin: 0 auto 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; }
+        .stat-icon.cpu { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-icon.ram { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .stat-icon.disk { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .stat-value { font-size: 24px; font-weight: 700; color: #333; }
+        .stat-label { font-size: 14px; color: #666; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .info-item { background: #f8f9fa; }
+        .info-label { font-size: 12px; color: #999; }
+        .info-value { font-size: 14px; color: #333; }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h2 class="card-title"><i class="ri-dashboard-line"></i> 系统仪表盘</h2>
+            <h2 class="card-title"> 系统仪表盘</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon cpu"><i class="ri-cpu-line"></i></div>
-                    <div class="stat-value">{cpu_percent}%</div>
-                    <div class="stat-label">CPU 使用率 ({cpu_cores} 核心)</div>
+                    <div class="stat-value">0%</div>
+                    <div class="stat-label">CPU 使用率</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon ram"><i class="ri-memory-line"></i></div>
-                    <div class="stat-value">{ram_percent}%</div>
-                    <div class="stat-label">内存使用 ({ram_used_gb} GB / {ram_total_gb} GB)</div>
+                    <div class="stat-value">0%</div>
+                    <div class="stat-label">内存使用</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon disk"><i class="ri-hard-drive-line"></i></div>
-                    <div class="stat-value">{disk_percent}%</div>
-                    <div class="stat-label">磁盘使用 ({disk_used_gb} GB / {disk_total_gb} GB)</div>
-                </div>
-            </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">系统运行时间</div>
-                    <div class="info-value">{uptime_str}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">操作系统</div>
-                    <div class="info-value">{platform.system()} {platform.release()}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Python 版本</div>
-                    <div class="info-value">{platform.python_version()}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">主机名</div>
-                    <div class="info-value">{platform.node()}</div>
+                    <div class="stat-value">0%</div>
+                    <div class="stat-label">磁盘使用</div>
                 </div>
             </div>
         </div>
@@ -206,9 +205,7 @@
     </script>
 </body>
 </html>"""
-            return html
-        except Exception as e:
-            return f"<p>仪表盘渲染出错：{{e}}</p>"
+        return html
 
 register_plugin_type("DashboardPlugin", DashboardPlugin)
 

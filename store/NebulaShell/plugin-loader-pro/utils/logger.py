@@ -1,4 +1,5 @@
 
+class ProLogger:
     _COLORS = {
         "reset": "\033[0m",
         "white": "\033[0;37m",

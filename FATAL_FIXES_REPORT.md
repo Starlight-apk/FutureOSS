@@ -12,12 +12,12 @@
 - 这允许任何来源的跨域请求，存在安全风险
 
 #### 修复方案
-1. **修改中间件** (`store/@{NebulaShell}/http-api/middleware.py`)：
+1. **修改中间件** (`store/NebulaShell/http-api/middleware.py`)：
    - 将 `CorsMiddleware.process()` 方法改为从配置读取允许的来源列表
    - 只在请求来源在允许列表中时设置 CORS 头
    - 支持 `*` 通配符和具体域名
 
-2. **修改服务器** (`store/@{NebulaShell}/http-api/server.py`)：
+2. **修改服务器** (`store/NebulaShell/http-api/server.py`)：
    - 在 `do_OPTIONS()` 方法中添加来源检查
    - 只为允许的来源设置 CORS 头
 

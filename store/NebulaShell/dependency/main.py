@@ -1,7 +1,9 @@
+class DependencyError(Exception):
     pass
 
 
 class DependencyResolver:
+    def add_dependency(self, name: str, dependencies: list[str]):
         self.graph[name] = dependencies
 
     def resolve(self) -> list[str]:
@@ -13,7 +15,8 @@ class DependencyResolver:
         for name, deps in self.graph.items():
             for dep in deps:
                 if dep in in_degree:
-                    in_degree[name] += 1                    who_depends_on[dep].append(name)
+                    in_degree[name] += 1
+                    who_depends_on[dep].append(name)
         queue = [name for name, degree in in_degree.items() if degree == 0]
         result = []
 
@@ -39,6 +42,7 @@ class DependencyResolver:
 
 
 class DependencyPlugin(Plugin):
+    def __init__(self):
         pass
 
     def start(self):

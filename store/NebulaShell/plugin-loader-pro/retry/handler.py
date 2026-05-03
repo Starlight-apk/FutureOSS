@@ -1,4 +1,5 @@
 
+class RetryHandler:
     def __init__(self, config: RetryConfig = None):
         config = config or RetryConfig()
         self.max_retries = config.max_retries

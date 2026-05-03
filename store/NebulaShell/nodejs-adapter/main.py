@@ -1,3 +1,4 @@
+"""
 Node.js Adapter Plugin for NebulaShell
 
 This plugin provides Node.js and npm capabilities to other plugins.
@@ -10,6 +11,7 @@ Features:
 - Check Node.js and npm versions
 - List installed packages
 - Dependency isolation per plugin
+"""
 
 import subprocess
 import json
@@ -20,6 +22,7 @@ from typing import Dict, List, Optional, Any
 
 
 class NodeJSAdapter:
+    def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
         self.node_path = self.config.get('node_path', '/usr/bin/node')
         self.npm_path = self.config.get('npm_path', '/usr/bin/npm')
@@ -68,7 +71,7 @@ class NodeJSAdapter:
     def install(self, plugin_id: str, packages: List[str], 
                 pkg_dir: Optional[Path] = None, 
                 is_dev: bool = False) -> Dict[str, Any]:
-        Install npm packages to a plugin-specific directory.
+        """Install npm packages to a plugin-specific directory.
         
         Args:
             plugin_id: Unique identifier for the plugin
@@ -78,6 +81,7 @@ class NodeJSAdapter:
         
         Returns:
             Dict with installation result
+        """
         try:
             if pkg_dir is None:
                 target_dir = self.cache_dir / plugin_id
@@ -102,7 +106,8 @@ class NodeJSAdapter:
                 cwd=str(target_dir),
                 capture_output=True,
                 text=True,
-                timeout=300            )
+                timeout=300
+            )
             
             if result.returncode == 0:
                 return {
@@ -141,7 +146,7 @@ class NodeJSAdapter:
             pkg_dir: Optional[Path] = None,
             args: Optional[List[str]] = None,
             env: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
-        Execute a Node.js script or npm command.
+        """Execute a Node.js script or npm command.
         
         Args:
             plugin_id: Unique identifier for the plugin
@@ -152,6 +157,7 @@ class NodeJSAdapter:
         
         Returns:
             Dict with execution result
+        """
         try:
             if pkg_dir is None:
                 work_dir = self.cache_dir / plugin_id
@@ -213,7 +219,7 @@ class NodeJSAdapter:
     
     def list_packages(self, plugin_id: str, 
                       pkg_dir: Optional[Path] = None) -> Dict[str, Any]:
-        List installed packages in a plugin directory.
+        """List installed packages in a plugin directory.
         
         Args:
             plugin_id: Unique identifier for the plugin
@@ -221,6 +227,7 @@ class NodeJSAdapter:
         
         Returns:
             Dict with list of installed packages
+        """
         try:
             if pkg_dir is None:
                 work_dir = self.cache_dir / plugin_id
@@ -280,7 +287,7 @@ class NodeJSAdapter:
     def init_project(self, plugin_id: str, pkg_dir: Optional[Path] = None,
                      package_name: Optional[str] = None,
                      version: str = "1.0.0") -> Dict[str, Any]:
-        Initialize a new Node.js project in a plugin directory.
+        """Initialize a new Node.js project in a plugin directory.
         
         Args:
             plugin_id: Unique identifier for the plugin
@@ -290,6 +297,7 @@ class NodeJSAdapter:
         
         Returns:
             Dict with initialization result
+        """
         try:
             if pkg_dir is None:
                 work_dir = self.cache_dir / plugin_id
@@ -338,6 +346,10 @@ class NodeJSAdapter:
 
 
 def init(config: Dict[str, Any]) -> NodeJSAdapter:
+    return NodeJSAdapter(config)
+
+
+def get_capabilities() -> list:
     return [
         'nodejs_runtime',
         'npm_package_manager',
@@ -348,7 +360,7 @@ def init(config: Dict[str, Any]) -> NodeJSAdapter:
 
 
 def execute_command(adapter: NodeJSAdapter, command: str, **kwargs) -> Dict[str, Any]:
-    Execute a command through the adapter.
+    """Execute a command through the adapter.
     
     Available commands:
     - check_versions: Check Node.js and npm versions
@@ -356,6 +368,7 @@ def execute_command(adapter: NodeJSAdapter, command: str, **kwargs) -> Dict[str,
     - run: Execute Node.js scripts or npm commands
     - list_packages: List installed packages
     - init_project: Initialize a new Node.js project
+    """
     if command == 'check_versions':
         return adapter.check_versions()
     elif command == 'install':
@@ -386,4 +399,4 @@ if __name__ == '__main__':
     caps = get_capabilities()
     print(f"\nCapabilities: {', '.join(caps)}")
     
-    print("\n✓ Node.js Adapter initialized successfully!")
+    print("\nNode.js Adapter initialized successfully!")

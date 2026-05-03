@@ -7,6 +7,11 @@ from oss.plugin.types import Plugin
 
 
 class SystemDependencyChecker:
+    def __init__(self, package_managers=None):
+        self.package_managers = package_managers or {}
+        self.detected_pm = self._detect_package_manager()
+    
+    def _detect_package_manager(self):
         for pm, commands in self.package_managers.items():
             for cmd in commands:
                 if shutil.which(cmd):
@@ -95,7 +100,20 @@ class SystemDependencyChecker:
 
 
 class AutoDependencyPlugin(Plugin):
-        if deps:
+    def __init__(self):
+        self._plugin_loader_ref = None
+        self.scan_dirs = ["store"]
+        self.auto_install = True
+
+    def init(self, deps: dict = None):
+        self._plugin_loader_ref = None
+        if not self._plugin_loader_ref:
+            try:
+                from store.NebulaShell.plugin_bridge.main import use
+                self._plugin_loader_ref = use("plugin-loader")
+            except Exception:
+                pass
+        if not self._plugin_loader_ref and deps:
             self.scan_dirs = deps.get("scan_dirs", ["store"])
             self.auto_install = deps.get("auto_install", True)
             
@@ -145,7 +163,8 @@ class AutoDependencyPlugin(Plugin):
     def check_all_dependencies(self, base_dir: str = "store") -> Dict[str, Any]:
         plugins = self.scan_plugin_manifests(base_dir)
         
-        all_deps = {}        for plugin in plugins:
+        all_deps = {}
+        for plugin in plugins:
             for dep in plugin["system_dependencies"]:
                 if dep not in all_deps:
                     all_deps[dep] = []
@@ -203,29 +222,48 @@ class AutoDependencyPlugin(Plugin):
         }
     
     def get_system_info(self) -> Dict[str, Any]:
-        
-        通过 PL 注入机制向插件加载器注册以下功能：
-        - auto-dependency:scan: 扫描所有插件的系统依赖
-        - auto-dependency:check: 检查依赖安装状态
-        - auto-dependency:install: 安装缺失的依赖
-        - auto-dependency:info: 获取插件系统信息
+        return {
+            "scan_dirs": self.scan_dirs,
+            "auto_install": self.auto_install
+        }
+
+    def register_services(self, injector):
         def scan_deps(scan_dir: str = "store") -> Dict[str, Any]:
             return self.check_all_dependencies(scan_dir)
-        
+
+        injector.register_function(
+            "auto-dependency:scan",
+            scan_deps,
+            "scan all plugin system dependencies"
+        )
+
+        def check_deps(scan_dir: str = "store") -> Dict[str, Any]:
+            return self.check_all_dependencies(scan_dir)
+
         injector.register_function(
             "auto-dependency:check",
             check_deps,
-            "检查所有插件声明的系统依赖是否已安装"
+            "check if all declared system deps are installed"
         )
-        
+
         def install_deps(scan_dir: str = "store") -> Dict[str, Any]:
+            return self.install_missing_dependencies(scan_dir)
+
+        injector.register_function(
+            "auto-dependency:install",
+            install_deps,
+            "install missing system dependencies"
+        )
+
+        def get_info() -> Dict[str, Any]:
             return self.get_system_info()
-        
+
         injector.register_function(
             "auto-dependency:info",
             get_info,
-            "获取自动依赖插件的系统信息"
+            "get auto-dependency plugin system info"
         )
 
 
 def New() -> AutoDependencyPlugin:
+    return AutoDependencyPlugin()

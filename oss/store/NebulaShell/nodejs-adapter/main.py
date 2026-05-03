@@ -1,3 +1,4 @@
+"""
 Node.js Runtime Adapter for NebulaShell
 =====================================
 This plugin acts as a pure service provider (Adapter). It does NOT contain its own business logic or pkg.
@@ -8,6 +9,7 @@ Usage by other plugins:
     1. Get this adapter from the shared service registry.
     2. Call adapter.execute_in_context(plugin_root="./path/to/other-plugin", command="npm start")
     3. The adapter will automatically switch CWD to "./path/to/other-plugin/pkg" and run the command.
+"""
 
 import os
 import sys
@@ -17,8 +19,8 @@ import shutil
 from typing import Dict, Any, List, Optional
 
 class NodeJSAdapter:
-    Pure Node.js Runtime Adapter.
-    Provides execution context switching for other plugins.
+    """Pure Node.js Runtime Adapter.
+    Provides execution context switching for other plugins."""
     
     def __init__(self):
         self.name = "nodejs-adapter"
@@ -29,6 +31,10 @@ class NodeJSAdapter:
         self._detect_runtime()
     
     def _detect_runtime(self):
+        self.node_path = shutil.which('node')
+        self.npm_path = shutil.which('npm')
+
+    def get_info(self):
         versions = self.check_versions()
         return {
             'available': bool(self.node_path),
@@ -38,34 +44,52 @@ class NodeJSAdapter:
         }
 
     def check_versions(self) -> Dict[str, str]:
-        CORE METHOD: Execute a command within the context of another plugin.
-        
+        """Check Node.js and npm versions."""
+        versions = {}
+        if self.node_path:
+            try:
+                result = subprocess.run([self.node_path, '--version'], capture_output=True, text=True, timeout=30)
+                versions['node'] = result.stdout.strip()
+            except Exception as e:
+                versions['node'] = f'Error: {e}'
+        if self.npm_path:
+            try:
+                result = subprocess.run([self.npm_path, '--version'], capture_output=True, text=True, timeout=30)
+                versions['npm'] = result.stdout.strip()
+            except Exception as e:
+                versions['npm'] = f'Error: {e}'
+        return versions
+
+    def execute_in_context(self, plugin_root: str, command_args: List[str], is_npm: bool = False) -> Dict[str, Any]:
+        """Execute a command within the context of another plugin.
+
         Args:
             plugin_root: The root directory of the CALLING plugin (e.g., /workspace/oss/plugins/my-web-app)
             command_args: The command arguments (e.g., ['start'] or ['install', 'express'])
             is_npm: If True, uses 'npm'. If False, uses 'node'.
-            
+
         Behavior:
             1. Targets the './pkg' subdirectory inside plugin_root.
             2. Sets cwd to that pkg directory.
             3. Executes the command.
             4. Ensures dependencies install into that specific pkg folder.
+        """
         if not self.node_path:
             return {'success': False, 'error': 'Node.js runtime not found'}
         if is_npm and not self.npm_path:
             return {'success': False, 'error': 'npm not found'}
 
         work_dir = os.path.join(plugin_root, 'pkg')
-        
+
         if not os.path.exists(work_dir):
             return {'success': False, 'error': f'Target pkg directory not found: {work_dir}'}
 
         try:
             executable = self.npm_path if is_npm else self.node_path
             cmd = [executable] + command_args
-            
+
             env = os.environ.copy()
-            env['npm_config_prefix'] = work_dir 
+            env['npm_config_prefix'] = work_dir
             env['NODE_PATH'] = os.path.join(work_dir, 'node_modules')
 
             print(f"[ADAPTER] Executing in context: {work_dir}")
@@ -77,8 +101,8 @@ class NodeJSAdapter:
                 env=env,
                 capture_output=True,
                 text=True,
-                timeout=300            )
-            
+                timeout=300)
+
             return {
                 'success': result.returncode == 0,
                 'stdout': result.stdout,
@@ -86,23 +110,23 @@ class NodeJSAdapter:
                 'returncode': result.returncode,
                 'cwd': work_dir
             }
-            
+
         except subprocess.TimeoutExpired:
             return {'success': False, 'error': 'Command execution timeout'}
         except Exception as e:
             return {'success': False, 'error': f'{type(e).__name__} - {e}'}
 
     def install_dependencies(self, plugin_root: str, packages: List[str] = None) -> Dict[str, Any]:
-        Helper: Install dependencies for a specific plugin.
+        """Helper: Install dependencies for a specific plugin.
         If packages is None, runs 'npm install' (installs from package.json).
-        If packages is provided, runs 'npm install <pkg1> <pkg2>...'.
+        If packages is provided, runs 'npm install <pkg1> <pkg2>...'."""
         args = ['install']
         if packages:
             args.extend(packages)
         return self.execute_in_context(plugin_root, args, is_npm=True)
 
     def run_script(self, plugin_root: str, script_name: str, extra_args: List[str] = None) -> Dict[str, Any]:
-        Helper: Run an npm script (e.g., 'start', 'build') for a specific plugin.
+        """Helper: Run an npm script (e.g., 'start', 'build') for a specific plugin."""
         args = ['run', script_name]
         if extra_args:
             args.append('--')
@@ -110,15 +134,15 @@ class NodeJSAdapter:
         return self.execute_in_context(plugin_root, args, is_npm=True)
 
     def run_file(self, plugin_root: str, file_path: str, args: List[str] = None) -> Dict[str, Any]:
-        Helper: Run a specific JS file within a plugin's pkg directory.
-        file_path should be relative to the pkg dir (e.g., 'index.js').
+        """Helper: Run a specific JS file within a plugin's pkg directory.
+        file_path should be relative to the pkg dir (e.g., 'index.js')."""
         cmd_args = [file_path]
         if args:
             cmd_args.extend(args)
         return self.execute_in_context(plugin_root, cmd_args, is_npm=False)
 
     def init_project(self, plugin_root: str, name: str = "plugin-project") -> Dict[str, Any]:
-        Helper: Initialize a package.json in the plugin's pkg directory.
+        """Helper: Initialize a package.json in the plugin's pkg directory."""
         res = self.execute_in_context(plugin_root, ['init', '-y'], is_npm=True)
         if not res['success']:
             return res
@@ -141,9 +165,9 @@ class NodeJSAdapter:
 
 
 def init(context):
-    Initialize the adapter and register it as a shared service.
+    """Initialize the adapter and register it as a shared service.
     This plugin does NOT start any server or run any code itself.
-    It just registers the tool for others to use.
+    It just registers the tool for others to use."""
     adapter = NodeJSAdapter()
     versions = adapter.check_versions()
     
@@ -165,6 +189,13 @@ def init(context):
     }
 
 def start(context):
+    """Return inactive status."""
     return {'status': 'inactive'}
 
 def get_info(context):
+    """Return adapter info."""
+    return {
+        'name': 'nodejs-adapter',
+        'version': '1.0.0',
+        'features': ['run_script', 'install_deps', 'exec_command', 'context_switching']
+    }

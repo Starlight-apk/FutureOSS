@@ -1,3 +1,4 @@
+def _gitee_request(url, timeout=30):
     req = urllib.request.Request(url)
     req.add_header("User-Agent", "NebulaShell-PkgManager")
     if GITEE_TOKEN:
@@ -6,6 +7,7 @@
 
 
 class PkgManagerPlugin(Plugin):
+    def __init__(self):
         if not self.webui:
             Log.warn("pkg-manager", "警告: 未找到 WebUI 依赖")
             return
@@ -32,26 +34,35 @@ class PkgManagerPlugin(Plugin):
                 safe_pkg_name = html.escape(pkg_name)
                 safe_version = html.escape(str(info.get('version', '未知')))
                 safe_author = html.escape(str(info.get('author', '未知')))
-                plugin_rows += f
+                plugin_rows += f"<tr><td>{safe_pkg_name}</td><td>{safe_version}</td><td>{safe_author}</td></tr>"
             
-            html = f
+            html = f"<table>{plugin_rows}</table>"
             return html
         except Exception as e:
-            return f"<p>插件管理页面渲染出错：{{e}}</p>"
+            return f"<p>插件管理页面渲染出错: {e}</p>"
 
     def _store_content(self) -> str:
-                <div class="plugin-card">
+        try:
+            html = ""
+            for pkg in self._fetch_remote_plugins():
+                safe_name = html.escape(pkg.get('name', ''))
+                safe_desc = html.escape(pkg.get('description', ''))
+                safe_version = html.escape(pkg.get('version', '未知'))
+                safe_author = html.escape(pkg.get('author', '未知'))
+                action_btn = '<button class="btn btn-success">安装</button>'
+                html += f"""<div class="plugin-card">
                     <div class="plugin-icon"><i class="ri-plug-line"></i></div>
                     <h3>{safe_name}</h3>
                     <p class="plugin-desc">{safe_desc}</p>
                     <div class="plugin-meta">
-                        <span>版本：{safe_version}</span>
-                        <span>作者：{safe_author}</span>
+                        <span>版本: {safe_version}</span>
+                        <span>作者: {safe_author}</span>
                     </div>
                     <div class="plugin-actions">
                         {action_btn}
                     </div>
-                </div><!DOCTYPE html>
+                </div>"""
+            html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -60,13 +71,23 @@ class PkgManagerPlugin(Plugin):
     <link rel="stylesheet" href="/assets/remixicon.css">
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:        .container {{ max-width: 1400px; margin: 0 auto; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
         .card {{ background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }}
         .card-header {{ margin-bottom: 20px; }}
-        .card-title {{ font-size: 18px; font-weight: 600; color:        .btn {{ padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }}
-        .btn-success {{ background:        .btn-success:hover {{ background:        .btn-secondary {{ background:        .plugins-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }}
-        .plugin-card {{ background:        .plugin-card:hover {{ transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }}
-        .plugin-icon {{ width: 48px; height: 48px; background:        .plugin-card h3 {{ font-size: 16px; color:        .plugin-desc {{ color:        .plugin-meta {{ display: flex; justify-content: space-between; font-size: 12px; color:        .plugin-actions {{ display: flex; gap: 10px; }}
+        .card-title {{ font-size: 18px; font-weight: 600; color: #333; }}
+        .btn {{ padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }}
+        .btn-success {{ background: #67c23a; color: white; }}
+        .btn-success:hover {{ background: #5daf34; }}
+        .btn-secondary {{ background: #909399; color: white; }}
+        .plugins-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }}
+        .plugin-card {{ background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }}
+        .plugin-card:hover {{ transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }}
+        .plugin-icon {{ width: 48px; height: 48px; background: #ecf5ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }}
+        .plugin-card h3 {{ font-size: 16px; color: #333; margin-bottom: 8px; }}
+        .plugin-desc {{ color: #666; font-size: 13px; margin-bottom: 12px; }}
+        .plugin-meta {{ display: flex; justify-content: space-between; font-size: 12px; color: #999; }}
+        .plugin-actions {{ display: flex; gap: 10px; }}
     </style>
 </head>
 <body>
@@ -76,7 +97,7 @@ class PkgManagerPlugin(Plugin):
                 <h2 class="card-title"><i class="ri-store-line"></i> 插件商店</h2>
             </div>
             <div class="plugins-grid">
-                {plugin_cards}
+                {html}
             </div>
         </div>
     </div>
@@ -88,10 +109,10 @@ class PkgManagerPlugin(Plugin):
                 body: JSON.stringify({{plugin: name}})
             }}).then(r => r.json()).then(data => {{
                 if (data.success) {{
-                    alert('安装成功！');
+                    alert('安装成功!');
                     location.reload();
                 }} else {{
-                    alert('安装失败：' + data.error);
+                    alert('安装失败: ' + data.error);
                 }}
             }});
         }}
@@ -100,7 +121,7 @@ class PkgManagerPlugin(Plugin):
 </html>"""
             return html
         except Exception as e:
-            return f"<p>插件商店页面渲染出错：{{e}}</p>"
+            return f"<p>插件商店页面渲染出错: {e}</p>"
 
 
 
@@ -248,6 +269,8 @@ class PkgManagerPlugin(Plugin):
     def _load_plugin_config(self, plugin_name: str) -> dict:
         if self.storage:
             storage_instance = self.storage.get_storage("pkg-manager")
-            storage_instance.set(f"plugin_config.{plugin_name}", config)
+            return storage_instance.get(f"plugin_config.{plugin_name}", {})
+        return {}
 
     def _get_plugin_detailed_info(self, plugin_name: str) -> dict:
+        return {}

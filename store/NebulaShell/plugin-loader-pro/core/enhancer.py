@@ -1,4 +1,5 @@
 
+class PluginLoaderEnhancer:
     def __init__(self, plugin_manager, config: ProConfig):
         self.pm = plugin_manager
         self.config = config
@@ -98,3 +99,4 @@
         return ordered
 
     def disable(self):
+        pass

@@ -11,7 +11,7 @@ services:
       - "8082:8082"   # HTTP TCP
     volumes:
       # 插件热更新（无需重建镜像）
-      - ./store/@{NebulaShell}:/app/store/@{NebulaShell}:ro
+      - ./store/NebulaShell:/app/store/NebulaShell:ro
       - ./store/@{Falck}:/app/store/@{Falck}:ro
       # 数据持久化
       - nebulashell-data:/app/data

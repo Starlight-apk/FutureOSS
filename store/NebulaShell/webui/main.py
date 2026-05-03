@@ -1,4 +1,4 @@
-
+class WebUIPlugin:
     def __init__(self):
         self.http_api = None
         self.server = None
@@ -27,9 +27,15 @@
         )
 
     def set_http_api(self, http_api):
-        self.tui = tui
+        self.http_api = http_api
 
     def init(self, deps: dict = None):
+        if not self.http_api:
+            try:
+                from store.NebulaShell.plugin_bridge.main import use
+                self.http_api = use("http-api")
+            except Exception:
+                pass
         if self.server:
             self._setup_home_page()
             
@@ -51,13 +57,11 @@
 
 
     def register_page(self, path: str, content_provider, nav_item: dict = None):
-        其他插件调用此方法注册页面。
-        :param path: 路由路径 (e.g., '/dashboard')
-        :param content_provider: 无参函数，返回 HTML 字符串
-        :param nav_item: 导航项 {'icon': '📊', 'text': '仪表盘'}
+        """其他插件调用此方法注册页面。"""
         if self.server:
             self.server.register_page(path, content_provider, nav_item)
         else:
             Log.warn("webui", f"警告：试图注册页面 {path}，但服务器未初始化")
 
     def add_nav_item(self, item: dict):
+        pass

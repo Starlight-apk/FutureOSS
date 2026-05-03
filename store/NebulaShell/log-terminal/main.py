@@ -1,4 +1,4 @@
-
+class LogTerminalPlugin:
     def __init__(self):
         self.webui = None
         self.http_api = None
@@ -30,6 +30,13 @@
         self.http_api = http_api
 
     def init(self, deps: dict = None):
+        if not self.webui or not self.http_api:
+            try:
+                from store.NebulaShell.plugin_bridge.main import use
+                if not self.webui: self.webui = use("webui")
+                if not self.http_api: self.http_api = use("http-api")
+            except Exception:
+                pass
         if self.webui:
             Log.info("log-terminal", "已获取 WebUI 引用")
             
@@ -89,14 +96,16 @@
                         try:
                             with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
                                 if log_file not in last_positions:
-                                    f.seek(0, 2)                                    last_positions[log_file] = f.tell()
+                                    f.seek(0, 2)
+                                    last_positions[log_file] = f.tell()
                                 else:
                                     f.seek(last_positions[log_file])
                                 
                                 lines = f.readlines()
                                 if lines:
                                     last_positions[log_file] = f.tell()
-                                    for line in lines[-50:]:                                        line = line.strip()
+                                    for line in lines[-50:]:
+                                        line = line.strip()
                                         if line:
                                             self.add_log_entry("info", "system", line)
                         except Exception as e:
@@ -195,7 +204,7 @@
                     'port': port
                 }
                 
-                Log.info("log-terminal", f"SSH 终端会话                
+                Log.info("log-terminal", f"SSH 终端会话 {session_id} 已创建")
                 return Response(
                     status=200,
                     headers={"Content-Type": "application/json"},
@@ -234,7 +243,8 @@
                     import traceback; print(f"[main.py] 错误:{type(e).__name__}:{e}"); traceback.print_exc()
                     pass
                 del self._ssh_sessions[session_id]
-                Log.info("log-terminal", f"SSH 终端会话                return Response(
+                Log.info("log-terminal", f"SSH 终端会话 {session_id} 已断开")
+                return Response(
                     status=200,
                     headers={"Content-Type": "application/json"},
                     body=json.dumps({'success': True, 'message': '已断开连接'})
@@ -292,14 +302,15 @@
                     'ok': 'log-ok',
                     'tip': 'log-tip'
                 }.get(log['level'], 'log-info')
-                log_rows += f
-            
-            html = f
+                log_rows += f"<tr class='{level_class}'><td>{log['timestamp']}</td><td>{log['tag']}</td><td>{log['message']}</td></tr>"
+
+            html = f"""<html><body><table>{log_rows}</table></body></html>"""
             return html
         except Exception as e:
             return f"<p>日志视图渲染出错：{e}</p>"
+
     def _render_terminal(self) -> str:
-<html lang="zh-CN">
+        html = """<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -307,20 +318,29 @@
     <link rel="stylesheet" href="/assets/remixicon.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:        .container { max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; display: flex; flex-direction: column; }
-        .card { background:        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .card-title { font-size: 18px; font-weight: 600; color:        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
-        .btn-primary { background:        .btn-primary:hover { background:        .btn-danger { background:        .btn-danger:hover { background:        .terminal-container { flex: 1; background:        .terminal-output { flex: 1; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; color:        .terminal-input { display: flex; margin-top: 10px; }
-        .terminal-input input { flex: 1; background:        .terminal-input input:focus { border-color:        .status-bar { display: flex; justify-content: space-between; padding: 10px; background:        .status-item { display: flex; align-items: center; gap: 8px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; }
+        .container { max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; display: flex; flex-direction: column; }
+        .card { background: #16213e; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 600; color: #e94560; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #0f3460; color: white; }
+        .btn-danger { background: #e94560; color: white; }
+        .terminal-container { flex: 1; background: #0a0a1a; border-radius: 6px; padding: 15px; }
+        .terminal-output { flex: 1; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; color: #00ff00; }
+        .terminal-input { display: flex; margin-top: 10px; }
+        .terminal-input input { flex: 1; background: #0a0a1a; color: #00ff00; border: 1px solid #333; padding: 8px; }
+        .status-bar { display: flex; justify-content: space-between; padding: 10px; background: #16213e; }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .status-connected { background:        .status-disconnected { background:        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background:        ::-webkit-scrollbar-thumb { background:    </style>
+        .status-connected { background: #00ff00; }
+        .status-disconnected { background: #ff0000; }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title"><i class="ri-terminal-box-line"></i> SSH 终端</h2>
+                <h2 class="card-title"> SSH 终端</h2>
                 <div>
                     <button class="btn btn-primary" id="connectBtn" onclick="connectTerminal()">连接</button>
                     <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectTerminal()" style="display:none;">断开</button>
@@ -370,8 +390,7 @@
                     input.disabled = false;
                     connectBtn.style.display = 'none';
                     disconnectBtn.style.display = 'inline-block';
-                    output.textContent = 'SSH 终端已连接。输入命令开始使用...
-';
+                    output.textContent = 'SSH 终端已连接。输入命令开始使用...';
                     input.focus();
                 } else {
                     output.textContent = '连接失败：' + data.error;
@@ -399,8 +418,7 @@
                     input.disabled = true;
                     connectBtn.style.display = 'inline-block';
                     disconnectBtn.style.display = 'none';
-                    output.textContent += '
-会话已断开。';
+                    output.textContent += '会话已断开。';
                 }
             });
         }
@@ -415,12 +433,10 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    output.textContent += '$ ' + cmd + '
-' + data.output;
+                    output.textContent += '$ ' + cmd + '\\n' + data.output;
                     output.scrollTop = output.scrollHeight;
                 } else {
-                    output.textContent += '
-命令执行失败：' + data.error;
+                    output.textContent += '命令执行失败：' + data.error;
                 }
             });
         }
@@ -434,9 +450,7 @@
     </script>
 </body>
 </html>"""
-            return html
-        except Exception as e:
-            return f"<p>终端视图渲染出错：{e}</p>"
+        return html
 
 register_plugin_type("LogTerminalPlugin", LogTerminalPlugin)
 

@@ -5,7 +5,7 @@
   "python.analysis.extraPaths": [
     "${workspaceFolder}",
     "${workspaceFolder}/oss",
-    "${workspaceFolder}/store/@{NebulaShell}"
+    "${workspaceFolder}/store/NebulaShell"
   ],
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.autoImportCompletions": true,

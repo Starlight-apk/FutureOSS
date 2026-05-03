@@ -1,10 +1,12 @@
-    
-    自动检测语言并注入到请求上下文
-    检测优先级:
-    1. URL 查询参数 ?lang=xx
+class I18nMiddleware:
+    """Auto-detect language and inject into request context.
+
+    Detection priority:
+    1. URL query param ?lang=xx
     2. Cookie locale=xx
-    3. Accept-Language 头
-    4. 默认语言
+    3. Accept-Language header
+    4. Default language
+    """
 
     def __init__(self, engine, config: dict = None):
         self.engine = engine

@@ -1,6 +1,9 @@
 
+class I18nEngine:
+
     def __init__(self):
-        self._translations: dict[str, dict[str, Any]] = {}        self._current_locale: str = "zh-CN"
+        self._translations: dict[str, dict[str, Any]] = {}
+        self._current_locale: str = "zh-CN"
         self._fallback_locale: str = "en-US"
         self._supported_locales: list[str] = []
         self._locales_dir: str = ""
@@ -21,21 +24,19 @@
                     content = locale_file.read_text(encoding="utf-8")
                     self._translations[locale] = json.loads(content)
                 except (json.JSONDecodeError, Exception) as e:
-                    print(f"[i18n] 加载语言文件失败 {locale_file}: {e}")
+                    print(f"[i18n] load locale file failed {locale_file}: {e}")
                     self._translations[locale] = {}
 
-    def set_locale(self, locale: str):
+    def get_locale(self) -> str:
         return self._current_locale
 
+    def set_locale(self, locale: str):
+        self._current_locale = locale
+
     def set_fallback(self, locale: str):
-        
-        Args:
-            key: 翻译键 (支持点号分隔的嵌套路径，如 "user.greeting")
-            locale: 指定语言 (默认使用当前语言)
-            **kwargs: 插值参数
-            
-        Returns:
-            翻译后的文本
+        self._fallback_locale = locale
+
+    def t(self, key: str, locale: str = None, **kwargs) -> str:
         target_locale = locale or self._current_locale
         
         value = self._get_nested(key, self._translations.get(target_locale, {}))
@@ -49,11 +50,24 @@
         return self._interpolate(value, kwargs)
 
     def _get_nested(self, key: str, data: dict) -> Any:
+        parts = key.split(".")
+        current = data
+        for part in parts:
+            if isinstance(current, dict):
+                current = current.get(part)
+            else:
+                return None
+        return current
+
+    def _interpolate(self, text: str, kwargs: dict) -> str:
         result = re.sub(r'\{\{(\w+)\}\}', lambda m: str(kwargs.get(m.group(1), m.group(0))), text)
         result = re.sub(r'\{(\w+)\}', lambda m: str(kwargs.get(m.group(1), m.group(0))), result)
         return result
 
     def get_supported_locales(self) -> list[str]:
+        return list(self._supported_locales)
+
+    def is_valid_locale(self, locale: str) -> bool:
         return locale in self._supported_locales
 
     def detect_locale(self, accept_language: Optional[str] = None, 

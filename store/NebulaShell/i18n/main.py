@@ -1,9 +1,14 @@
 
+class I18nPlugin(Plugin):
     def __init__(self):
         self.engine = I18nEngine()
         self.middleware_handler = None
+        self._http_api = None
 
-    def meta(self):
+    def set_http_api(self, http_api):
+        self._http_api = http_api
+
+    def init(self, deps: dict = None):
         
         加载语言文件并初始化中间件
         config = {}
@@ -30,9 +35,14 @@
         Log.info("i18n", f"默认语言: {default_locale}")
 
     def start(self):
-        http_api = None
-        if hasattr(self, 'set_http_api'):
-            http_api = getattr(self, '_http_api', None)
+        http_api = self._http_api
+        if not http_api:
+            try:
+                from store.NebulaShell.plugin_bridge.main import use
+                http_api = use("http-api")
+                self._http_api = http_api
+            except Exception:
+                pass
         
         if http_api and hasattr(http_api, 'router'):
             http_api.router.get("/api/i18n/locales", self._locales_handler)
@@ -48,8 +58,7 @@
 
 
     def _locales_handler(self, request):
-        
-        GET /api/i18n/translate?key=user.greeting&locale=en-US&name=World
+        # GET /api/i18n/translate?key=user.greeting&locale=en-US&name=World
         from oss.plugin.types import Response
         t = getattr(request, 't', self.engine.t)
         

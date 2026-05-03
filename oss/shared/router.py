@@ -1,3 +1,5 @@
+class BaseRoute:
+    
     __slots__ = ('method', 'path', 'handler', '_pattern_parts')
     
     def __init__(self, method: str, path: str, handler: Callable):
@@ -66,7 +68,8 @@ def extract_path_params(pattern: str, path: str) -> dict[str, str]:
     
     for i, p in enumerate(parts_to_process):
         if i < len(path_parts) and p.startswith(":"):
-            param_name = p[1:]            params[param_name] = path_parts[i]
+            param_name = p[1:]
+            params[param_name] = path_parts[i]
     
     if use_wildcard:
         param_name = last_pattern[1:]
@@ -88,13 +91,9 @@ class BaseRouter:
         self.add("PUT", path, handler)
     
     def delete(self, path: str, handler: Callable):
-        
-        Args:
-            method: HTTP 方法
-            path: 请求路径
-        
-        Returns:
-            (路由，路径参数) 或 None
+        self.add("DELETE", path, handler)
+    
+    def match(self, method: str, path: str):
         for route in self.routes:
             if route.method == method and match_path(route.path, path):
                 params = extract_path_params(route.path, path)

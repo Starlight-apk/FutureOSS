@@ -1,4 +1,4 @@
-
+class ReferenceCheck:
     STD_MODULES = {
         'os', 'sys', 'json', 're', 'time', 'datetime', 'pathlib',
         'typing', 'collections', 'functools', 'itertools', 'io',
@@ -155,3 +155,4 @@
         return False
 
     def _is_name_defined(self, name: str, tree: ast.AST, line: int) -> bool:
+        pass

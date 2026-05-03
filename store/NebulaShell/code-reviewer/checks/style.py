@@ -1,4 +1,4 @@
-
+class StyleCheck:
     def check(self, filepath: str, content: str) -> list:
         issues = []
 

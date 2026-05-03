@@ -1,3 +1,4 @@
+class WsEvent:
     type: str
     client: Any = None
     path: str = ""

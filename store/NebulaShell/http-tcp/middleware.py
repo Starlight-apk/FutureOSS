@@ -1,7 +1,6 @@
+class TcpMiddleware:
     def process(self, request: dict, next_fn: Callable) -> Optional[dict]:
-    def process(self, request, next_fn):
-        print(f"[http-tcp] {request.get('method')} {request.get('path')}")
-        return next_fn()
+        pass
 
 
 class TcpCorsMiddleware(TcpMiddleware):

@@ -1,4 +1,4 @@
-
+class TUIPlugin:
     def __init__(self):
         self.webui = None
         self.http_api = None
@@ -20,9 +20,19 @@
         )
 
     def set_webui(self, webui):
+        self.webui = webui
+
+    def set_http_api(self, http_api):
         self.http_api = http_api
 
     def init(self, deps: dict = None):
+        if not self.webui or not self.http_api:
+            try:
+                from store.NebulaShell.plugin_bridge.main import use
+                if not self.webui: self.webui = use("webui")
+                if not self.http_api: self.http_api = use("http-api")
+            except Exception:
+                pass
         default_pages = ["/", "/dashboard", "/logs", "/terminal"]
         
         for path in default_pages:
@@ -45,38 +55,23 @@
         Log.info("tui", "提示：按 'q' 退出 TUI，WebUI 仍在运行")
 
     def _tui_loop(self):
-        welcome_html = 
-        return Response(
-            status=200,
-            headers={"Content-Type": "text/html; charset=utf-8"},
-            body=html
-        )
+        pass
 
     def _handle_tui_page(self, request):
         css = """/* TUI 兼容 CSS */
 .tui-page {
-    /* 背景色 - 仅支持 ANSI 颜色 */
-    background-color:    color:}
-
+    background-color: transparent;
+    color: inherit;
+}
 .tui-body {
     font-family: monospace;
     font-weight: normal;
 }
-
-/* 字体样式 - TUI 支持 */
 .bold { font-weight: bold; }
 .underline { text-decoration: underline; }
-
-/* 布局 - TUI 简化处理 */
-.tui-container {
-    padding: 0;
-    margin: 0;
-}
-
-/* 交互元素标记 */
 [data-tui-action] {
     cursor: pointer;
-}
+}"""
         return Response(
             status=200,
             headers={"Content-Type": "text/css"},

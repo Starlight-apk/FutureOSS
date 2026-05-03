@@ -16,7 +16,7 @@ The `@NebulaShell/nodejs-adapter` plugin provides Node.js and npm capabilities t
 
 The plugin is included in the NebulaShell store at:
 ```
-store/@{NebulaShell}/nodejs-adapter/
+store/NebulaShell/nodejs-adapter/
 ```
 
 It will be automatically loaded when the NebulaShell server starts.
@@ -223,7 +223,7 @@ else:
 Test the adapter directly:
 
 ```bash
-cd /workspace/store/@{NebulaShell}/nodejs-adapter
+cd /workspace/store/NebulaShell/nodejs-adapter
 python main.py
 ```
 

@@ -1,3 +1,4 @@
+class ProConfig:
     def __init__(self, config: dict = None):
         config = config or {}
         self.failure_threshold = config.get("failure_threshold", 3)
@@ -20,4 +21,3 @@ class AutoRecoveryConfig:
         self.timeout_per_plugin = config.get("timeout_per_plugin", 30)
 
 
-class ProConfig:

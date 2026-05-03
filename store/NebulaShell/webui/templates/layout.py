@@ -1,9 +1,9 @@
-
+class Layout:
     def __init__(self, config: dict):
         self.config = config
 
     def render(self) -> str:
-<html lang="zh-CN">
+        return """<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

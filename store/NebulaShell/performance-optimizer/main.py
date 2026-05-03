@@ -44,6 +44,15 @@ class FastCache:
         return True, entry[0]
     
     def set(self, key: Any, value: Any):
+        if key in self._cache:
+            self._order.remove(key)
+        self._cache[key] = (value, time.time())
+        self._order.append(key)
+        if len(self._cache) > self._maxsize:
+            oldest = self._order.popleft()
+            del self._cache[oldest]
+    
+    def clear(self):
         self._cache.clear()
         self._order.clear()
         self._hits = 0
@@ -51,16 +60,13 @@ class FastCache:
     
     @property
     def hit_rate(self) -> float:
-    
-    Args:
-        maxsize: 最大缓存条目数
-        ttl: 过期时间（秒），0 表示永不过期
-        key_func: 自定义 key 生成函数，默认使用 args+kwargs
-    
-    Example:
-        @cached(maxsize=100)
-        def expensive_compute(x, y):
-            return x ** y
+        total = self._hits + self._misses
+        if total == 0:
+            return 0.0
+        return self._hits / total
+
+
+def cached(maxsize: int = 1024, ttl: float = 0, key_func: Callable = None):
     _cache = FastCache(maxsize=maxsize, ttl=ttl)
     
     def decorator(func: F) -> F:
@@ -79,8 +85,12 @@ class FastCache:
             _cache.set(key, value)
             return value
         
-        wrapper.cache = _cache        wrapper.cache_clear = _cache.clear        wrapper.cache_stats = _cache.stats        return wrapper    
+        wrapper.cache = _cache
+        wrapper.cache_clear = _cache.clear
+        wrapper.cache_stats = _cache.stats
+        return wrapper
     return decorator
+
 
 class ObjectPool(Generic[T]):
     __slots__ = ('_factory', '_pool', '_maxsize', '_created', '_acquired', '_lock')
@@ -94,25 +104,23 @@ class ObjectPool(Generic[T]):
         self._lock = Lock() if sys.version_info < (3, 9) else None
     
     def acquire(self) -> T:
+        if self._pool:
+            obj = self._pool.pop()
+        else:
+            obj = self._factory()
+            self._created += 1
+        self._acquired += 1
+        return obj
+    
+    def release(self, obj: T):
         if len(self._pool) < self._maxsize:
             self._pool.append(obj)
     
     def clear(self):
-    
-    特性:
-    - 累积一定数量后批量处理
-    - 超时自动触发
-    - 减少系统调用次数
-    
-    Example:
-        processor = BatchProcessor(
-            batch_handler=lambda items: db.bulk_insert(items),
-            batch_size=100,
-            timeout=1.0
-        )
-        for item in items:
-            processor.add(item)
-        processor.flush()
+        self._pool.clear()
+
+
+class BatchProcessor(Generic[T]):
     __slots__ = ('_handler', '_batch_size', '_timeout', '_buffer', '_last_flush', '_processed_count')
     
     def __init__(self, batch_handler: Callable[[List[T]], Any], batch_size: int = 100, timeout: float = 1.0):
@@ -124,6 +132,11 @@ class ObjectPool(Generic[T]):
         self._processed_count = 0
     
     def add(self, item: T):
+        self._buffer.append(item)
+        if len(self._buffer) >= self._batch_size:
+            self.flush()
+    
+    def flush(self):
         if not self._buffer:
             return
         
@@ -149,10 +162,21 @@ class MemoryArena:
     
     def __init__(self, size: int = 1024 * 1024):
         self._data = bytearray(size)
-        self._free_list: List[tuple[int, int]] = [(0, size)]        self._allocated: Set[int] = set()
+        self._free_list: List[tuple[int, int]] = [(0, size)]
+        self._allocated: Set[int] = set()
         self._total_size = size
     
     def allocate(self, size: int) -> Optional[memoryview]:
+        for i, (offset, block_size) in enumerate(self._free_list):
+            if block_size >= size:
+                self._free_list.pop(i)
+                if block_size > size:
+                    self._free_list.append((offset + size, block_size - size))
+                self._allocated.add(offset)
+                return memoryview(self._data)[offset:offset + size]
+        return None
+    
+    def deallocate(self, view: memoryview):
         offset = view.obj.__array_interface__['data'][0] - id(self._data) if hasattr(view.obj, '__array_interface__') else 0
         if offset in self._allocated:
             self._allocated.remove(offset)
@@ -177,11 +201,14 @@ class HotPathOptimizer:
         self._start_times: Dict[str, float] = {}
     
     def track(self, func_name: str):
-    
-    特性:
-    - 低开销计时
-    - 嵌套支持
-    - 统计汇总
+        self._call_counts[func_name] = self._call_counts.get(func_name, 0) + 1
+        if self._call_counts[func_name] >= self._threshold and func_name not in self._optimized:
+            self._optimized.add(func_name)
+            return True, self._call_counts[func_name]
+        return False, self._call_counts[func_name]
+
+
+class PerfProfiler:
     __slots__ = ('_records', '_stack', '_enabled')
     
     def __init__(self):
@@ -208,14 +235,10 @@ class HotPathOptimizer:
         self._records[name].append(elapsed)
     
     def context(self, name: str):
-    
-    特性:
-    - 重复字符串去重
-    - 减少内存占用
-    - 加速字符串比较
-    
-    注意：Python 内置的 sys.intern() 已经对字符串做了弱引用处理，
-    这里使用强引用缓存来确保常用字符串不会被回收。
+        pass
+
+
+class StringIntern:
     __slots__ = ('_cache',)
     
     def __init__(self, use_weak_refs: bool = True):
@@ -236,6 +259,15 @@ class HotPathOptimizer:
 
 
 class PerformanceOptimizerPlugin:
+    def __init__(self):
+        self._initialized = False
+        self._caches: Dict[str, FastCache] = {}
+        self._pools: Dict[str, ObjectPool] = {}
+        self._profiler = PerfProfiler()
+        self._hot_path = HotPathOptimizer()
+        self._string_intern = StringIntern()
+
+    def init(self, deps: dict = None):
         if self._initialized:
             return
         
@@ -249,11 +281,14 @@ class PerformanceOptimizerPlugin:
         self._initialized = True
     
     def start(self):
+        pass
+    
+    def stop(self):
         for cache in self._caches.values():
             cache.clear()
         for pool in self._pools.values():
             pool.clear()
-        self._profiler.clear()
+        self._profiler = PerfProfiler()
     
     def get_cache(self, name: str) -> Optional[FastCache]:
         return self._caches.get(name)
@@ -280,3 +315,4 @@ class PerformanceOptimizerPlugin:
 
 
 def New() -> PerformanceOptimizerPlugin:
+    return PerformanceOptimizerPlugin()

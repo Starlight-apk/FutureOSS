@@ -1,4 +1,4 @@
-
+class CodeReviewerPlugin:
     def __init__(self):
         self.reviewer = None
         self.config = {}
@@ -46,3 +46,4 @@
         Log.error("code-reviewer", "插件已停止")
 
     def check(self, dirs: list = None) -> dict:
+        pass

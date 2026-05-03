@@ -1,4 +1,5 @@
 
+class ProPluginManager:
     def __init__(self, config: ProConfig):
         self.config = config
         self.plugins: dict[str, dict[str, Any]] = {}
@@ -102,3 +103,4 @@
                             ProLogger.error("inject", f"注入失败 {name}.{setter}: {type(e).__name__}: {e}")
 
     def _get_ordered_plugins(self) -> list[str]:
+        return []

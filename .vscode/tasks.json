@@ -91,7 +91,7 @@
     {
       "label": "NebulaShell: 代码检查",
       "type": "shell",
-      "command": "python -m pylint oss/ store/@{NebulaShell}/ --rcfile=${workspaceFolder}/.pylintrc || echo 'Pylint检查完成'",
+      "command": "python -m pylint oss/ store/NebulaShell/ --rcfile=${workspaceFolder}/.pylintrc || echo 'Pylint检查完成'",
       "group": "build",
       "presentation": {
         "echo": true,
@@ -124,7 +124,7 @@
     {
       "label": "NebulaShell: 格式化代码",
       "type": "shell",
-      "command": "python -m black oss/ store/@{NebulaShell}/",
+      "command": "python -m black oss/ store/NebulaShell/",
       "group": "build",
       "presentation": {
         "echo": true,

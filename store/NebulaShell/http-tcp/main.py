@@ -1,4 +1,5 @@
 
+class HttpTcpPlugin:
     def __init__(self):
         self.server = None
         self.router = TcpRouter()
@@ -8,3 +9,4 @@
         self.server.start()
 
     def stop(self):
+        pass

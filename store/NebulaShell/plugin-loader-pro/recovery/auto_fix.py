@@ -1,4 +1,5 @@
 
+class AutoFixRecovery:
     def __init__(self, max_attempts: int = 3, delay: int = 10):
         self.max_attempts = max_attempts
         self.delay = delay
@@ -9,3 +10,4 @@
         self._recovery_attempts[name] = 0
 
     def get_attempts(self, name: str) -> int:
+        return self._recovery_attempts.get(name, 0)

@@ -1,7 +1,7 @@
-
+class Assets:
     @staticmethod
     def get_css() -> str:
-        return 
+        return ""
 
     @staticmethod
     def get_js() -> str:

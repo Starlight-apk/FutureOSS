@@ -1,4 +1,4 @@
-
+class HttpApiPlugin:
     def __init__(self):
         self.server = None
         self.router = Router()

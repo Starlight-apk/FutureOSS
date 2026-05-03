@@ -1,4 +1,4 @@
-
+class TcpClient:
     def __init__(self, conn: socket.socket, address: tuple):
         self.conn = conn
         self.address = address
@@ -9,6 +9,7 @@
 
 
 class TcpHttpServer:
+    def __init__(self):
         self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._server.bind((self.host, self.port))
@@ -37,7 +38,8 @@ class TcpHttpServer:
                             content_length = int(line.split(":", 1)[1].strip())
                             break
                     
-                    body_start_pos = header_end + 4                    body_received = len(buffer) - body_start_pos
+                    body_start_pos = header_end + 4
+                    body_received = len(buffer) - body_start_pos
                     
                     if body_received < content_length:
                         while body_received < content_length:

@@ -1,3 +1,4 @@
+class TcpEvent:
     type: str
     client: Any = None
     data: bytes = b""

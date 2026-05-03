@@ -581,7 +581,7 @@ class PluginManager:
             self._bootstrap_installation()
 
         lifecycle_plugin = None
-        lc_dir = Path(store_dir) / "@{NebulaShell}" / "lifecycle"
+        lc_dir = Path(store_dir) / "NebulaShell" / "lifecycle"
         if lc_dir.exists() and (lc_dir / "main.py").exists():
             try:
                 inst = self.load(lc_dir)
@@ -589,14 +589,14 @@ class PluginManager:
             except Exception as e: Log.warn("plugin-loader", f"lifecycle 插件加载失败：{type(e).__name__}: {e}")
 
         dep_plugin = None
-        dep_dir = Path(store_dir) / "@{NebulaShell}" / "dependency"
+        dep_dir = Path(store_dir) / "NebulaShell" / "dependency"
         if dep_dir.exists() and (dep_dir / "main.py").exists():
             try:
                 inst = self.load(dep_dir)
                 if inst: dep_plugin = inst; self._dependency_plugin = inst; self.plugins.pop("dependency", None)
             except Exception as e: Log.warn("plugin-loader", f"dependency 插件加载失败：{type(e).__name__}: {e}")
 
-        sig_dir = Path(store_dir) / "@{NebulaShell}" / "signature-verifier"
+        sig_dir = Path(store_dir) / "NebulaShell" / "signature-verifier"
         if sig_dir.exists() and (sig_dir / "main.py").exists():
             try:
                 inst = self.load(sig_dir)
@@ -610,12 +610,31 @@ class PluginManager:
     def _load_plugins_from_dir(self, store_dir: Path):
         if not store_dir.exists(): return
         core_plugins = {"webui", "dashboard", "pkg-manager"}
-        skip = {"plugin-loader", "lifecycle", "dependency", "signature-verifier"}
+        skip = {"plugin-loader"}
+        first_plugins = []
+        other_plugins = []
         for ad in store_dir.iterdir():
             if ad.is_dir():
                 for pd in ad.iterdir():
-                    if pd.is_dir() and pd.name not in skip and (pd / "main.py").exists():
-                        self.load(pd, use_sandbox=pd.name not in core_plugins)
+                    if not pd.is_dir() or pd.name in skip or not (pd / "main.py").exists():
+                        continue
+                    manifest_file = pd / "manifest.json"
+                    is_first = False
+                    if manifest_file.exists():
+                        try:
+                            meta = json.loads(manifest_file.read_text()).get("metadata", {})
+                            if meta.get("load_priority") == "first":
+                                is_first = True
+                        except (json.JSONDecodeError, OSError):
+                            pass
+                    if is_first:
+                        first_plugins.append(pd)
+                    else:
+                        other_plugins.append(pd)
+        for pd in first_plugins:
+            self.load(pd, use_sandbox=pd.name not in core_plugins)
+        for pd in other_plugins:
+            self.load(pd, use_sandbox=pd.name not in core_plugins)
         self._link_capabilities()
 
     def _check_any_plugins(self, store_dir: str) -> bool:
